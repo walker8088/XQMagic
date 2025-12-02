@@ -1,0 +1,65 @@
+以下内容来自皮卡鱼2023.04.08
+
+提问：这是一份UCI协议的中国象棋引擎程序的配置文件，你帮我分析一下下列每项参数的含义。
+
+Debug Log File type string default
+Threads type spin default 1 min 1 max 1024
+Hash type spin default 16 min 1 max 33554432
+Clear Hash type button
+Ponder type check default false
+MultiPV type spin default 1 min 1 max 500
+Skill Level type spin default 20 min 0 max 20
+Move Overhead type spin default 10 min 0 max 5000
+Slow Mover type spin default 100 min 10 max 1000
+nodestime type spin default 0 min 0 max 10000
+Sixty Move Rule type check default true
+Mate Threat Depth type spin default 1 min 0 max 10
+Repetition Fold type combo default TwoFold var TwoFold var RootThreeFold var ThreeFold
+Repetition Rule type combo default AsianRule uar AsianRule uar ChineseRule var SkyRule
+UCI_LimitStrength type check default false
+UCI_Elo type spin default 1350 min 1350 max 2850
+UCI_WDL Centipawn type check default true
+UCI_ShowWDL type check default false
+EvalFile type str ing default pikafish.nnue
+
+以下内容来自Bing AI：
+
+这是一份UCI协议的中国象棋引擎程序的配置文件，它包含了一些可以调节引擎性能和行为的参数。下面是每项参数的含义：
+
+- Debug Log File type string default: 这个参数用于设置调试日志文件的路径和名称，如果为空则不生成日志文件。
+
+- Threads type spin default 1 min 1 max 1024: 这个参数用于设置引擎使用的线程数，可以根据硬件性能和操作系统进行调整，一般来说，线程数越多，引擎的搜索速度和深度越快。
+
+- Hash type spin default 16 min 1 max 33554432: 这个参数用于设置引擎使用的置换表的大小，单位是兆字节（MB），置换表是一种缓存机制，用于存储已经搜索过的局面和评估值，以避免重复搜索，提高搜索效率。一般来说，置换表越大，引擎的搜索质量越高，但也要考虑硬件的内存限制，如果设置过大，可能导致内存不足或者搜索速度变慢。
+
+- Clear Hash type button: 这个参数是一个按钮，用于清空置换表中的数据，一般在开始新的对局或者分析时使用，以避免之前的数据对当前的搜索造成干扰。
+
+- Ponder type check default false: 这个参数是一个开关，用于设置引擎是否在对手的回合进行思考，即预测对手的走法并提前搜索，这样可以节省时间，提高搜索深度，但也会增加硬件的负担，如果硬件性能不足，可能导致引擎反应变慢或者崩溃。
+
+- MultiPV type spin default 1 min 1 max 500: 这个参数用于设置引擎输出的候选走法的数量，即多重主变量（Multi-PV），一般来说，引擎只会输出最佳的走法和对应的评估值，但有时候，用户可能想要看到其他的走法和评估值，以便进行比较和分析，这时候就可以通过调节这个参数来实现，但要注意，这个参数的增加会降低搜索的速度和深度，因为引擎需要花费更多的时间和资源来搜索和排序多个走法。
+
+- Skill Level type spin default 20 min 0 max 20: 这个参数用于设置引擎的技能水平，即人工降低引擎的强度，以便和不同水平的用户进行对弈或者分析，这个参数的范围是0到20，0表示最低的水平，20表示最高的水平，一般来说，这个参数越低，引擎的搜索深度越浅，评估值越不准确，走法越不理想，反之亦然。
+
+- Move Overhead type spin default 10 min 0 max 5000: 这个参数用于设置引擎的走法开销，即引擎在每次走棋时预留的时间，单位是毫秒（ms），这个参数的目的是为了防止引擎因为网络延迟或者其他原因而超时，一般来说，这个参数越大，引擎的走棋速度越慢，但也越安全，反之亦然。
+
+- Slow Mover type spin default 100 min 10 max 1000: 这个参数用于设置引擎的走棋速度，即引擎在每次走棋时使用的时间百分比，这个参数的范围是10到1000，100表示正常的速度，即按照时间控制来分配时间，如果大于100，表示引擎会走得更慢，如果小于100，表示引擎会走得更快，一般来说，这个参数越大，引擎的搜索深度越深，走法越理想，但也越容易超时，反之亦然。
+
+- nodestime type spin default 0 min 0 max 10000: 这个参数用于设置引擎的节点时间，即引擎在每次走棋时使用的固定的节点数，这个参数的单位是毫秒（ms），如果设置为0，表示不使用这个参数，而是按照时间控制来分配时间，如果设置为非零的值，表示引擎会在每次走棋时搜索固定的节点数，不管时间控制如何，这样可以使引擎的走棋速度更稳定，但也可能导致引擎的搜索质量不均匀，因为不同的局面的节点数可能差别很大。
+
+- Sixty Move Rule type check default true: 这个参数是一个开关，用于设置引擎是否遵守六十回合和棋规则，即如果双方在六十回合内没有吃子或者移动兵，则判定为和棋，这个规则是国际象棋的规则，但是中国象棋没有这个规则，所以如果想要模拟中国象棋的规则，可以关闭这个参数，但要注意，这样可能导致引擎陷入无尽的循环，或者错过和棋的机会。
+
+- Mate Threat Depth type spin default 1 min 0 max 10: 这个参数用于设置引擎的杀棋威胁深度，即引擎在搜索时是否考虑对手的杀棋威胁，以及考虑的深度，这个参数的范围是0到10，0表示不考虑对手的杀棋威胁，只考虑自己的杀棋威胁，这样可以提高搜索的速度，但也可能导致引擎忽略对手的致命的杀棋，如果大于0，表示引擎会考虑对手的杀棋威胁，以及对应的深度，这样可以提高搜索的质量，但也会降低搜索的速度，一般来说，这个参数越大，引擎的防守能力越强，但也越慢，反之亦然。
+
+- Repetition Fold type combo default TwoFold var TwoFold var RootThreeFold var ThreeFold: 这个参数用于设置引擎的重复局面的处理方式，即引擎在搜索时遇到重复局面时如何评估，这个参数有三个选项，分别是TwoFold，RootThreeFold和ThreeFold，TwoFold表示引擎会折叠两次重复的局面，即如果一个局面出现两次，就认为是和棋，这样可以避免引擎陷入无尽的循环，但也可能导致引擎错过有利的局面，RootThreeFold表示引擎会折叠根节点三次重复的局面，即如果一个局面在根节点出现三次，就认为是和棋，这样可以避免引擎错过有利的局面，但也可能导致引擎陷入无尽的循环，ThreeFold表示引擎会折叠任意节点三次重复的局面，即如果一个局面在任意节点出现三次，就认为是和棋，这样可以避免引擎陷入无尽的循环，但也可能导致引擎错过有利的局面，一般来说，这个参数的选择要根据对局的目的和风格来决定，如果想要追求最佳的结果，可以选择TwoFold，如果想要模拟真实的对局，可以选择RootThreeFold，如果想要避免重复局面的影响，可以选择ThreeFold。
+
+- Repetition Rule type combo default AsianRule var AsianRule var ChineseRule var SkyRule: 这个参数用于设置引擎的重复局面的判定规则，即引擎在对局时遇到重复局面时如何判定胜负，这个参数有四个选项，分别是AsianRule，ChineseRule，SkyRule和None，AsianRule表示引擎遵守亚洲规则，即如果一个局面出现三次，就判定为和棋，如果一个局面出现四次，就判定为先手输，这个规则是亚洲国际象棋联合会的规则，ChineseRule表示引擎遵守中国规则，即如果一个局面出现三次，就判定为先手输，这个规则是中国象棋协会的规则，SkyRule表示引擎遵守天天规则，即如果一个局面出现三次，就判定为后手输，这个规则是天天象棋的规则，None表示引擎不遵守任何规则，即不判定重复局面的胜负，只判定是否有杀棋，这样可以模拟无限循环的局面，但也可能导致引擎无法结束对局。
+
+- UCI_LimitStrength type check default false: 这个参数是一个开关，用于设置引擎是否限制自己的强度，即人工降低引擎的强度，以便和不同水平的用户进行对弈或者分析，如果关闭这个参数，表示引擎不限制自己的强度，即使用最大的搜索深度和评估值，如果开启这个参数，表示引擎会根据另一个参数UCI_Elo来限制自己的强度，即模拟相应的等级分的水平。
+
+- UCI_Elo type spin default 1350 min 1350 max 2850: 这个参数用于设置引擎的等级分，即引擎模拟的水平，这个参数的范围是1350到2850，1350表示最低的水平，2850表示最高的水平，一般来说，这个参数越高，引擎的水平越高，反之亦然，这个参数只有在UCI_LimitStrength开启时才有效，否则无效。
+
+- UCI_WDL Centipawn type check default true: 这个参数是一个开关，用于设置引擎的评估值的单位，即引擎输出的评估值是以什么为单位，如果开启这个参数，表示引擎的评估值是以厘兵为单位，即每个棋子的价值是以兵为基准，一般来说，兵的价值是100厘兵，车的价值是900厘兵，马的价值是450厘兵，炮的价值是500厘兵，相的价值是250厘兵，士的价值是250厘兵，将的价值是无穷大，如果关闭这个参数，表示引擎的评估值是以胜率为单位，即每个局面的胜率是以百分比为基准，一般来说，胜率越高，表示局面越有利，反之亦然。
+
+- UCI_ShowWDL type check default false: 这个参数是一个开关，用于设置引擎是否显示胜率，即引擎在输出评估值时是否同时输出胜率，如果开启这个参数，表示引擎会显示胜率，即每个评估值后面会跟着一个百分比，表示该评估值对应的胜率，如果关闭这个参数，表示引擎不显示胜率，即只输出评估值，不输出百分比，这个参数只有在UCI_WDL Centipawn开启时才有效，否则无效。
+
+- EvalFile type string default pikafish.nnue: 这个参数用于设置引擎的评估文件的路径和名称，即引擎使用的评估函数的文件，评估函数是一种用于评估局面优劣的算法，一般来说，评估函数越准确，引擎的水平越高，这个参数的默认值是pikafish.nnue，这是一种基于神经网络的评估函数，它的优点是评估速度快，评估质量高，缺点是文件较大，需要较高的硬件性能，如果想要使用其他的评估函数，可以修改这个参数，但要注意，评估函数必须和引擎的版本和协议相匹配，否则可能导致引擎无法正常工作。

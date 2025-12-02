@@ -1,0 +1,13 @@
+
+pyyaml
+cchess>=1.0
+pyqt5
+opencv-python
+pillow
+psutil
+requests
+peewee
+tinydb
+pygetwindow
+pyinstaller
+pytest-qt

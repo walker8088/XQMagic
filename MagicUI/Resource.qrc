@@ -1,0 +1,45 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>../ImgRes/app.ico</file>
+    <file>../ImgRes/board.png</file>
+    <file>../ImgRes/ra.png</file>
+    <file>../ImgRes/ba.png</file>
+    <file>../ImgRes/rb.png</file>
+    <file>../ImgRes/bb.png</file>
+    <file>../ImgRes/rc.png</file>
+    <file>../ImgRes/bc.png</file>
+    <file>../ImgRes/rk.png</file>
+    <file>../ImgRes/bk.png</file>
+    <file>../ImgRes/rn.png</file>
+    <file>../ImgRes/bn.png</file>
+    <file>../ImgRes/rp.png</file>
+    <file>../ImgRes/bp.png</file>
+    <file>../ImgRes/rr.png</file>
+    <file>../ImgRes/br.png</file>
+    <file>../ImgRes/over.png</file>
+    <file>../ImgRes/select.png</file>
+    <file>../ImgRes/step.png</file>
+    <file>../ImgRes/point.png</file>
+    <file>../ImgRes/edit.png</file>
+    <file>../ImgRes/openbook.png</file>
+    <file>../ImgRes/endbook.png</file>
+    <file>../ImgRes/robot.png</file>
+    <file>../ImgRes/mybook.png</file>
+    <file>../ImgRes/bookmark.png</file>
+    <file>../ImgRes/restart.png</file>
+    <file>../ImgRes/cloud.png</file>
+    <file>../ImgRes/engine.png</file>
+    <file>../ImgRes/left_right.png</file>
+    <file>../ImgRes/up_down.png</file>
+    <file>../ImgRes/exit.png</file>
+    <file>../ImgRes/search.png</file>
+    <file>../ImgRes/online.png</file>
+    <file>../ImgRes/capture.png</file>
+    <file>../ImgRes/star.png</file>
+    <file>../ImgRes/good.png</file>
+    <file>../ImgRes/sad.png</file>
+    <file>../ImgRes/bad.png</file> 
+    <file>../ImgRes/info.png</file> 
+    
+</qresource>
+</RCC>
