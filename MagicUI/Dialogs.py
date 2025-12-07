@@ -9,7 +9,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from PyQt5.QtWidgets import QStyle, QApplication, QMenu, QHBoxLayout, QVBoxLayout, QFormLayout, QDialog, QFileDialog,\
-                    QLabel, QSpinBox, QCheckBox, QPushButton, QRadioButton, QLineEdit,\
+                    QLabel, QSpinBox, QCheckBox, QPushButton, QRadioButton, QLineEdit,QTextEdit,\
                     QWidget, QDockWidget, QDialogButtonBox, QButtonGroup, QListWidget, QListWidgetItem, QInputDialog, \
                     QAbstractItemView, QComboBox, QTreeWidgetItem, QTreeWidget, QSplitter, QMessageBox
 
@@ -18,7 +18,7 @@ import cchess
 from cchess import ChessBoard
 
 from .BoardWidgets import ChessBoardEditWidget
-from .SnippingWidget import SnippingWidget
+#from .SnippingWidget import SnippingWidget
 
 #-----------------------------------------------------#
 class NumSlider(QWidget):
@@ -51,7 +51,80 @@ class NumSlider(QWidget):
     
     def onSlideValueChanged(self, value):
         self.VLabel.setText(str(value))
-            
+ 
+
+#-----------------------------------------------------#
+class TextInputDialog(QInputDialog):
+    """
+    自定义 QInputDialog，使输入框更宽（默认 500 px，可自行调节）。
+    同时支持单行（QLineEdit）或多行（QTextEdit）两种模式。
+    """
+    def __init__(self, title: str = "", label: str = "", parent=None,
+                 multiline: bool = False, width: int = 500):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setLabelText(label)
+        self.multiline = multiline
+        self.desired_width = width
+
+        # 移除默认的 QLineEdit
+        self.layout().removeWidget(self.findChild(QLineEdit))
+
+        if self.multiline:
+            self.text_edit = QTextEdit()
+            self.text_edit.setAcceptRichText(False)
+            self.text_edit.setFixedHeight(100)   # 多行时给个合适高度
+        else:
+            self.text_edit = QLineEdit()
+            self.text_edit.setMinimumWidth(self.desired_width)
+
+        # 重新加入布局（QInputDialog 的布局是 QGridLayout）
+        self.layout().addWidget(self.text_edit, 1, 0, 1, 2)
+
+        # 让对话框自适应宽度
+        self.resize(self.desired_width + 100, self.sizeHint().height())
+
+    def textValue(self) -> str:
+        return self.text_edit.toPlainText().strip() if self.multiline else self.text_edit.text()
+
+    @staticmethod
+    def getText(parent, title, label, text="", multiline=False, width=500):
+        dialog = LongTextInputDialog(title, label, parent, multiline, width)
+        dialog.setTextValue(text)
+        if dialog.exec_() == QDialog.Accepted:
+            return dialog.textValue(), True
+        return "", False
+
+'''
+# ------------------- 使用示例 -------------------
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+
+    # 单行长文本
+    text, ok = LongTextInputDialog.getText(
+        None,
+        title="请输入内容",
+        label="这里是提示文字：",
+        text="默认文字",
+        multiline=False,
+        width=600
+    )
+    if ok:
+        print("单行输入结果：", text)
+
+    # 多行长文本
+    text, ok = LongTextInputDialog.getText(
+        None,
+        title="多行输入",
+        label="请输入多行内容：",
+        multiline=True,
+        width=700
+    )
+    if ok:
+        print("多行输入结果：\n", text)
+
+    sys.exit(app.exec_())            
+'''
 #-----------------------------------------------------#
 class PositionEditDialog(QDialog):
     def __init__(self, parent, skinFolder = None):
@@ -107,8 +180,8 @@ class PositionEditDialog(QDialog):
         okBtn.clicked.connect(self.accept)
         cancelBtn.clicked.connect(self.close)
         
-        self.snippingWidget = SnippingWidget()
-        self.snippingWidget.onSnippingCompleted = self.onSnippingCompleted
+        #self.snippingWidget = SnippingWidget()
+        #self.snippingWidget.onSnippingCompleted = self.onSnippingCompleted
 
     def onInitBoard(self):
         self.boardEdit.from_fen(cchess.FULL_INIT_FEN)

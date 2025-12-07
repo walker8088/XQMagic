@@ -75,11 +75,12 @@ class EngineManager(QObject):
 
         self.fen_engine = fen_engine
         self.fen = fen
+        self.params = params
         self.stopThinking()
         
-        logging.info(f'Engine[{self.id}] goFrom: {fen} {params}')
-        return self.engine.go_from(fen_engine, params)
-    
+        logging.info(f'Engine[{self.id}] goFrom: {self.fen_engine} {self.params}')
+        return self.engine.go_from(self.fen_engine, self.params)
+            
     def stopThinking(self):
         if not self.isReady:
             return True
@@ -90,7 +91,12 @@ class EngineManager(QObject):
         #self.engine.get_action()
         
         return True 
-
+    
+    def redoThinking(self):
+        if self.fen_engine:
+            logging.info(f'Engine[{self.id}] goFrom: {self.fen_engine} {self.params}')
+            return self.engine.go_from(self.fen_engine, self.params)
+            
     def start(self):
         self.thread = ThreadRunner(self)
         self.thread.start()

@@ -2,18 +2,17 @@ import os
 import sys
 import shutil
 from pathlib import Path
-from ChessUI.Version import release_version
 
-#cmd = "pyinstaller.exe -F .\\Evolution.py -i images\\app.ico --noconsole --exclude-module PyQt5"
-cmd = "pyinstaller.exe .\\Evolution.py -i ImgRes\\app.ico --clean --noconsole --exclude-module=PySide6 \
-            --exclude-module=nacl --exclude-module=psycopg2"
+from MagicUI.Version import release_version
+
+cmd = ".\\.venv\\Scripts\\pyinstaller.exe XQMagic.py -i ImgRes\\app.ico --clean --noconsole"
 
 ret = os.system(cmd)
 
 if ret != 0:
     sys.exit(ret)
 
-need_removes = Path('dist', 'Evolution', '_internal').glob(".//mkl_*.dll")
+need_removes = Path('dist', 'XQMagic', '_internal').glob(".//mkl_*.dll")
 for file in need_removes:
     os.remove(file)
     print(f'Deleted:{file}')
@@ -39,9 +38,12 @@ for file in [
     '_brotli.cp311-win_amd64.pyd',
     'omptarget.rtl.opencl.dll',
     ]:
-    os.remove(F'dist/Evolution/_internal/{file}')
- 
-need_removes = Path('dist', 'Evolution', '_internal', 'cv2').glob(".//opencv_videoio_ffmpeg*.dll")
+    try:        
+        os.remove(F'dist/XQMagic/_internal/{file}')
+    except:
+        pass
+        
+need_removes = Path('dist', 'XQMagic', '_internal', 'cv2').glob(".//opencv_videoio_ffmpeg*.dll")
 for file in need_removes:
     os.remove(file)
     print(f'Deleted:{file}')
@@ -53,33 +55,33 @@ for file in [
     'Qt5Qml.dll',
     'd3dcompiler_47.dll',
     ]:
-    os.remove(F'dist/Evolution/_internal/PyQt5/Qt5/bin/{file}')
+    os.remove(F'dist/XQMagic/_internal/PyQt5/Qt5/bin/{file}')
 
 
 folders = ['Books', 'Game', 'Engine', 'Sound', 'Skins']
 for folder in folders:
     src_folder = f".\\{folder}"
-    dest_folder = f".\\dist\\Evolution\\{folder}"
+    dest_folder = f".\\dist\\XQMagic\\{folder}"
     #os.mkdir(dest_folder) 
     print("*** Copying Folder:", src_folder,"-->", dest_folder)
     shutil.copytree(src_folder, dest_folder)
 
 shutil.rmtree('build')
 
-#os.rename('.\\dist', '.\\Evolution')
+#os.rename('.\\dist', '.\\XQMagic')
 for file in [
-    "Evolution.ini",
-    'ReadMe.txt',
+    "XQMagic.ini",
+    'README.md',
     'ReleaseNote.txt'
     ]:
-    shutil.copy(file, '.\\dist\\Evolution\\')
+    shutil.copy(file, '.\\dist\\XQMagic\\')
 
 for file in [    
     'openbook.pfBook',
     ]:
-    os.remove(F'dist/Evolution/Game/{file}')
+    os.remove(F'dist/XQMagic/Game/{file}')
     
-final_folder = f'D:\\Evolution-{release_version}'    
-shutil.move('.\\dist\\Evolution', final_folder)
+final_folder = f'D:\\XQMagic-{release_version}'    
+shutil.move('.\\dist\\XQMagic', final_folder)
 print(f'请到 {final_folder} 目录下查看exe文件。')
 print("Done.")      

@@ -1,4 +1,4 @@
-
+pyinstalller
 pyyaml
 cchess>=1.0
 pyqt5

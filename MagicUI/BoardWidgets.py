@@ -7,14 +7,14 @@ from dataclasses import dataclass
 
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QPoint, QSize, QRect
 from PyQt5.QtGui import QPixmap, QCursor, QPen, QColor, QPainter, QPolygon
-from PyQt5.QtWidgets import QDialog, QMenu, QWidget, QApplication
-from PyQt5.QtWidgets import qApp
-from PyQt5.QtSvg import QSvgRenderer
+from PyQt5.QtWidgets import qApp, QDialog, QMenu, QWidget, QApplication
+
+#from PyQt5.QtSvg import QSvgRenderer
 
 import cchess
 from cchess import ChessBoard, Piece, iccs2pos
 
-from .Utils import TimerMessageBox, scaleImage, SvgToPixmap
+from .Utils import TimerMessageBox, scaleImage
 from .Resource import qt_resource_data
 
 from .Globl import *
@@ -269,25 +269,9 @@ class ChessBoardBaseWidget(QWidget):
         if self.board_start_y < 0:
             self.board_start_y = 0
     
-    def copyFenToClipboard(self):
-        fen = self._board.to_fen()        
-        clipboard = QApplication.clipboard()
-        clipboard.clear()
-        clipboard.setText(fen)
-    
     def getImage(self):
         return self.grab(self.getBoardRect())
-        
-    def copyImageToClipboard(self):
-        pixmap = self.getImage()
-        clipboard = QApplication.clipboard()
-        clipboard.clear()
-        clipboard.setPixmap(pixmap)
-    
-    def saveImageToFile(self, file_name):
-        pixmap = self.getImage()
-        pixmap.save(file_name)
-                
+            
     def getBoardRect(self):
         return QRect(self.board_start_x, self.board_start_y, self.board_width, self.board_height)
 
@@ -671,6 +655,7 @@ class PieceFreeItem:
     rect: QRect
     
 
+#---------------------------------------------------------#
 class ChessBoardEditWidget(ChessBoardBaseWidget):
     fenChangedSignal = pyqtSignal(str)
 
@@ -899,3 +884,4 @@ class ChessBoardEditWidget(ChessBoardBaseWidget):
     def sizeHint(self):
         return QSize(int(self.base_board_width / 9 * 11) + 50, self.base_board_height + 10)
 
+#---------------------------------------------------------#

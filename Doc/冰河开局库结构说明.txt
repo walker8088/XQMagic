@@ -1,0 +1,154 @@
+今天读了一下鹏飞破解部的部分代码，主要是看了一下开局库有关的操作，现将部分结论公布如下，如有说明不正确的地方，欢迎您的指出，也让我能更准确的了解相关细节。
+
+一、兵河开局库是什么？
+
+      这个问题看上去实在是有点傻，因为论坛里的人几乎每天都在与开局库打交道，更是有大量做库的高手，相关的教程在教我们制作兵河开局库的方法，就是收集利用已有的棋谱文件，在兵河软件中按相关步骤进行操作，然后生成一个文件，该文件是一个以.obk为结尾的文件。
+
+      到这里我们的结论是兵河开局库是一个以.obk为后缀名的文件，这种说法肯定是没有错误的，但是这个文件具体是怎么组成的呢，我今天在google上搜索了一些资料，未看到究竟。
+
+二、兵河里的文档说明
+
+     下载现在的兵河五四后，会有一个技术文档的文件夹，其中里面有一个bhobk的文件夹，里面有一个bhobk.c的程序，该程序的代码如下
+      typedef struct book_entry_t book_entry_t ;
+struct book_entry_t
+{
+    unsigned __int64 key ;
+    unsigned __int16 move ;
+    __int32 score ;
+    __int32 win_count ;
+    __int32 draw_count ;
+    __int32 lost_count ;
+    unsigned __int16 valid ;
+    char comments[64];
+};
+
+int GetBookEntry(book_entry_t *entry,unsigned __int64 key)
+{    
+    int result ;
+    char *errmsg=NULL ;
+    char **dbResult ;
+    int nRow,nColumn ;
+    int i,j ;
+    int index ;
+    char szSql[1024]={0};
+    _snprintf(szSql,1024,"select * from bhobk where vkey=%I64u;",key);
+    result=sqlite3_get_table(db,szSql,&dbResult,&nRow,&nColumn,&errmsg);
+    if(SQLITE_OK==result)
+    {
+        index=nColumn ;
+        for(i=0;i<nRow;i++)
+        {
+            if(i>127) break ;
+            for(j=0;j<nColumn;j++)
+            {
+                if(j==2)entry.move=atoi(dbResult[index]);
+                else if(j==3)entry.score=atoi(dbResult[index]);
+                else if(j==4)entry.win_count=atoi(dbResult[index]);
+                else if(j==5)entry.draw_count=atoi(dbResult[index]);
+                else if(j==6)entry.lost_count=atoi(dbResult[index]);
+                else if(j==7)entry.valid=atoi(dbResult[index]);
+                else if(j==8)strncpy(entry.comments,dbResult[index],64);
+                index++;
+            }
+        }
+    }
+    sqlite3_free_table(dbResult);
+    
+    return nRow>128?128:nRow ;
+}
+
+int main(int argc,char **argv)
+{
+    //某个局面开局库棋步总数
+    int nCount;
+    //记录某个局面开局库数据
+    book_entry_t entry[128]={0};
+    //这里的key是某个局面的ZobrisKey,采用无符号64位整数,具体计算方法见说明文件,这里给定常数作为实例
+    unsigned __int64 key=15265892774299731920;
+
+    int result=sqlite3_open("c:\\test.obk",&db);
+    if(result!=SQLITE_OK)
+    {
+        return 1;
+    }
+
+    nCount=GetBookEntry(entry,key);
+
+    sqlite3_close(db);
+    return 0 ;
+}
+
+    这里面声明了一个数据结构，并且有一段读取SQLite数据库的代码，这里就先到此为止。
+
+三、验证
+
+    再次验证鹏飞中的相关代码，已可以确认兵河开局库，实际上就是一个SQLite的数据库文件，而SQLite又是什么呢，他是一个文件形式的内存数据库，如果您需要更多这方面的知识，可以去了解该数据库，简言之，就是该数据库虽然是一个文件，但他也可以包含常用数据库的很多概念，如表、存储过程、视图及索引等。
+
+    因此，兵河开局库文件实际上就是一个SQLite的数据库文件，于是我使用SQLiteDev连接兵河文件，完全能够正常连接，现将分析的数据公布如下：
+
+  
+兵河库数据库格式
+1、采用了SQLite数据库
+2、表名为bhobk
+3、表中列的定义
+     3.1 id:主键
+     3.2  vk:当前局面的数字化，是当前的局面经过Zobrist 方法得到的哈希值，该值的具体Hash方法，我目前还没有准确测试出，希望有人能给出具体的算法或者准确的说明，不然还得仔细看程序实现了。关于Zobrist是什么的问题，它其实是一个基于无符号64位整形的（建议）的局面hash方法，子在走动时可以通过异或的方法快速的调整对应值，是整个象棋软件局面判断的一个重要数据结构。
+
+           目前库中：7101337512282506414表示初始局面
+     3.3 vmove：当前招法的数字法表示  
+     3.4 vscore：分数，是指当前局面
+     3.5 vwin：当前局面的胜局数
+     3.6 vdraw:当前局面的和局数
+     3.7 vlost：当前局面的负局数
+     3.8 vvalid：当前招法是否为有效步数，1为有效，0为无效
+     3.9 vmemo：当前招法的备注
+     3.10 vindex:当前招法达到的步数（如多少步脱谱）
+
+开局的着法，如果在数据库中直接检索，可以利用类似下面的语句
+Select * FromMAIN.[bhobk]  
+where vindex=1 order by vwin desc ;  
+
+
+实际搜索时使用的算法是
+
+Select * from bhobk where vkey=某个数值 and  vvalid=1 这种方式
+
+其中vkey的值，要根据当前局面子的位置计算而得到
+
+四、鹏飞库
+
+     这也是这两天论坛里有人一直在问的问题，现在可以这样说，本质上讲鹏飞开局库与兵河库无任何差异，因为鹏飞库也是SQLite的数据库，只是对应的表名不一样而已，鹏飞开局库的相关规定如下：
+
+
+1、采用了SQLite数据库
+2、库着的表名为pfbook，注意这里与兵河是本质的不同，便搞过数据库开发的人都知道，这种差异只是表名的差异而已。
+3、库的版本信息：bookVersion表，记录当前库的版本，如1.0.0.0
+4、库的配置信息：config，用于记录当前库是否为加密处理地的开局库
+5、表中列的定义，与兵河库的定义没有差别，便vkey值从兵河库中到鹏飞中时，做了一次到64位无符号整形的转换
+6、具体的列定义基本如下：
+     6.1 id:主键
+     6.2  vk:当前局面的数字化，是当前的局面经过Zobrist 得到的哈希值，该值在兵河的基础上做了一次64位无符号整形的转换
+     6.3 vmove：当前招法的数字法表示 ，加密库中该值有变化
+     6.4 vscore：分数，是指当前局面，加密时使用的种子
+     6.5 vwin：当前局面的胜局数
+     6.6 vdraw:当前局面的和局数
+     6.7 vlost：当前局面的负局数
+     6.8 vvalid：当前招法是否为有效步数，1为有效，0为无效
+     6.9 vmemo：当前招法的备注
+     6.10 vindex:当前招法达到的步数（如多少步脱谱）
+
+7、加密的处理，只对vmove的数据进行了加密，采用了一个自定义的加密方法EncryptMove，该方法继承自SQLite的Function，其种子是vscore。
+
+加密的原理也非常简单，但是这里我就不再详细说明了。
+
+
+五、结论
+
+    兵河库可以自由转换为鹏飞库
+     鹏飞库也可以转换为兵河库
+     鹏飞的加密库，只要你愿意，你可以很轻松的将其还原
+
+
+      我这里只是总结性的给出了这些结论，并没有具体描述相关实现的具体过程，有兴趣的朋友，可以在此基础上进行更深入的了解。
+
+

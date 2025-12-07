@@ -42,20 +42,17 @@ class NumEdit(QWidget):
         # 减按钮
         self.btn_minus = QToolButton(self)
         self.btn_minus.setText("–")          # en dash，更美观
-        #self.btn_minus.setFixedSize(24, 24)
         self.btn_minus.clicked.connect(self.decrease)
 
         # 数字编辑框（使用 QSpinBox 更方便控制范围和滚轮）
         self.spinbox = QSpinBox(self)
         self.spinbox.setButtonSymbols(QSpinBox.NoButtons)  # 隐藏自带上下箭头
         self.spinbox.setAlignment(Qt.AlignCenter)
-        #self.spinbox.setFixedHeight(24)
         self.spinbox.valueChanged.connect(self._on_spinbox_changed)
 
         # 加按钮
         self.btn_plus = QToolButton(self)
         self.btn_plus.setText("+")
-        #self.btn_plus.setFixedSize(24, 24)
         self.btn_plus.clicked.connect(self.increase)
 
         # 添加到布局
@@ -129,101 +126,122 @@ class DockWidget(QDockWidget):
 class DocksWidget(QDockWidget):
     def __init__(self, name, parent, inner, dock_areas):
         super().__init__(parent)
+
         self.setObjectName(name)
         self.inner = inner
         self.setWidget(self.inner)
         self.setWindowTitle(self.inner.title)
         self.setAllowedAreas(dock_areas)
+
+
+class LabelWidget(QWidget):
+    def __init__(self, label, widget):
+        super().__init__()
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel(label))
+        layout.addWidget(widget)
         
 #-----------------------------------------------------#
 class HistoryWidget(QWidget):
     positionSelSignal = pyqtSignal(int)
-    save_book_signal = pyqtSignal()
-
-    def __init__(self, parent):
-        super().__init__(parent)
+    removeFollowSignal = pyqtSignal(int)
+    
+    def __init__(self):
+        super().__init__()
 
         self.title = "棋谱记录"
-        self.parent = parent
+        
         self.isShowScore = True 
 
         self.positionView = QTreeWidget()
         self.positionView.setColumnCount(1)
-        self.positionView.setHeaderLabels(["序号", "着法", "红优分", ''])
+        self.positionView.setHeaderLabels(["序号", "着法", '', "云库分", '引擎分'])
         self.positionView.setColumnWidth(0, 90)
         #self.positionView.setTextAlignment(0, Qt.AlignLeft)
         self.positionView.setColumnWidth(1, 120)
-        self.positionView.setColumnWidth(2, 80)
-        self.positionView.setColumnWidth(3, 20)
-        #self.positionView.setColumnWidth(4, 20)
+        self.positionView.setColumnWidth(2, 20)
+        self.positionView.setColumnWidth(3, 90)
+        self.positionView.setColumnWidth(4, 90)
 
         self.positionView.itemSelectionChanged.connect(self.onSelectionChanged)
-        #self.positionView.itemActivated.connect(self.onItemActivated)
         #self.positionView.itemClicked.connect(self.onItemClicked)
-
+        
         self.annotationView = QTextEdit()
         self.annotationView.readOnly = True
-
-        splitter = QSplitter(self)
-        splitter.setOrientation(Qt.Vertical)
-        splitter.addWidget(self.positionView)
         
-        #splitter.addWidget(self.annotationView)
-        #splitter.setStretchFactor(0, 90)
-        #splitter.setStretchFactor(1, 10)
+        self.branchView = QListWidget(self)
 
-        self.firstBtn = QPushButton(
-            self.style().standardIcon(QStyle.SP_ArrowUp), '')
-        self.firstBtn.clicked.connect(self.onFirstBtnClick)
-        self.lastBtn = QPushButton(
-            self.style().standardIcon(QStyle.SP_ArrowDown), '')
-        self.lastBtn.clicked.connect(self.onLastBtnClick)
-
-        self.nextBtn = QPushButton(
-            self.style().standardIcon(QStyle.SP_ArrowForward), '')
-        self.nextBtn.clicked.connect(self.onNextBtnClick)
-        self.privBtn = QPushButton(
-            self.style().standardIcon(QStyle.SP_ArrowBack), '')
-        self.privBtn.clicked.connect(self.onPrivBtnClick)
+        self.vsplitter = QSplitter(Qt.Vertical)
+        self.vsplitter.addWidget(LabelWidget('注释', self.annotationView))
+        self.vsplitter.addWidget(LabelWidget('变招列表', self.branchView))
         
-
+        self.hsplitter = QSplitter(Qt.Horizontal)
+        self.hsplitter.addWidget(self.positionView)
+        self.hsplitter.addWidget(self.vsplitter)
+        
         self.reviewByCloudBtn = QPushButton("云库复盘")
         self.reviewByCloudBtn.setEnabled(False)
         self.reviewByEngineBtn = QPushButton("引擎复盘")
-        
+                
         self.addBookmarkBtn = QPushButton("收藏局面")
         self.addBookmarkBtn.clicked.connect(self.onAddBookmarkBtnClick)
         self.addBookmarkBookBtn = QPushButton("收藏棋谱")
         self.addBookmarkBookBtn.clicked.connect(self.onAddBookmarkBookBtnClick)
-        self.saveDbBtnBtn = QPushButton("保存到棋谱库")
-        self.saveDbBtnBtn.clicked.connect(self.onSaveDbBtnClick)
-        
-        hbox1 = QHBoxLayout()
-        hbox1.addWidget(self.firstBtn, 0)
-        hbox1.addWidget(self.privBtn, 0)
-        hbox1.addWidget(self.nextBtn, 0)
-        hbox1.addWidget(self.lastBtn, 0)
+        #self.saveDbBtnBtn = QPushButton("保存到棋谱库")
+        #self.saveDbBtnBtn.clicked.connect(self.onSaveDbBtnClick)
 
-        hbox2 = QHBoxLayout()
-        hbox2.addWidget(self.reviewByCloudBtn, 0)
-        hbox2.addWidget(self.reviewByEngineBtn, 0)
-        
-        hbox3 = QHBoxLayout()
-        #hbox3.addWidget(self.addBookmarkBtn, 0)
-        #hbox3.addWidget(self.addBookmarkBookBtn, 0)
-        hbox3.addWidget(self.saveDbBtnBtn, 0)
-        
-        vbox = QVBoxLayout()
-        vbox.addWidget(splitter, 2)
-        vbox.addLayout(hbox1)
-        vbox.addLayout(hbox2)
-        vbox.addLayout(hbox3)
+        hbox = QHBoxLayout()
+        #hbox.addWidget(self.reviewByCloudBtn)
+        #hbox.addWidget(self.reviewByEngineBtn)
+        hbox.addWidget(self.addBookmarkBookBtn)
+        hbox.addWidget(self.addBookmarkBtn)
 
-        self.setLayout(vbox)
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.hsplitter)
+        layout.addLayout(hbox)
 
         self.viewItems = []
         
         self.clear()
+    
+    def bindBoard(self, boardPanel):
+        #面板和走子历史互相绑定，减少全局变量
+        self.boardPanel = boardPanel
+        self.boardPanel.historyView = self
+
+        self.boardPanel.firstBtn.clicked.connect(self.goFirst)
+        self.boardPanel.lastBtn.clicked.connect(self.goLast)
+        self.boardPanel.nextBtn.clicked.connect(self.goNext)
+        self.boardPanel.privBtn.clicked.connect(self.goPriv)
+        
+    def goFirst(self):
+        self.selectIndex(0)
+       
+    def goLast(self):
+        self.selectIndex(len(self.viewItems) - 1)
+       
+    def goNext(self):
+        if (self.selectionIndex < 0) or \
+                (self.selectionIndex >= (len(self.viewItems) -1)):
+            return
+
+        self.selectIndex(self.selectionIndex + 1)
+        
+    def goPriv(self):
+        if self.selectionIndex <= 0:
+            return
+        
+        self.selectIndex(self.selectionIndex - 1)
+    
+    def getGameIccsMoves(self):
+        init_fen = self.viewItems[0].data(1, Qt.UserRole)['fen']
+        moves = []
+        for item in self.viewItems[1:]:  
+            position = item.data(1, Qt.UserRole)
+            moves.append(position['iccs'])
+        
+        return (init_fen, moves)
 
     def contextMenuEvent(self, event):
 
@@ -232,12 +250,12 @@ class HistoryWidget(QWidget):
         clearFollowAction = menu.addAction("删除后续着法")
         menu.addSeparator()
         copyFenAction =  menu.addAction("复制-FEN")
-        copyEngineFenAction =  menu.addAction("复制-引擎FEN")
+        #copyEngineFenAction =  menu.addAction("复制-引擎FEN")
         copyImageAction =  menu.addAction("复制-图片")
-        saveImageAction =  menu.addAction("保存图片到文件")
-        menu.addSeparator()
-        bookmarkPositionAction =  menu.addAction("收藏局面")
-        bookmarkBookAction =  menu.addAction("收藏棋谱")
+        #saveImageAction =  menu.addAction("保存图片到文件")
+        #menu.addSeparator()
+        #bookmarkPositionAction =  menu.addAction("收藏局面")
+        #bookmarkBookAction =  menu.addAction("收藏棋谱")
         #addToMyLibAction =  menu.addAction("保存到棋谱库")
 
         action = menu.exec_(self.mapToGlobal(event.pos()))
@@ -245,18 +263,17 @@ class HistoryWidget(QWidget):
         if action == clearFollowAction:
             self.onClearFollowBtnClick()
         elif action == copyFenAction:
-            Globl.boardView.copyFenToClipboard()
-        elif action == copyEngineFenAction:
-            self.parent.copyEngineFenToClipboard()
+            self.boardPanel.copyFenToClipboard()
+        #elif action == copyEngineFenAction:
+        #    self.parent.copyEngineFenToClipboard()
         elif action == copyImageAction:
-            Globl.boardView.copyImageToClipboard()
-        elif action == saveImageAction:
-            #Globl.boardView.copyImageToClipboard()
-            self.parent.saveImageToFile()
-        elif action == bookmarkPositionAction:
-            self.onAddBookmarkBtnClick()
-        elif action == bookmarkBookAction:
-            self.onAddBookmarkBookBtnClick()
+            self.boardPanel.copyImageToClipboard()
+        #elif action == saveImageAction:
+        #    self.parent.saveImageToFile()
+        #elif action == bookmarkPositionAction:
+        #    self.onAddBookmarkBtnClick()
+        #elif action == bookmarkBookAction:
+        #    self.onAddBookmarkBookBtnClick()
         #elif action == addToMyLibAction:
         #    self.onSaveDbBtnClick()
 
@@ -264,8 +281,8 @@ class HistoryWidget(QWidget):
         if self.selectionIndex < 0:
             return
 
-        #self.onRemoveHistoryFollow(self.selectionIndex)
-        self.parent.removeHistoryFollow(self.selectionIndex)
+        self.onRemoveHistoryFollow(self.selectionIndex)
+        self.removeFollowSignal.emit(self.selectionIndex)
         
     def onItemClicked(self, item, col):
         self.selectionIndex = item.data(0, Qt.UserRole)
@@ -277,6 +294,8 @@ class HistoryWidget(QWidget):
         
         self.selectionIndex = index
         item = self.viewItems[self.selectionIndex]
+        self.curr_position = item.data(1, Qt.UserRole)
+        #print(self.curr_position)
         self.positionView.setCurrentItem(item)
         
         if fireEvent:
@@ -286,69 +305,10 @@ class HistoryWidget(QWidget):
         items = self.positionView.selectedItems()
         if len(items) != 1:
             return
+        
         index = items[0].data(0, Qt.UserRole)
         self.selectIndex(index, True)
-                      
-    def onFirstBtnClick(self):
-        self.selectIndex(0)
-       
-    def onLastBtnClick(self):
-        self.selectIndex(len(self.viewItems) - 1)
-       
-    def onNextBtnClick(self):
-        if (self.selectionIndex < 0) or \
-                (self.selectionIndex >= (len(self.viewItems) -1)):
-            return
-
-        self.selectIndex(self.selectionIndex + 1)
-        
-    def onPrivBtnClick(self):
-        if self.selectionIndex <= 0:
-            return
-        
-        self.selectIndex(self.selectionIndex - 1)
-        
-    def onSaveDbBtnClick(self):
-        self.parent.saveGameToDB()
-        msgbox = TimerMessageBox("当前棋谱已成功保存到棋谱库.", timeout = 0.5)
-        msgbox.exec()
-        
-    def onAddBookmarkBtnClick(self):
-
-        fen = self.parent.board.to_fen()
-
-        if Globl.localBook.isFenInBookmark(fen):
-            msgbox = TimerMessageBox("收藏中已经有该局面存在.", timeout = 1)
-            msgbox.exec()
-            return
-
-        name, ok = QInputDialog.getText(self, getTitle(), '请输入收藏名称:', text = self.parent.getDefaultGameName())
-        if not ok:
-            return
-
-        if Globl.localBook.isNameInBookmark(name):
-            msgbox = TimerMessageBox(f'收藏中已经有[{name}]存在.', timeout = 1)
-            msgbox.exec()
-            return
-
-        Globl.localBook.saveBookmark(name, fen)
-        self.parent.bookmarkView.updateBookmarks()
-
-    def onAddBookmarkBookBtnClick(self):
-
-        fen, moves = self.parent.getGameIccsMoves()
-
-        name, ok = QInputDialog.getText(self, getTitle(), '请输入收藏名称:', text = self.parent.getDefaultGameName())
-        if not ok:
-            return
-
-        if Globl.localBook.isNameInBookmark(name):
-            QMessageBox.information(None, f'{getTitle()}, 收藏中已经有[{name}]存在.')
-            return
-
-        Globl.localBook.saveBookmark(name, fen, moves)
-        self.parent.bookmarkView.updateBookmarks()
-    
+                          
     def getCurrPosition(self):
         if self.selectionIndex < 0:
             return None
@@ -364,16 +324,6 @@ class HistoryWidget(QWidget):
         self.selectionIndex = position['index']
         self.positionView.setCurrentItem(item)
         
-    '''
-    def onRemovePosition(self, position):
-        root = self.positionView.invisibleRootItem()
-        it = self.viewItems[-1]
-        index = it.data(0, Qt.UserRole)
-        if index == position['index']:
-            item = self.viewItems.pop(-1)
-            root.removeChild(item)
-    '''
-
     def onRemoveHistoryFollow(self, index):
         root = self.positionView.invisibleRootItem()
         while len(self.viewItems) > (index + 1): 
@@ -402,31 +352,31 @@ class HistoryWidget(QWidget):
         fen = position['fen']
 
         if not self.isShowScore:
-            item.setText(2, '')
-            item.setIcon(3, QIcon())
+            item.setText(3, '')
+            item.setIcon(2, QIcon())
         else: 
             if fen not in Globl.fenCache:
-                item.setText(2, '')
-                item.setIcon(3, QIcon())    
+                item.setText(3, '')
+                item.setIcon(2, QIcon())    
             else:    
                 fenInfo = Globl.fenCache[fen] 
                 if (index > 0) and ('score' in fenInfo) :
-                    item.setText(2, str(fenInfo['score']))
+                    item.setText(3, str(fenInfo['score']))
                 else:
-                    item.setText(2, '')
+                    item.setText(3, '')
                 
                 if 'diff' in fenInfo:    
                     diff = fenInfo['diff']
                     if diff > -30:
-                        item.setIcon(3, QIcon(":ImgRes/star.png"))
+                        item.setIcon(2, QIcon(":ImgRes/star.png"))
                     elif diff > -70:
-                        item.setIcon(3, QIcon(":ImgRes/good.png"))
+                        item.setIcon(2, QIcon(":ImgRes/good.png"))
                     elif diff > -100:
-                        item.setIcon(3, QIcon(":ImgRes/sad.png"))
+                        item.setIcon(2, QIcon(":ImgRes/sad.png"))
                     else:
-                        item.setIcon(3, QIcon(":ImgRes/bad.png"))    
+                        item.setIcon(2, QIcon(":ImgRes/bad.png"))    
                 else:
-                    item.setIcon(3, QIcon())
+                    item.setIcon(2, QIcon())
 
         item.setData(0, Qt.UserRole, index)
         item.setData(1, Qt.UserRole, position)
@@ -443,42 +393,71 @@ class HistoryWidget(QWidget):
         self.viewItems = []
         self.positionView.clear()
         self.selectionIndex = -1
+    
+    def onAddBookmarkBtnClick(self):
+        
+        fen = self.curr_position['fen']
+
+        if Globl.localBook.isFenInBookmark(fen):
+            msgbox = TimerMessageBox("收藏中已经有该局面存在.", timeout = 1)
+            msgbox.exec()
+            return
+
+        name, ok = QInputDialog.getText(self, getTitle(), '请输入收藏名称:', text = '' ) #self.parent.getDefaultGameName())
+        if not ok:
+            return
+
+        if Globl.localBook.isNameInBookmark(name):
+            msgbox = TimerMessageBox(f'收藏中已经有[{name}]存在.', timeout = 1)
+            msgbox.exec()
+            return
+
+        Globl.localBook.saveBookmark(name, fen)  
+        Globl.bookmarkView.updateBookmarks()
+
+    def onAddBookmarkBookBtnClick(self):
+        fen, moves = self.getGameIccsMoves()
+
+        name, ok = QInputDialog.getText(self, getTitle(), '请输入收藏名称:', text = '') #self.parent.getDefaultGameName())
+        if not ok:
+            return
+
+        if Globl.localBook.isNameInBookmark(name):
+            QMessageBox.information(None, f'{getTitle()}, 收藏中已经有[{name}]存在.')
+            return
+
+        Globl.localBook.saveBookmark(name, fen, moves)
+        Globl.bookmarkView.updateBookmarks()
 
     def sizeHint(self):
-        return QSize(350, 500)
+        return QSize(500, 600)
 
+    def saveSettings(self, settings):
+        h_sizes = self.hsplitter.sizes()
+        v_sizes = self.vsplitter.sizes()
+        settings.setValue("history/h_splitter/sizes", h_sizes)
+        settings.setValue("history/v_splitter/sizes", v_sizes)
 
-#-----------------------------------------------------#
-class BoardHistoryWidget(QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-
-        #self.title = "棋谱记录"
-        #self.parent = parent
+    def loadSettings(self, settings):
         
-        self.boardView = ChessBoardWidget(self)
-        self.historyView = HistoryWidget(self)
-
-        splitter = QSplitter(self)
-        splitter.setOrientation(Qt.Horizontal)
-        splitter.addWidget(self.boardView)
-        splitter.addWidget(self.historyView)
-
-        splitter.setStretchFactor(0, 90)
-        splitter.setStretchFactor(1, 10)
-
-    def showBoardMoves(self, fen, moves):
-        self.boardView.from_fen(fen)
-        for it in moves:
-            self.historyView.onNewPostion(it)
+        if settings.contains("history/h_splitter/sizes"):
+            h_sizes = settings.value("history/h_splitter/sizes")
+            if h_sizes and len(h_sizes) == 2:
+                self.hsplitter.setSizes([int(size) for size in h_sizes])
+        
+        # 恢复垂直分割器状态
+        if settings.contains("history/v_splitter/sizes"):
+            v_sizes = settings.value("history/v_splitter/sizes")
+            if v_sizes and len(v_sizes) == 2:
+                self.vsplitter.setSizes([int(size) for size in v_sizes])
 
 #-----------------------------------------------------#
 class DockHistoryWidget(QDockWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.setObjectName("History")
-        self.inner = HistoryWidget(parent)
+        self.setObjectName("DockHistoryWidget")
+        self.inner = HistoryWidget()
         self.setWidget(self.inner)
         self.setWindowTitle(self.inner.title)
 
@@ -488,7 +467,7 @@ class EngineWidget(QDockWidget):
     def __init__(self, parent, engineMgr):
 
         super().__init__("引擎", parent)    
-        self.setObjectName("ChessEngine")
+        self.setObjectName("EngineWidget")
         
         self.dockedWidget = QWidget(self)
         self.setWidget(self.dockedWidget)
@@ -537,26 +516,14 @@ class EngineWidget(QDockWidget):
         self.moveTimeSpin = QSpinBox()
         self.moveTimeSpin.setRange(0, 100)
         self.moveTimeSpin.setValue(0)
-        '''
-        '''
+
         self.threadsSpin = QSpinBox()
         self.threadsSpin.setSingleStep(1)
         self.threadsSpin.setRange(1, self.MAX_THREADS)
         self.threadsSpin.setValue(self.getDefaultThreads())
         self.threadsSpin.valueChanged.connect(self.onThreadsChanged)
         
-        self.memorySpin = QSpinBox()
-        self.memorySpin.setSingleStep(100)
-        self.memorySpin.setRange(500, self.MAX_MEM)
-        self.memorySpin.setValue(self.getDefaultMem())
-        self.memorySpin.valueChanged.connect(self.onMemoryChanged)
         
-        self.multiPVSpin = QSpinBox()
-        self.multiPVSpin.setSingleStep(1)
-        self.multiPVSpin.setRange(1, 10)
-        self.multiPVSpin.setValue(1)
-        self.multiPVSpin.valueChanged.connect(self.onMultiPVChanged)
-
         self.skillLevelSpin = QSpinBox()
         self.skillLevelSpin.setSingleStep(1)
         self.skillLevelSpin.setRange(1, 20)
@@ -632,7 +599,7 @@ class EngineWidget(QDockWidget):
     def getDefaultThreads(self):
         return self.MAX_THREADS // 2
 
-    def writeSettings(self, settings):
+    def saveSettings(self, settings):
         for key, value in self.params.items():
             settings.setValue(key, value)
         
@@ -640,7 +607,7 @@ class EngineWidget(QDockWidget):
         settings.setValue("engineBlack", self.blackBox.isChecked()) 
         settings.setValue("engineAnalysis", self.analysisBox.isChecked()) 
 
-    def readSettings(self, settings):
+    def loadSettings(self, settings):
         for key, old_value in self.params.items():
             new_value = settings.value(key, old_value)
             self.params[key] = new_value
@@ -661,7 +628,6 @@ class EngineWidget(QDockWidget):
         return params 
 
     def contextMenuEvent(self, event):
-        return
         menu = QMenu(self)
         viewBranchAction = menu.addAction("分支推演")
         action = menu.exec_(self.mapToGlobal(event.pos()))
@@ -669,7 +635,9 @@ class EngineWidget(QDockWidget):
             self.onViewBranch()
     
     def onViewBranch(self):
-        self.parent.onViewBranch()
+        #self.parent.onViewBranch()
+        #TODO 自己处理显示
+        pass
 
     def onEngineReady(self, engine_id, name, engine_options):
         self.setWindowTitle(f'引擎 {name}')
@@ -738,7 +706,7 @@ class EngineWidget(QDockWidget):
             self.engineManager.setOption('MultiPV', 1)
             self.multiPVSpin.setValue(1)
         else: 
-            self.multiPVSpin.setValue(0)
+            self.multiPVSpin.setValue(1)
                
     def onReviewBegin(self, mode):
         self.onReviewModeChanged(mode, Stage.Begin)
@@ -797,10 +765,13 @@ class EngineWidget(QDockWidget):
     
     def onMultiPVChanged(self, state):
         v = self.multiPVSpin.value()
+        self.engineManager.stopThinking()
+        self.clear()
         self.engineManager.setOption('MultiPV', v)
         if self.gameMode == GameMode.Free:
             self.params['EngineMultiPV'] = v
-
+        self.engineManager.redoThinking()
+            
     def onRedBoxChanged(self, state):
         
         red_checked = self.redBox.isChecked()
@@ -1353,7 +1324,7 @@ class EndBookWidget(QDockWidget):
     def sizeHint(self):
         return QSize(150, 500)
 
-    def readSettings(self, settings):
+    def loadSettings(self, settings):
         
         self.updateBooks()
 
@@ -1367,7 +1338,7 @@ class EndBookWidget(QDockWidget):
         else:    
             self.bookView.setCurrentRow(index)
         
-    def writeSettings(self, settings):
+    def saveSettings(self, settings):
         settings.setValue("endBookName", self.currBookName)
         if self.currGame:
             settings.setValue("endBookIndex", self.currGame['index'])
@@ -1391,24 +1362,25 @@ class BookmarkWidget(QDockWidget):
         self.bookmarkView = QListWidget()
         self.bookmarkView.doubleClicked.connect(self.onDoubleClicked)
 
-        #self.bookmarkTypeCombo = QComboBox(self)
-        #self.bookmarkTypeCombo.currentTextChanged.connect(
-        #    self.onBookTypeChanged)
-        #self.bookmarkTypeCombo.addItems(self.bookmark_type)
-
-        #hbox = QHBoxLayout()
-        #hbox.addWidget(self.bookmarkTypeCombo)
-
         vbox = QVBoxLayout()
-        #vbox.addLayout(hbox)
         vbox.addWidget(self.bookmarkView)
         self.dockedWidget.setLayout(vbox)
 
-        #self.bookmarkModel = QStandardItemModel(self.bookmarkView)
-        #self.bookmarkView.setModel(self.bookmarkModel)
         self.bookmarkView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        #self.bookmarkView.setAlternatingRowColors(True)
-        #self.bookmarkView.clicked.connect(self.onSelectIndex)
+        
+        '''
+        self.addBookmarkBtn = QPushButton("收藏局面")
+        self.addBookmarkBtn.clicked.connect(self.onAddBookmarkBtnClick)
+        self.addBookmarkBookBtn = QPushButton("收藏棋谱")
+        self.addBookmarkBookBtn.clicked.connect(self.onAddBookmarkBookBtnClick)
+        
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.addBookmarkBookBtn)
+        hbox.addWidget(self.addBookmarkBtn)
+        hbox.addStretch()
+        
+        vbox.addLayout(hbox)
+        '''
 
         self.curr_item = None
 
@@ -1449,7 +1421,7 @@ class BookmarkWidget(QDockWidget):
         fen = item.data(Qt.UserRole)['fen']
 
         if action == removeAction:
-            Globl.LocalBookmarks.removeBookmark(old_name)
+            Globl.localBook.removeBookmark(old_name)
             self.updateBookmarks()
         elif action == renameAction:
             new_name, ok = QInputDialog.getText(self,
@@ -1537,6 +1509,229 @@ class GameLibWidget(QDockWidget):
 
     def sizeHint(self):
         return QSize(150, 500)
+
+#---------------------------------------------------------#
+'''
+class BoardPanelWidget(QWidget):
+
+    def __init__(self, board):
+        super().__init__()
+        
+        self.boardView = ChessBoardWidget(board)
+        self.historyView = StepsWidget()
+
+        # ---- 下部左侧按钮组 ----
+        self.flipBox = QCheckBox()  #"翻转")
+        self.flipBox.setIcon(QIcon(':ImgRes/up_down.png'))
+        self.flipBox.setToolTip('上下翻转')
+        self.flipBox.stateChanged.connect(self.onFlipBoardChanged)
+
+        self.mirrorBox = QCheckBox()  #"镜像")
+        self.mirrorBox.setIcon(QIcon(':ImgRes/left_right.png'))
+        self.mirrorBox.setToolTip('左右镜像')
+        self.mirrorBox.stateChanged.connect(self.onMirrorBoardChanged)
+   
+        self.showBestBox = QCheckBox()  #"最佳提示")
+        self.showBestBox.setIcon(QIcon(':ImgRes/info.png'))
+        self.showBestBox.setChecked(True)
+        self.showBestBox.setToolTip('提示最佳走法')
+        self.showBestBox.stateChanged.connect(self.onShowBestMoveChanged)
+    
+        self.showScoreBox = QCheckBox('分数')  #"最佳提示")
+        self.showScoreBox.setIcon(QIcon(':ImgRes/info.png'))
+        self.showScoreBox.setChecked(True)
+        self.showScoreBox.setToolTip('显示走子得分（红优分）')
+        self.showScoreBox.stateChanged.connect(self.onShowScoreChanged)
+        
+        # 2. 下部按钮工具栏
+        toolbar_layout = QHBoxLayout()
+        toolbar_layout.setContentsMargins(10, 5, 10, 5)
+        toolbar_layout.setSpacing(10)
+        toolbar_layout.addWidget(self.flipBox)
+        toolbar_layout.addWidget(self.mirrorBox)
+        toolbar_layout.addWidget(self.showBestBox)
+        toolbar_layout.addWidget(self.showScoreBox)
+        #toolbar_layout.addWidget(self.copyBtn)
+
+        # ---- 下部右侧按钮组 ----
+        self.firstBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowUp), '')
+        self.lastBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowDown), '')
+        self.nextBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowForward), '')
+        self.privBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowBack), '')
+        
+        #self.firstBtn.clicked.connect(self.onFirstBtnClick)
+        #self.lastBtn.clicked.connect(self.onLastBtnClick)
+        #self.nextBtn.clicked.connect(self.onNextBtnClick)
+        #self.privBtn.clicked.connect(self.onPrivBtnClick)
+        
+        toolbar_layout.addStretch()         
+        toolbar_layout.addWidget(self.firstBtn)
+        toolbar_layout.addWidget(self.privBtn)
+        toolbar_layout.addWidget(self.nextBtn)
+        toolbar_layout.addWidget(self.lastBtn)
+        
+        leftView = QWidget()
+        leftLayout = QVBoxLayout(leftView)
+        leftLayout.setContentsMargins(0, 0, 0, 0)
+        leftLayout.setSpacing(0)
+        leftLayout.addWidget(self.boardView, stretch=1)
+        leftLayout.addLayout(toolbar_layout)
+
+        self.mainSplitter = QSplitter(self)
+        self.mainSplitter.addWidget(leftView)
+        self.mainSplitter.addWidget(self.historyView)
+        
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.mainSplitter)
+        
+    def onFlipBoardChanged(self, state):
+        self.boardView.setFlipBoard(state)
+
+    def onMirrorBoardChanged(self, state):
+        self.boardView.setMirrorBoard(state)
+   
+    def onShowBestMoveChanged(self, state):
+        self.boardView.setShowBestMove((Qt.CheckState(state) == Qt.Checked))
+    
+    def onShowScoreChanged(self, state):
+        self.historyView.setShowScore((Qt.CheckState(state) == Qt.Checked))
+
+    def onFirstBtnClick(self):
+        self.historyView.selectIndex(0)
+       
+    def onLastBtnClick(self):
+        self.historyView.selectIndex(len(self.viewItems) - 1)
+       
+    def onNextBtnClick(self):
+        if (self.historyView.selectionIndex < 0) or \
+                (self.historyView.selectionIndex >= (len(self.historyView.viewItems) -1)):
+            return
+
+        self.historyView.selectIndex(self.selectionIndex + 1)
+        
+    def onPrivBtnClick(self):
+        if self.historyView.selectionIndex <= 0:
+            return
+        
+        self.historyView.selectIndex(self.selectionIndex - 1)
+        
+    def onSaveDbBtnClick(self):
+        #self.parent.saveGameToDB()
+        #msgbox = TimerMessageBox("当前棋谱已成功保存到棋谱库.", timeout = 0.5)
+        #msgbox.exec()
+        pass
+
+'''
+#------------------------------------------------------------------#
+
+class BoardPanelWidget(QWidget):
+
+    def __init__(self, board):
+        super().__init__()
+        
+        self.boardView = ChessBoardWidget(board)
+        self.historyView = None
+
+        # ---- 下部左侧按钮组 ----
+        self.flipBox = QCheckBox()  #"翻转")
+        self.flipBox.setIcon(QIcon(':ImgRes/up_down.png'))
+        self.flipBox.setToolTip('上下翻转')
+        self.flipBox.stateChanged.connect(self.onFlipBoardChanged)
+
+        self.mirrorBox = QCheckBox()  #"镜像")
+        self.mirrorBox.setIcon(QIcon(':ImgRes/left_right.png'))
+        self.mirrorBox.setToolTip('左右镜像')
+        self.mirrorBox.stateChanged.connect(self.onMirrorBoardChanged)
+   
+        self.showBestBox = QCheckBox()  #"最佳提示")
+        self.showBestBox.setIcon(QIcon(':ImgRes/info.png'))
+        self.showBestBox.setChecked(True)
+        self.showBestBox.setToolTip('提示最佳走法')
+        self.showBestBox.stateChanged.connect(self.onShowBestMoveChanged)
+    
+        #self.showScoreBox = QCheckBox()  
+        #self.showScoreBox.setIcon(QIcon(':ImgRes/info.png'))
+        #self.showScoreBox.setChecked(True)
+        #self.showScoreBox.setToolTip('显示走子得分（红优分）')
+        #self.showScoreBox.stateChanged.connect(self.onShowScoreChanged)
+        
+        # 2. 下部按钮工具栏
+        toolbar_layout = QHBoxLayout()
+        toolbar_layout.setContentsMargins(10, 5, 10, 5)
+        toolbar_layout.setSpacing(10)
+        toolbar_layout.addWidget(self.flipBox)
+        toolbar_layout.addWidget(self.mirrorBox)
+        toolbar_layout.addWidget(self.showBestBox)
+        #toolbar_layout.addWidget(self.showScoreBox)
+        #toolbar_layout.addWidget(self.copyBtn)
+
+        # ---- 下部右侧按钮组 ----
+        self.firstBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowUp), '')
+        self.lastBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowDown), '')
+        self.nextBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowForward), '')
+        self.privBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowBack), '')
+ 
+        toolbar_layout.addStretch()         
+        toolbar_layout.addWidget(self.firstBtn)
+        toolbar_layout.addWidget(self.privBtn)
+        toolbar_layout.addWidget(self.nextBtn)
+        toolbar_layout.addWidget(self.lastBtn)
+        
+        #leftView = QWidget()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self.boardView, stretch=1)
+        layout.addLayout(toolbar_layout)
+
+    def copyFenToClipboard(self):
+        fen = self.boardView._board.to_fen()        
+        clipboard = QApplication.clipboard()
+        clipboard.clear()
+        clipboard.setText(fen)
+    
+    def copyImageToClipboard(self):
+        pixmap = self.boardView.getImage()
+        clipboard = QApplication.clipboard()
+        clipboard.clear()
+        clipboard.setPixmap(pixmap)
+    
+    def saveImageToFile(self, file_name):
+        pixmap = self.boardView.getImage()
+        pixmap.save(file_name)
+    
+    def onFlipBoardChanged(self, state):
+        self.boardView.setFlipBoard(state)
+
+    def onMirrorBoardChanged(self, state):
+        self.boardView.setMirrorBoard(state)
+   
+    def onShowBestMoveChanged(self, state):
+        self.boardView.setShowBestMove((Qt.CheckState(state) == Qt.Checked))
+    
+    #def onShowScoreChanged(self, state):
+    #    self.historyView.setShowScore((Qt.CheckState(state) == Qt.Checked))
+
+ 
+    def saveSettings(self, settings):
+        settings.setValue("flip", self.flipBox.isChecked())
+        settings.setValue("mirror", self.mirrorBox.isChecked())
+        settings.setValue("showBest", self.showBestBox.isChecked())
+        #settings.setValue("showScore", self.showScoreBox.isChecked())
+
+    def loadSettings(self, settings):
+        flip = settings.value("flip", False, type=bool)
+        self.flipBox.setChecked(flip)
+        mirror = settings.value("mirror", False, type=bool)
+        self.mirrorBox.setChecked(mirror)
+        showBest = settings.value("showBest", True, type=bool)
+        self.showBestBox.setChecked(showBest)
+        #showScore = settings.value("showScore", True, type=bool)
+        #self.showScoreBox.setChecked(showScore)
+        #cloudMode = settings.value("cloudMode", True, type=bool)
+        
+     
+#------------------------------------------------------------------#
 
 
 
