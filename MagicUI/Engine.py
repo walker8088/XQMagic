@@ -23,6 +23,7 @@ class EngineManager(QObject):
 
     def __init__(self, parent, id):
         super().__init__()
+        
         self.id = id
         self.parent = parent
         
@@ -33,8 +34,7 @@ class EngineManager(QObject):
         
         self.isRunning = False
         self.isReady = False
-        
-
+                        
     def loadEngine(self, engine_path, engine_type):
         if engine_type == 'uci':
             engine = UciEngine('')

@@ -101,11 +101,36 @@ class ChessBoardBaseWidget(QWidget):
         
 
         self.setDefaultSkin()
+    
+    def copyFrom(self, other):
+        self.flip_board = other.flip_board
+        self.mirror_board = other.mirror_board
+        self.use_svg = other.use_svg
+        
+        self.base_board = other.base_board
+        self.base_select_img =other.base_select_img
+        self.base_step_img = other.base_step_img
+        self.base_point_img = other.base_point_img
 
+        self.base_pieces = other.base_pieces.copy()
+
+        self.base_offset_x = other.base_offset_x
+        self.base_offset_y = other.base_offset_y
+            
+        self.base_border_x = other.base_border_x
+        self.base_border_y = other.base_border_y
+
+        self.base_board_width = other.base_board_width
+        self.base_board_height = other.base_board_height
+        self.base_piece_size = other.base_piece_size
+        
+        self.base_space_x = other.base_space_x
+        self.base_space_y = other.base_space_y
+
+        
     def setDefaultSkin(self):
         
         self.base_board = QPixmap(':ImgRes/board.png')
-        #self.base_select_img = QPixmap(':ImgRes/select.png')
         self.base_select_img = QPixmap(':ImgRes/step.png')
         self.base_step_img = QPixmap(':ImgRes/step.png')
         self.base_point_img = QPixmap(':ImgRes/point.png')

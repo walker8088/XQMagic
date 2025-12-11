@@ -6,12 +6,11 @@ import traceback
 
 from PyQt5.QtCore import Qt, QByteArray, QSize
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
 
 from PyQt5.QtWidgets import QStyle, QApplication, QMenu, QHBoxLayout, QVBoxLayout, QFormLayout, QDialog, QFileDialog,\
                     QLabel, QSpinBox, QCheckBox, QPushButton, QRadioButton, QLineEdit,QTextEdit,\
                     QWidget, QDockWidget, QDialogButtonBox, QButtonGroup, QListWidget, QListWidgetItem, QInputDialog, \
-                    QAbstractItemView, QComboBox, QTreeWidgetItem, QTreeWidget, QSplitter, QMessageBox
+                    QAbstractItemView, QComboBox, QTreeWidgetItem, QTreeWidget, QSplitter, QMessageBox, QSlider, QGroupBox
 
 
 import cchess
@@ -95,36 +94,7 @@ class TextInputDialog(QInputDialog):
             return dialog.textValue(), True
         return "", False
 
-'''
-# ------------------- 使用示例 -------------------
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
 
-    # 单行长文本
-    text, ok = LongTextInputDialog.getText(
-        None,
-        title="请输入内容",
-        label="这里是提示文字：",
-        text="默认文字",
-        multiline=False,
-        width=600
-    )
-    if ok:
-        print("单行输入结果：", text)
-
-    # 多行长文本
-    text, ok = LongTextInputDialog.getText(
-        None,
-        title="多行输入",
-        label="请输入多行内容：",
-        multiline=True,
-        width=700
-    )
-    if ok:
-        print("多行输入结果：\n", text)
-
-    sys.exit(app.exec_())            
-'''
 #-----------------------------------------------------#
 class PositionEditDialog(QDialog):
     def __init__(self, parent, skinFolder = None):
@@ -285,10 +255,8 @@ class ImageView(QWidget):
 
         self.resize()
         self.update()
-
         
     def resize(self):
-       
         if self.view_size is None:
             self.left = 0
             self.top = 0
@@ -475,6 +443,7 @@ class EngineConfigDialog(QDialog):
         '''
         self.rules = ['AsianRule', 'ChineseRule', 'SkyRule']
         self.ruleCombo = QComboBox(self)
+
         self.ruleCombo.addItems(self.rules)
         self.ponderMode = QCheckBox('后台思考')
 
@@ -483,7 +452,7 @@ class EngineConfigDialog(QDialog):
         self.multiPVSpin = NumSlider(self, 1, 7, 1)
     
         self.depthSpin = NumSlider(self, 0, 40, 2)
-        self.moveTimeSpin = NumSlider(self, 0, 120, 5)
+        self.timeSpin = NumSlider(self, 0, 120, 5)
            
         self.scoreFightSlider = NumSlider(self, 1280, 3150, 50)
         self.depthFightSpin = NumSlider(self, 0, 40, 2)
@@ -502,20 +471,29 @@ class EngineConfigDialog(QDialog):
         
         engineBox.setLayout(fbox)
         
-        defaultBox = QGroupBox("引擎分析设置")
+        defaultBox = QGroupBox("精确分析设置")
         
         f1 = QFormLayout()    
         f1.addRow('限定深度:', self.depthSpin)
-        f1.addRow('限定步时(秒):', self.moveTimeSpin)
+        f1.addRow('限定步时(秒):', self.timeSpin)
         defaultBox.setLayout(f1)
         #hbox.addWidget(defaultBox, 1)
         
+        quickBox = QGroupBox("快速分析设置")
+        self.quickDepthSpin = NumSlider(self, 5, 16, 2)
+        self.quickTimeSpin = NumSlider(self, 1, 3, 1)
+        f2 = QFormLayout()    
+        f2.addRow('限定深度:', self.quickDepthSpin)
+        f2.addRow('限定步时(秒):', self.quickTimeSpin)
+        quickBox.setLayout(f2)
+        
+
         fightBox = QGroupBox("人机挑战设置")
-        f2 = QFormLayout()
-        f2.addRow('限定级别', self.scoreFightSlider)
-        f2.addRow('限定深度', self.depthFightSpin)
-        f2.addRow('限定步时（秒）', self.moveTimeFightSpin)
-        fightBox.setLayout(f2)
+        f3 = QFormLayout()
+        f3.addRow('限定级别', self.scoreFightSlider)
+        f3.addRow('限定深度', self.depthFightSpin)
+        f3.addRow('限定步时（秒）', self.moveTimeFightSpin)
+        fightBox.setLayout(f3)
         #hbox.addWidget(fightBox, 1)
         
         QBtn = (
@@ -528,60 +506,56 @@ class EngineConfigDialog(QDialog):
 
         layout.addWidget(engineBox)
         layout.addWidget(defaultBox)
+        layout.addWidget(quickBox) 
         layout.addWidget(fightBox)
         #layout.addLayout(hbox)
         layout.addWidget(buttonBox)
 
         self.params = {}
         
-        self.params['EngineThreads'] = self.threadsSpin
-        self.params['EngineMemory'] = self.memorySpin
-        self.params['EngineMultiPV'] = self.multiPVSpin
-        
-        self.params["EngineGoDepth"] = self.depthSpin
-        self.params["EngineGoMoveTime"] = self.moveTimeSpin
+        self.params['param.Threads'] = self.threadsSpin
+        self.params['param.Hash'] = self.memorySpin
+        #self.params['param.Ponder'] = self.ponderMode
 
-        self.params['EngineEloFight'] = self.scoreFightSlider
-        self.params["EngineGoDepthFight"] = self.depthFightSpin
-        self.params['EngineGoMoveTimeFight'] = self.moveTimeFightSpin
+        self.params['deep.MultiPV'] = self.multiPVSpin
+        
+        self.params["go.deep.depth"] = self.depthSpin
+        self.params["go.deep.movetime"] = self.timeSpin
+        
+        self.params["go.quick.depth"] = self.quickDepthSpin
+        self.params["go.quick.movetime"] = self.quickTimeSpin
+
+        self.params['fight.UCI_Elo'] = self.scoreFightSlider
+        self.params["go.fight.depth"] = self.depthFightSpin
+        self.params['go.fight.movetime'] = self.moveTimeFightSpin
         
         
     def config(self, params):
-        
+        logging.info(params)
         self.enginePath.setText(params['EnginePath'])
         self.engineType.setText(params['EngineType'])
 
-        changes = {}
-            
         for p_name, widget in self.params.items():
             widget.setValue(params[p_name])
         
-        self.ponderMode.setChecked(params['EnginePonder'] == 'true')
+        self.ponderMode.setChecked(params['param.Ponder'])
 
-        rule_index = self.rules.index(params['EngineRule'])
+        rule_index = self.rules.index(params['param.Repetition Rule'])
         self.ruleCombo.setCurrentIndex(rule_index)
         
         if self.exec() == QDialog.Accepted:
             for p_name, widget in self.params.items():
-                if params[p_name] != widget.value():
-                    params[p_name] = widget.value()
-                    changes[p_name] = widget.value()
-            
-            ponderMode = 'true' if self.ponderMode.isChecked() else 'false'
-            if params['EnginePonder'] != ponderMode:
-                params['EnginePonder'] = ponderMode
-                changes['EnginePonder'] = ponderMode
+                params[p_name] = widget.value()
+               
+            params['param.Ponder'] = self.ponderMode.isChecked()
 
             ruleName = self.ruleCombo.currentText()        
-            if params['EngineRule'] != ruleName:
-                params['EngineRule'] = ruleName
-                changes['EngineRule'] = ruleName
+            params['param.Repetition Rule'] = ruleName
+            
+            return True
+        else:
+            return False
 
-            if len(changes) > 0:
-                logging.info(f'params changed:{changes}')
-        
-        return changes
-        
 #--------------------------------------------------------------#
 class QuickBookDialog(QDialog):
     def __init__(self, parent):

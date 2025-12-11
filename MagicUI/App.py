@@ -32,7 +32,7 @@ class ChessApp(QApplication):
         self.config = {}
 
         Globl.APP_NAME = 'XQMagic'
-        Globl.APP_NAME_TEXT = "磁力象棋"
+        Globl.APP_NAME_TEXT = "象棋魔术师"
         
         self.setApplicationName(Globl.APP_NAME)
         self.setApplicationVersion(release_version)

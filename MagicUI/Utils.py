@@ -24,18 +24,18 @@ from cchess import ChessBoard, Move, BLACK
 
 #-----------------------------------------------------#
 class GameMode(Enum):
-    NoEngine = auto()
     Free = auto()
-    Fight = auto()
-    EndGame = auto()
-    Online = auto()
+    EngineAssit = auto()
+    EngineFight = auto()
+    EngineEndGame = auto()
+    EngineOnline = auto()
 
 GameTitle = {
-    GameMode.NoEngine: '无引擎模式',
-    GameMode.Free:     '自由练棋', 
-    GameMode.Fight:    '人机对战', 
-    GameMode.EndGame:  '杀法挑战', 
-    GameMode.Online:   '连线分析',          
+    GameMode.Free:          '自由练棋', 
+    GameMode.EngineAssit:   '引擎辅助',
+    GameMode.EngineFight:   '人机对战', 
+    GameMode.EngineEndGame:  '杀法挑战', 
+    GameMode.EngineOnline:  '连线分析',          
 }
 
 #-----------------------------------------------------#
@@ -54,7 +54,7 @@ class QGameManager(QObject):
     
     def __init__(self):
         super().__init__()
-        self.gameMode = GameMode.NoEngine
+        self.gameMode = GameMode.Free
         self.reviewMode = None
         self.reviewType = None
 
