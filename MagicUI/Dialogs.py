@@ -531,7 +531,7 @@ class EngineConfigDialog(QDialog):
         
         
     def config(self, params):
-        logging.info(params)
+        #logging.info(params)
         self.enginePath.setText(params['EnginePath'])
         self.engineType.setText(params['EngineType'])
 

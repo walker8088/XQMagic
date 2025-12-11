@@ -303,6 +303,7 @@ class HistoryWidget(QWidget):
         position['view'] = items
         self.posModel.appendRow(items)
         self.posList.append(position)
+        self.onUpdatePosition(position)
         
     def onUpdatePosition(self, position):
         viewItems = position['view']
@@ -610,12 +611,18 @@ class BoardPanelWidget(QWidget):
 class MoveListDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setObjectName('MoveListDialog')
+
         self.setWindowTitle("分支查看")
         self.resize(1000, 700)
 
         self.board = ChessBoard()
 
-        # 主布局：上下
+        # 2. 恢复上一次的位置、大小、最大化状态
+        self.restoreGeometry(Globl.settings.value("MoveListDialog:geometry", b""))
+        if Globl.settings.value("MoveListDialog:maximized", False, type=bool):
+            self.setWindowState(Qt.WindowMaximized)
+
         main_layout = QVBoxLayout(self)
 
         splitter = QSplitter(Qt.Horizontal)
@@ -669,8 +676,19 @@ class MoveListDialog(QDialog):
             self.historyView.onNewPostion(position) 
         
         self.exec_()
-            
+
+    def closeEvent(self, event):
+        # 保存普通状态下的 geometry（最大化时不要保存，否则恢复后会变小）
+        if not self.isMaximized():
+            Globl.settings.setValue("MoveListDialog:geometry", self.saveGeometry())
+
+        # 保存是否最大化
+        Globl.settings.setValue("MoveListDialog:maximized", self.isMaximized())
+        
+        super().closeEvent(event)    
+
 #------------------------------------------------------------------#
+#配置项已经与皮卡鱼高度绑定，换个引擎要改很多地方
 class EngineWidget(QDockWidget):
 
     def __init__(self, parent, engineMgr):
@@ -850,7 +868,7 @@ class EngineWidget(QDockWidget):
         self.params['EngineType'] = self.parent.config['MainEngine']['engine_type']
         self.configBtn.setEnabled(True)
         
-    def applyParams(self):
+    def applyAllParams(self):
         
         #设置各模式通用参数
         self.applyParamsWithPrefix(['param',])
@@ -862,6 +880,12 @@ class EngineWidget(QDockWidget):
             self.applyParamsWithPrefix(['fight',])
         elif self.gameMode == GameMode.EngineOnline:
             self.applyParamsWithPrefix(['online',])
+    
+    def applyParams(self, param_keys):
+        for key in param_keys: 
+            value = self.params[key]
+            self.engineManager.setOption(key, value)
+         
             
     def applyParamsWithPrefix(self, prefixs):
         prefix = f"{'.'.join(prefixs)}." 
@@ -889,7 +913,7 @@ class EngineWidget(QDockWidget):
             self.analysisBox.setChecked(False)
        
         self.setMultiPV()
-        self.applyParams()
+        self.applyAllParams()
 
     def onReviewBegin(self, mode):
         self.onReviewModeChanged(mode, Stage.Begin)
@@ -922,7 +946,7 @@ class EngineWidget(QDockWidget):
         dlg = EngineConfigDialog(self.parent)
         ok = dlg.config(self.params)
         if ok:
-            self.applyParams()
+            self.applyAllParams()
         
     def onModeSelected(self):
         
@@ -933,7 +957,8 @@ class EngineWidget(QDockWidget):
     
     def setMultiPV(self):
         if self.gameMode == GameMode.EngineAssit:
-            v = self.params[f"{self.goMode}.MultiPV"]    
+            param_key = f"{self.goMode}.MultiPV"
+            v = self.params[param_key]    
             self.multiPVSpin.setValue(v)
 
     def onMultiPVChanged(self, state):
@@ -943,9 +968,10 @@ class EngineWidget(QDockWidget):
         if self.gameMode == GameMode.EngineAssit:
             self.engineManager.stopThinking()
             self.clear()
-            self.params[f"{self.goMode}.MultiPV"] = v    
-            self.engineManager.setOption('MultiPV', v)
-        
+            param_key = f"{self.goMode}.MultiPV"
+            self.params[param_key] = v 
+            self.applyParams([param_key])   
+            
             self.engineManager.redoThinking()
             
     def onRedBoxChanged(self, state):
@@ -986,8 +1012,8 @@ class EngineWidget(QDockWidget):
             return
 
         branchId = item.data(0, Qt.UserRole)
-        iccsList = self.branchs[branchId]
-        self.parent.onViewBranch(iccsList)
+        fenInfo = self.branchs[branchId]
+        self.parent.onViewBranch(fenInfo)
         
         
     def onEngineMoveInfo(self, fenInfo):
@@ -1062,17 +1088,6 @@ class EngineWidget(QDockWidget):
 
         #it.setData(0, Qt.UserRole, fenInfo['iccs_str'])
 
-    def getDefaultMem(self):
-        mem = getFreeMem()/2
-        m_count = int((mem // 100 ) * 100)
-        if m_count > self.MAX_MEM: 
-            m_count = self.MAX_MEM
-        
-        return m_count
-
-    def getDefaultThreads(self):
-        return self.MAX_THREADS // 2
-
     def saveSettings(self, settings):
         for key, value in self.params.items():
             settings.setValue(key, value)
@@ -1092,6 +1107,17 @@ class EngineWidget(QDockWidget):
         self.redBox.setChecked(settings.value("engineRed", False, type=bool))
         self.blackBox.setChecked(settings.value("engineBlack", False, type=bool))
         self.analysisBox.setChecked(settings.value("engineAnalysis", False, type=bool))
+
+    def getDefaultMem(self):
+        mem = getFreeMem()/2
+        m_count = int((mem // 100 ) * 100)
+        if m_count > self.MAX_MEM: 
+            m_count = self.MAX_MEM
+        
+        return m_count
+
+    def getDefaultThreads(self):
+        return self.MAX_THREADS // 2
 
     def clear(self):
         self.posView.clear()

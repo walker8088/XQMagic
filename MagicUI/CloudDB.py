@@ -43,13 +43,15 @@ class NetQuery(QObject):
     query_ret_signal = pyqtSignal(str, str)
     query_err_signal = pyqtSignal(str)
     
-    def __init__(self, parent, url, fen):
+    def __init__(self, parent, fen, url):
         super().__init__(parent)
-
-        self.url = url
-        self.net_mgr = QNetworkAccessManager()
         
         self.fen = fen
+        
+        self.url = url
+        self.net_mgr = parent.net_mgr
+        self.req = None
+
         self.reply = None
         self.tryCount = 0
         
@@ -93,7 +95,9 @@ class CloudDB(QObject):
         self.move_cache = {}
         self.query_worker = {}
 
-    def startQuery(self, position, score_limit = 90):
+        self.net_mgr = QNetworkAccessManager()
+        
+    def startQuery(self, position, score_limit = 100):
 
         fen = position['fen']
         
@@ -108,7 +112,7 @@ class CloudDB(QObject):
         if fen in self.query_worker:
             return
 
-        q = NetQuery(self, self.url, fen)
+        q = NetQuery(self, fen, self.url)
         self.query_worker[fen] = q
         q.query_ret_signal.connect(self.onQueryFinished)
         q.query_err_signal.connect(self.onQueryError) 

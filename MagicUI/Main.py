@@ -13,7 +13,7 @@ from collections import OrderedDict
 from configparser import ConfigParser
 
 #from PyQt5 import 
-from PyQt5.QtCore import Qt, pyqtSignal, QByteArray, QSettings, QUrl
+from PyQt5.QtCore import Qt, pyqtSignal, QByteArray, QUrl
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication,QMainWindow, QStyle, QSizePolicy, QMessageBox, QWidget, QCheckBox, QRadioButton, QComboBox,\
                             QFileDialog, QButtonGroup, QActionGroup, QAction
@@ -297,8 +297,8 @@ class MainWindow(QMainWindow):
     #声音播放
     def initSound(self):
         self.soundVolume = 0
-        #self.audioOutput = QAudioOutput()
         self.player = QMediaPlayer()
+        #self.audioOutput = QAudioOutput()
         #self.player.setAudioOutput(self.audioOutput)
         #self.player.errorOccurred.connect(self.onPlayError)
 
@@ -903,7 +903,7 @@ class MainWindow(QMainWindow):
     def onEngineReady(self, engine_id, name, engine_options):
 
         logging.info(f'Engine[{engine_id}] {name} Ready.' )
-        self.engineView.loadSettings(self.settings)
+        self.engineView.loadSettings(Globl.settings)
         self.engineView.onEngineReady(engine_id, name, engine_options)
         #默认只从自由练棋模式开始，减少复杂度
         self.switchGameMode(GameMode.EngineAssit)
@@ -1273,11 +1273,11 @@ class MainWindow(QMainWindow):
         self.updateTitle(name)
         self.bookmarkView.setEnabled(True)
         
-    def onViewBranch(self, iccsList):
+    def onViewBranch(self, fenInfo):
         dlg = MoveListDialog()
         fen = self.currPosition['fen']
-        step_index = self.currPosition['step_index']
-        dlg.shouMoves(self, fen, step_index, iccsList)
+        step_index = self.currPosition['index']
+        dlg.shouMoves(fen, step_index, fenInfo['moves'])
         
     def onShowMyGames(self):
         if self.myGameView.isVisible():
@@ -1799,49 +1799,45 @@ class MainWindow(QMainWindow):
         logging.info('应用关闭.')
 
     def readSettings(self):
-        self.settings = QSettings('XQSoft', Globl.APP_NAME)
         
-        if Globl.app.isClean:
-            self.settings.clear()
-
-        self.restoreGeometry(self.settings.value("geometry", QByteArray()))
-        self.restoreState(self.settings.value("windowState", QByteArray()))
+        self.restoreGeometry(Globl.settings.value("geometry", QByteArray()))
+        self.restoreState(Globl.settings.value("windowState", QByteArray()))
         
-        self.soundVolume = self.settings.value("soundVolume", 30)
+        self.soundVolume = Globl.settings.value("soundVolume", 30)
         self.showMoveSoundAct.setChecked(self.soundVolume > 0)
 
-        skin = self.settings.value("boardSkin", DEFAULT_SKIN)
+        skin = Globl.settings.value("boardSkin", DEFAULT_SKIN)
         if skin != DEFAULT_SKIN:
             self.changeSkin(skin)
                     
-        self.openBookFile = Path(self.settings.value("openBookFile", str(Path('game','openbook.yfk'))))
-        self.lastOpenFolder = self.settings.value("lastOpenFolder", '')
+        self.openBookFile = Path(Globl.settings.value("openBookFile", str(Path('game','openbook.yfk'))))
+        self.lastOpenFolder = Globl.settings.value("lastOpenFolder", '')
         
-        self.endBookView.loadSettings(self.settings)
-        self.historyView.loadSettings(self.settings)
+        self.endBookView.loadSettings(Globl.settings)
+        self.historyView.loadSettings(Globl.settings)
         
-        self.boardPanel.loadSettings(self.settings)
+        self.boardPanel.loadSettings(Globl.settings)
         
-        cloudMode = self.settings.value("cloudMode", True, type=bool)
+        cloudMode = Globl.settings.value("cloudMode", True, type=bool)
         self.queryCloudBox.setChecked(cloudMode)
         
     def saveSettings(self):
         #GameMode不保存，下次启动后进入自由练棋模式
-        self.settings.setValue("geometry", self.saveGeometry())
-        self.settings.setValue("windowState", self.saveState())
+        Globl.settings.setValue("geometry", self.saveGeometry())
+        Globl.settings.setValue("windowState", self.saveState())
         
-        self.settings.setValue("soundVolume", self.soundVolume)
+        Globl.settings.setValue("soundVolume", self.soundVolume)
         
-        self.settings.setValue("cloudMode", self.queryCloudBox.isChecked())
+        Globl.settings.setValue("cloudMode", self.queryCloudBox.isChecked())
         
-        self.settings.setValue("openBookFile", str(self.openBookFile))
-        self.settings.setValue("lastOpenFolder", self.lastOpenFolder)
-        self.settings.setValue("boardSkin", self.skin)
+        Globl.settings.setValue("openBookFile", str(self.openBookFile))
+        Globl.settings.setValue("lastOpenFolder", self.lastOpenFolder)
+        Globl.settings.setValue("boardSkin", self.skin)
         
-        self.engineView.saveSettings(self.settings)
-        self.endBookView.saveSettings(self.settings)
-        self.historyView.saveSettings(self.settings)
-        self.boardPanel.saveSettings(self.settings)
+        self.engineView.saveSettings(Globl.settings)
+        self.endBookView.saveSettings(Globl.settings)
+        self.historyView.saveSettings(Globl.settings)
+        self.boardPanel.saveSettings(Globl.settings)
 
     def about(self):
         QMessageBox.about(

@@ -4,7 +4,7 @@ import logging
 import traceback
 from pathlib import Path
 
-from PyQt5.QtCore import QCommandLineOption, QCommandLineParser
+from PyQt5.QtCore import QSettings, QCommandLineOption, QCommandLineParser
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
 from .Version import release_version
@@ -33,22 +33,19 @@ class ChessApp(QApplication):
 
         Globl.APP_NAME = 'XQMagic'
         Globl.APP_NAME_TEXT = "象棋魔术师"
-        
+        Globl.settings = QSettings('XQSoft', Globl.APP_NAME)
+
         self.setApplicationName(Globl.APP_NAME)
         self.setApplicationVersion(release_version)
-                
-        parser = QCommandLineParser()
 
+        parser = QCommandLineParser()
         parser.addHelpOption()
         parser.addVersionOption()
-
         debug_option = QCommandLineOption( ["d", "debug"], "Debug app.")
         parser.addOption(debug_option)
         clean_option = QCommandLineOption( ["c", "clean"], "Clean app setttings.")
         parser.addOption(clean_option)
-        
         parser.addPositionalArgument("file", "File to open.", "[file]")
-        
         parser.process(self)
         
         files = parser.positionalArguments()
@@ -59,6 +56,9 @@ class ChessApp(QApplication):
 
         self.isDebug = parser.isSet(debug_option)
         self.isClean = parser.isSet(clean_option)
+        
+        if self.isClean:
+            Globl.settings.clear()
 
         if self.isDebug:
             logging.basicConfig(filename = f'{Globl.APP_NAME}.log', filemode = 'w', level = logging.DEBUG)
