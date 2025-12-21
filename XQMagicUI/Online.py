@@ -1577,6 +1577,7 @@ class GameMaster():
                                 dead = True
                                 break
                             elif action == 'draw':
+                                #和棋
                                 dead = True
                                 break
                             elif action == 'resign':

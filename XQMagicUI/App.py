@@ -6,6 +6,7 @@ from pathlib import Path
 
 from PyQt5.QtCore import Qt, QSettings, QCommandLineOption, QCommandLineParser
 from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtGui import QFont
 
 from .Version import release_version
 from .Main import MainWindow
@@ -91,6 +92,19 @@ class ChessApp(QApplication):
 #-----------------------------------------------------#
 def run():
     Globl.app = ChessApp(sys.argv)
+    screen = Globl.app.primaryScreen()
+    screen_ratio =  screen.grabWindow(0).width() / screen.size().width() 
+    #print(screen_ratio)
+    # 设置全局默认字体
+    font = QFont("Microsoft YaHei", 8)  # 字体名、字号（可选加粗：font.setBold(True)）
+    #font.setBold(True)
+    Globl.app.setFont(font, "QSpinBox")  # 或指定类：app.setFont(font, "QPushButton")
+    Globl.app.setFont(font, "QToolButton")  # 或指定类：app.setFont(font, "QPushButton")
+    Globl.app.setFont(font, "QPushButton")  # 或指定类：app.setFont(font, "QPushButton")
+    Globl.app.setFont(font, "QRadioButton")  # 或指定类：app.setFont(font, "QPushButton")
+    Globl.app.setFont(font, "QGroupBox")  # 或指定类：app.setFont(font, "QPushButton")
+    Globl.app.setFont(font, "QCheckBox")  # 或指定类：app.setFont(font, "QPushButton")
+    Globl.app.setFont(font, "QLabel")  # 或指定类：app.setFont(font, "QPushButton")
 
     Globl.app.showWin()
     sys.exit(Globl.app.exec())

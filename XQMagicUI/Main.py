@@ -43,6 +43,12 @@ from .Online import OnlineManager, OnlineDialog
 
 from . import Globl
 
+'''
+# 设置全局默认字体
+font = QFont("Microsoft YaHei", 16)  # 字体名、字号（可选加粗：font.setBold(True)）
+font.setBold(True)
+app.setFont(font, "QPushButton")  # 或指定类：app.setFont(font, "QPushButton")
+'''
 
 #-----------------------------------------------------#
 class ActionType(Enum):

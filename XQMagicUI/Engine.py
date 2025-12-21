@@ -184,7 +184,7 @@ class EngineManager(QObject):
             self.moveInfoSignal.emit(self.id, action)
         elif act_id == 'dead':  #引擎被将死
             self.checkmateSignal.emit(self.id, action)
-        elif act_id == 'draw':  #引擎认输
+        elif act_id == 'draw':  #引擎输出和棋
             self.drawSignal.emit(self.id, action)
         
 
