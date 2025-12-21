@@ -218,12 +218,12 @@ class MainWindow(QMainWindow):
             self.engine_type = self.config['MainEngine']['engine_type'].lower()
             self.engine_exec = Path(self.config['MainEngine']['engine_exec'])
         except Exception as e:
-            QMessageBox.critical(self, f'{getTitle()}', f'配置文件[{self.config_file}]格式错误：{e}')
+            QMessageBox.critical(self, f'{getTitle()}', f'配置文件[{Globl.config_file}]格式错误：{e}')
             return False
     
         ok = Globl.engineManager.loadEngine(self.engine_exec, self.engine_type)
         if not ok:
-            QMessageBox.critical(self, f'{getTitle()}', f'加载象棋引擎[{engine_exec.absolute()}]出错，请确认该程序能在您的电脑上正确运行。')
+            QMessageBox.critical(self, f'{getTitle()}', f'加载象棋引擎[{self.engine_exec.absolute()}]出错，请确认该程序能在您的电脑上正确运行。')
         
         return ok
         

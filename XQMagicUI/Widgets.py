@@ -254,17 +254,13 @@ class HistoryWidget(QWidget):
         self.selectRow(self.currRow - 1)
     
     def getGameIccsMoves(self):
-        pass
-        '''
-        init_fen = 
+        init_fen = self.posList[0].fen
         moves = []
-        for item in self.viewItems[1:]:  
-            position = item.data(1, Qt.UserRole)
-            moves.append(position['iccs'])
+        for pos in self.posList[1:]:  
+            moves.append(pos['iccs'])
         
         return (init_fen, moves)
-        '''
-
+        
     def selectRow(self, row):
         #代码中移动选择行
         if (row < 0) or (row >= self.posModel.rowCount()) or (row == self.currRow):
@@ -292,7 +288,7 @@ class HistoryWidget(QWidget):
     def getCurrPosition(self):
         return self.posList[self.currRow]
         
-    def onNewPostion(self, position):
+    def onNewPostion(self, position, show = True):
         items = [
                 QStandardItem(),
                 QStandardItem(),
@@ -304,7 +300,9 @@ class HistoryWidget(QWidget):
         self.posModel.appendRow(items)
         self.posList.append(position)
         self.onUpdatePosition(position)
-        
+        if show:
+            self.selectRow(self.posModel.rowCount() - 1)
+
     def onUpdatePosition(self, position):
         viewItems = position['view']
 
@@ -364,7 +362,7 @@ class HistoryWidget(QWidget):
         self.removeFollowSignal.emit(self.currRow)
         
     def onRemoveHistoryFollow(self, row):
-        self.posModel.setRowCount(row)
+        self.posModel.setRowCount(row+1)
         self.posList = self.posList[:row+1]
 
     def contextMenuEvent(self, event):
@@ -629,18 +627,21 @@ class MoveListDialog(QDialog):
 
         self.boardPanel = BoardPanelWidget(self.board) 
         self.boardPanel.copyFrom(Globl.boardPanel)
+        self.boardView = self.boardPanel.boardView
 
         self.historyView = HistoryWidget()
         self.historyView.setSimpleMode(True)
         self.historyView.bindBoard(self.boardPanel)
-
+        #self.historyView.positionChangeSignal.connect(self.onSelectHistoryPosition)
+        
         splitter.addWidget(self.boardPanel)
         splitter.addWidget(self.historyView)
         splitter.setStretchFactor(0, 4)
         splitter.setStretchFactor(1, 1)
 
         main_layout.addWidget(splitter, stretch=1)
-
+        
+        '''
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch() 
 
@@ -650,6 +651,7 @@ class MoveListDialog(QDialog):
         bottom_layout.addWidget(close_btn)
 
         main_layout.addLayout(bottom_layout)
+        '''
 
     def shouMoves(self, fen, step_index, iccsList):
         self.board.from_fen(fen)
@@ -673,10 +675,29 @@ class MoveListDialog(QDialog):
                 'index': step_index + index + 1,
                 'move_color': board.move_player.color
             }
-            self.historyView.onNewPostion(position) 
+            self.historyView.onNewPostion(position, show = False) 
         
+        self.historyView.positionChangeSignal.connect(self.onSelectHistoryPosition)
         self.exec_()
 
+
+    def onSelectHistoryPosition(self, move_index):
+
+        position = self.historyView.getCurrPosition()
+        fen = position['fen']
+        move_index = position['index']
+        
+        #显示走子移动
+        if 'move' in position:
+            move = position['move']
+            self.boardView.from_fen(move.board.to_fen())
+            self.boardView.showMove(move.p_from, move.p_to)
+        else:
+             self.boardView.clearPickup()
+
+        self.boardView.from_fen(fen)
+
+        
     def closeEvent(self, event):
         # 保存普通状态下的 geometry（最大化时不要保存，否则恢复后会变小）
         if not self.isMaximized():
@@ -723,11 +744,12 @@ class EngineWidget(QDockWidget):
         self.params["deep.UCI_LimitStrength"] = False #不参与编辑
         self.params["deep.MultiPV"] = 1
                      
-        self.params["go.deep.depth"]    = 25
-        self.params["go.deep.movetime"] = 0
-            
         self.params["quick.UCI_LimitStrength"] = False #不参与编辑
         self.params["quick.MultiPV"] = 1  
+
+        self.params["go.deep.depth"]    = 25
+        self.params["go.deep.movetime"] = 0
+        
         self.params["go.quick.depth"]    = 16
         self.params["go.quick.movetime"] = 1
 
@@ -742,33 +764,7 @@ class EngineWidget(QDockWidget):
 
         self.engineLabel = QLabel()
         self.engineLabel.setAlignment(Qt.AlignCenter)
-        
-        '''
-        self.DepthSpin = QSpinBox()
-        self.DepthSpin.setRange(0, 100)
-        self.DepthSpin.setValue(22)
-        self.moveTimeSpin = QSpinBox()
-        self.moveTimeSpin.setRange(0, 100)
-        self.moveTimeSpin.setValue(0)
-
-        self.threadsSpin = QSpinBox()
-        self.threadsSpin.setSingleStep(1)
-        self.threadsSpin.setRange(1, self.MAX_THREADS)
-        self.threadsSpin.setValue(self.getDefaultThreads())
-        self.threadsSpin.valueChanged.connect(self.onThreadsChanged)
-        
-        
-        self.skillLevelSpin = QSpinBox()
-        self.skillLevelSpin.setSingleStep(1)
-        self.skillLevelSpin.setRange(1, 20)
-        self.skillLevelSpin.setValue(20)
-        self.skillLevelSpin.valueChanged.connect(self.onSkillLevelChanged)
-        '''
-
         self.multiPVSpin = NumEdit(1, min_value = 1, max_value = 8)
-        #self.multiPVSpin.setSingleStep(1)
-        #self.multiPVSpin.setRange(1, 7)
-        #self.multiPVSpin.setValue(1)
         self.multiPVSpin.valueChanged.connect(self.onMultiPVChanged)
  
         #group_box = QGroupBox("请选择模式:")
@@ -832,6 +828,7 @@ class EngineWidget(QDockWidget):
         self.posView.setColumnWidth(3, 220)
         self.posView.setColumnWidth(4, 380)
         #self.posView.itemSelectionChanged.connect(self.onBranchSelectionChanged)
+        self.posView.itemDoubleClicked.connect(self.onViewBranch)
 
         vbox.addWidget(self.posView)
 
@@ -866,8 +863,10 @@ class EngineWidget(QDockWidget):
         self.setWindowTitle(f'引擎 {name}')
         self.params['EnginePath'] = self.parent.config['MainEngine']['engine_exec']
         self.params['EngineType'] = self.parent.config['MainEngine']['engine_type']
-        self.configBtn.setEnabled(True)
         
+        self.onModeSelected()
+        self.configBtn.setEnabled(True)
+            
     def applyAllParams(self):
         
         #设置各模式通用参数
@@ -884,7 +883,8 @@ class EngineWidget(QDockWidget):
     def applyParams(self, param_keys):
         for key in param_keys: 
             value = self.params[key]
-            self.engineManager.setOption(key, value)
+            opKey = key.split('.')[-1] 
+            self.engineManager.setOption(opKey, value)
          
             
     def applyParamsWithPrefix(self, prefixs):
@@ -954,7 +954,9 @@ class EngineWidget(QDockWidget):
             self.goMode = 'quick'
         else:
             self.goMode = 'deep'
-    
+        
+        self.applyParamsWithPrefix([self.goMode,])
+
     def setMultiPV(self):
         if self.gameMode == GameMode.EngineAssit:
             param_key = f"{self.goMode}.MultiPV"

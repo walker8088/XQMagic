@@ -4,11 +4,12 @@ import logging
 import traceback
 from pathlib import Path
 
-from PyQt5.QtCore import QSettings, QCommandLineOption, QCommandLineParser
+from PyQt5.QtCore import Qt, QSettings, QCommandLineOption, QCommandLineParser
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
 from .Version import release_version
 from .Main import MainWindow
+
 from . import Globl
 
 #-----------------------------------------------------#
@@ -90,6 +91,7 @@ class ChessApp(QApplication):
 #-----------------------------------------------------#
 def run():
     Globl.app = ChessApp(sys.argv)
+
     Globl.app.showWin()
     sys.exit(Globl.app.exec())
 
