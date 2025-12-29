@@ -450,7 +450,8 @@ class HistoryWidget(QWidget):
 
     def setShowScore(self, yes):
         self.isShowScore = yes
-    
+        #TODO 是否需要清理已经显示的招法得分？
+         
     def setSimpleMode(self, yes): 
         if yes:
             self.hsplitter.widget(1).hide()
@@ -1002,11 +1003,12 @@ class EngineWidget(QDockWidget):
         self.parent.enginePlayColor(self.engineManager.id, 0, (Qt.CheckState(state) == Qt.Checked))
         
     def contextMenuEvent(self, event):
-        menu = QMenu(self)
-        viewBranchAction = menu.addAction("分支推演")
-        action = menu.exec_(self.mapToGlobal(event.pos()))
-        if action == viewBranchAction:
-            self.onViewBranch()
+        pass
+        #menu = QMenu(self)
+        #viewBranchAction = menu.addAction("分支推演")
+        #action = menu.exec_(self.mapToGlobal(event.pos()))
+        #if action == viewBranchAction:
+        #    self.onViewBranch()
     
     def onViewBranch(self):
         item = self.posView.currentItem()

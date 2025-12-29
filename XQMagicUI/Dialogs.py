@@ -480,8 +480,8 @@ class EngineConfigDialog(QDialog):
         #hbox.addWidget(defaultBox, 1)
         
         quickBox = QGroupBox("快速分析设置")
-        self.quickDepthSpin = NumSlider(self, 5, 16, 2)
-        self.quickTimeSpin = NumSlider(self, 1, 3, 1)
+        self.quickDepthSpin = NumSlider(self, 0, 16, 2)
+        self.quickTimeSpin = NumSlider(self, 0, 3, 1)
         f2 = QFormLayout()    
         f2.addRow('限定深度:', self.quickDepthSpin)
         f2.addRow('限定步时(秒):', self.quickTimeSpin)

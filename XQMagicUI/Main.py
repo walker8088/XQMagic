@@ -27,7 +27,7 @@ from .Resource import qt_resource_data
 from .Engine import EngineManager
 
 from .Storage import EndBookStore
-from .CloudDB import CloudDB, MyScoreDB
+from .CloudDB import CloudDB #, MyScoreDB
 from .LocalDB import OpenBookYfk, OpenBookPF, MasterBook, LocalBook
 
 from .Utils import GameMode, ReviewMode, TimerMessageBox, QGameManager, getTitle, getStepsFromFenMoves, trim_fen
@@ -472,15 +472,15 @@ class MainWindow(QMainWindow):
     #-----------------------------------------------------------
     #走子核心逻辑
     def initGame(self, fen):
-        self.isNeedSave = False
-        self.init_fen = fen
-
+        Globl.engineManager.stopThinking()
+        self.clearAll()
         self.moveEvent = threading.Event()
         self.moveEvent.set()
         
-        Globl.engineManager.stopThinking()
-        self.clearAll()
+        self.isNeedSave = False
+        self.init_fen = fen
         self.boardView.from_fen(self.init_fen, clear = True)
+        
         position = {
             'fen': self.init_fen,
             'fen_engine': self.init_fen,
@@ -491,14 +491,17 @@ class MainWindow(QMainWindow):
         if cchess.FULL_INIT_BOARD in self.init_fen:
            position['ecco'] = ''
         
+        self.currPosition = position
+        
         self.positionList.append(position)
-        self.currPosition = position   
         self.historyView.onNewPostion(self.currPosition)
         self.updateStatus(quickMode = False)
         self.updateEcco()
 
         self.moveEvent.clear()
-    
+
+        self.initGameSignal.emit()
+
         self.changePositionSignal.emit(False)
         
     def updateEcco(self):

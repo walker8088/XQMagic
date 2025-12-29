@@ -69,6 +69,9 @@ class NetQuery(QObject):
         self.reply.errorOccurred.connect(self.onQueryError)
         
     def onQueryFinished(self):
+        if not self.reply:
+            return
+
         resp = self.reply.readAll().data().decode().rstrip('\0')
         self.query_ret_signal.emit(self.fen, resp)
 
@@ -76,7 +79,7 @@ class NetQuery(QObject):
         self.reply = None
         
         self.tryCount += 1
-        if self.tryCount < 3:
+        if self.tryCount < 1:
             logging.warning(f'Query From CloudDB Error, retry { self.tryCount}')
             time.sleep(2)
             self.reply = self.net_mgr.get(self.req)
@@ -85,6 +88,7 @@ class NetQuery(QObject):
         else:
             self.query_err_signal.emit(self.fen)
     
+#------------------------------------------------------------------------------
 class CloudDB(QObject):
     query_result_signal = pyqtSignal(dict)
     
@@ -120,9 +124,13 @@ class CloudDB(QObject):
 
     def onQueryFinished(self, fen, resp):
         
+        #错误防护
+        if fen not in self.query_worker:
+            return
+
         self.score_limit = 90
         ret = {}
-        
+
         self.query_worker.pop(fen)
 
         #resp: 若局面代码错误，返回 invalid board ，
@@ -215,9 +223,14 @@ class CloudDB(QObject):
         self.query_result_signal.emit(ret)
         
     def onQueryError(self, fen):
+        #错误防护
+        if fen not in self.query_worker:
+            return
+
         self.query_worker.pop(fen)
 
 #------------------------------------------------------------------------------
+'''
 class MyScoreDB(QObject):
     query_result_signal = pyqtSignal(dict)
     
@@ -326,7 +339,7 @@ class MyScoreDB(QObject):
         self.reply = None
         
         self.tryCount += 1
-        if self.tryCount < 5:
+        if self.tryCount < 1:
             logging.warning(f'Query from ScoreDB Error, retry { self.tryCount}')
             time.sleep(2)
             self.reply = self.net_mgr.get(self.req)
@@ -335,3 +348,4 @@ class MyScoreDB(QObject):
         else:
             self.query_result_signal.emit({})
         
+'''
