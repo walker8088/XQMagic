@@ -78,14 +78,14 @@ class EngineManager(QObject):
         self.params = params
         self.stopThinking()
         
-        logging.info(f'Engine[{self.id}] goFrom: {self.fen_engine} {self.params}')
+        logging.info(f'Engine[{self.id}] go: {self.fen_engine} {self.params}')
         return self.engine.go_from(self.fen_engine, self.params)
             
     def stopThinking(self):
         if not self.isReady:
             return True
             
-        logging.info(f'Engine[{self.id}] stop_thinking')
+        logging.info(f'Engine[{self.id}] stop')
         self.engine.stop_thinking()
         #time.sleep(0.2)
         #self.engine.get_action()
@@ -94,7 +94,7 @@ class EngineManager(QObject):
     
     def redoThinking(self):
         if self.fen_engine:
-            logging.info(f'Engine[{self.id}] goFrom: {self.fen_engine} {self.params}')
+            logging.info(f'Engine[{self.id}] go: {self.fen_engine} {self.params}')
             return self.engine.go_from(self.fen_engine, self.params)
             
     def start(self):
@@ -166,7 +166,7 @@ class EngineManager(QObject):
             
             
             new_fen = m.board_done.to_fen()
-            iccs_dict = {'iccs': iccs, 'diff': 0, 'new_fen': new_fen}
+            iccs_dict = {'iccs': iccs, 'new_fen': new_fen}
             for key in ['score', 'mate']:
                 if key in ret:
                   iccs_dict[key] = ret[key]    

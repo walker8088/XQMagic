@@ -47,18 +47,17 @@ class PosMove(Model):
 master_book_db = Proxy()
 
 #------------------------------------------------------------------------------
-class MasterEvBook(Model):
-    #fen = CharField(unique=True, index=True)
-    key   = BigIntegerField()
-    step  = IntegerField()
-    score = IntegerField(null=True)
+class EvPosition(Model):
+    key = BigIntegerField(index=True)
     iccs  = CharField()
+    score = IntegerField(null=True)
+    count = IntegerField()
     mark  = CharField(null=True)
-    memo  = JSONField(null=True)
+    memo  = CharField(null=True)
     
     class Meta:
         database = master_book_db
-        table_name = 'evbook'
+        #table_name = 'evbook'
 
 #------------------------------------------------------------------------------
 #本地库
@@ -213,11 +212,12 @@ class MoveBookMixIn():
                     
     
 #------------------------------------------------------------------------------
-#MasterBook #存储古典以及大师对局谱
-class MasterBook(MoveBookMixIn):
+#MasterBook 
+#存储本地对局谱+引擎输出结果
+class MasterBook():
     def __init__(self):
         #super(self).__init__(MasterEvBook)
-        self.book_cls = MasterEvBook
+        self.book_cls = EvPosition
         self.db_master = None
 
     def open(self, fileName):
@@ -225,7 +225,7 @@ class MasterBook(MoveBookMixIn):
 
         if not Path(fileName).is_file():
             return False
-
+            
         self.db_master = SqliteExtDatabase(fileName)
         master_book_db.initialize(self.db_master)
 
@@ -239,52 +239,53 @@ class MasterBook(MoveBookMixIn):
     def removeMoves(self, fen, iccs, mark):
         return False
 
-    '''
     def getMoves(self, fen):
         
-        item = self.getRecord(fen)
-        if not item:
+        if self.db_master is None:
             return {}
 
-        record, record_state = item    
-        actions = OrderedDict()    
-        score_best = None
         board = ChessBoard(fen)
-        move_color = board.get_move_color()        
+        records, record_state = self.getRecords(board)
+        if not records:
+            return {}
         
-        for ics, act in record.actions.items():
-            score = act['sc']
+        is_mirror_board = True if board.is_mirror() else False
+            
+        move_color = board.get_move_color()        
+        actions = OrderedDict()    
+        
+        for it in records:
+            score = it.score
+            ics = it.iccs
             if record_state == 'mirror':
                 iccs = cchess.iccs_mirror(ics)
             else:
                 iccs = ics
 
             m = {}  
-            m['mark'] = act['mk']
+            m['mark'] = it.mark
             m['iccs'] = iccs
             move_it = board.copy().move_iccs(iccs)
             m['text'] = move_it.to_text()
             m['new_fen'] = move_it.board_done.to_fen()
-            
-            if score is not None:
-                if score_best is  None:
-                    score_best = score
-                m['score'] = score 
-                if move_color == cchess.BLACK:
-                    m['score'] = -m['score']
-                m['diff'] = score - score_best
-            
-            if 'mt' in act:
-                m['mate'] = act['mt']
+            m['score'] = -score if cchess.BLACK == move_color else score
 
             actions[iccs] = m
             
+            if is_mirror_board:
+                iccs_m = cchess.iccs_mirror(iccs)
+                m2 = {}  
+                m2['mark'] = it.mark
+                m2['iccs'] = iccs_m
+                move_it = board.copy().move_iccs(iccs_m)
+                m2['text'] = move_it.to_text()
+                m2['new_fen'] = move_it.board_done.to_fen()
+                m2['score'] = m['score']
+
+                actions[iccs_m] = m2
+            
         ret = {}
         ret['fen'] = fen
-        ret['mirror'] = (record_state == 'mirror')
-        
-        if score_best is not None:
-            ret['score'] = score_best 
         ret['actions'] = actions
         
         return ret
@@ -329,6 +330,7 @@ class MasterBook(MoveBookMixIn):
             record.save()
     
     #界面的类型转化为数据库类型然后保存        
+    '''
     def saveActions(self, fen, step, score, actions, mark):
         db_actions = {}
         for iccs, act in actions.items():
@@ -348,26 +350,19 @@ class MasterBook(MoveBookMixIn):
             score = None
             actions = [position['iccs']]
             self.saveActions(fen, step, score, actions, mark)
-
+    '''
     #--------------------------------------------------------------
     #底层处理
-    def getRecord(self, fen):
-        board = ChessBoard(fen)
+    def getRecords(self, board):
         for b, b_state in [(board, ''), (board.mirror(), 'mirror')]:
-            query = MasterPosAction.select().where(MasterPosAction.fen == b.to_fen())
+            query = EvPosition.select().where(EvPosition.key == b.zhash()).order_by(-EvPosition.score)
             query.execute()
-            #print(query.count(), b_state) 
             if query.count() > 0:
-                break
-            
-        if query.count() == 0:
-            return None
-        
-        if query.count() > 1:
-            raise Exception(f'database error：{b_state} {fen}')
-        
-        return (list(query)[0], b_state)
+                ret = list(query)
+                return (ret, b_state)
     
+        return (None, None)
+        
     def removeRecord(self, fen, state): 
 
         if state == 'mirror':
@@ -381,7 +376,7 @@ class MasterBook(MoveBookMixIn):
         return True
 
     def saveRecord(self, fen, step, score, actions):
-        item = self.getRecord(fen)
+        item = self.getRecords(fen)
         if item is None:
             #没查到数据，直接保存
             new_record = PosAction(fen, step, score, actions)
@@ -418,8 +413,8 @@ class MasterBook(MoveBookMixIn):
             #保存数据
             new_record = PosAction(fen, record.step, new_score, record.actions)
             new_record.save()
-                    
-    '''
+
+
 #------------------------------------------------------------------------------
 #LocalBook #存储个人保存的棋谱及收藏
 class LocalBook():

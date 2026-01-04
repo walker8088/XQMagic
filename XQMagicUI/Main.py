@@ -66,10 +66,9 @@ GAME_TYPES_ALL = GAME_FILE_TYPES + GAME_LIB_TYPES
 
 #-----------------------------------------------------#
 class MainWindow(QMainWindow):
-    initGameSignal = pyqtSignal(str)
-    newBoardSignal = pyqtSignal()
-    moveBeginSignal = pyqtSignal()
-    moveEndSignal = pyqtSignal()
+    initGameSignal = pyqtSignal()
+    #moveBeginSignal = pyqtSignal()
+    #moveEndSignal = pyqtSignal()
     #newPositionSignal = pyqtSignal()
     changePositionSignal = pyqtSignal(bool)
 
@@ -94,8 +93,8 @@ class MainWindow(QMainWindow):
         gamePath = Path('Game')
         gamePath.mkdir(exist_ok=True)
                 
-        #self.openBook = MasterBook()
-        #self.openBook.open(Path('Game', 'openbook.edb'))
+        self.openBook = MasterBook()
+        self.openBook.open(Path('Game', 'masterbook.db'))
         
         Globl.endbookStore = EndBookStore(Path(gamePath, 'endbooks.json'))
         #Globl.localbookStore = LocalBookStore(Path(gamePath, 'localbooks.json'))
@@ -181,7 +180,7 @@ class MainWindow(QMainWindow):
         self.clearAll()
         
         self.readSettings()
-        self.loadOpenBook(self.openBookFile)
+        #self.loadOpenBook(self.openBookFile)
         #self.cloudQuery = MyScoreDB(self) #CloudDB(self)
         self.cloudQuery = CloudDB(self)
         self.cloudQuery.query_result_signal.connect(self.onCloudQueryResult)
@@ -565,8 +564,8 @@ class MainWindow(QMainWindow):
             self.isNeedSave = True
 
         #在fenCach中把招法连起来
-        if new_fen not in Globl.fenCache:
-            Globl.fenCache[new_fen] = {}
+        #if new_fen not in Globl.fenCache:
+        #    Globl.fenCache[new_fen] = {}
         Globl.fenCache[new_fen].update({ 'fen_prev': position['fen_prev'] })
             
         self.historyView.onNewPostion(self.currPosition)
@@ -646,61 +645,69 @@ class MainWindow(QMainWindow):
 
     #-----------------------------------------------------------
     #fenCache 核心逻辑
-    def updateFenCache(self, fenInfo):
+    def updateFenCache(self, fenInfo, isEngine = False):
 
         fen = fenInfo['fen']
         
-        if fen not in Globl.fenCache:
-            Globl.fenCache[fen] = {}   
-        Globl.fenCache[fen].update(fenInfo)
-        
-        best_next = []
+        if isEngine:
+            if 'score' in fenInfo:
+                Globl.fenCache[fen]['score_e'] = fenInfo['score']
+                
+            actions = fenInfo['actions']
+            for act in actions.values():
+                if 'new_fen' in act: 
+                    new_fen = act['new_fen']
+                    Globl.fenCache[new_fen]['score_e'] = act['score']
+        else:
+            best_next = []
+            Globl.fenCache[fen].update(fenInfo)
+                
+            #此局面的最优下个招法
+            if 'actions' not in fenInfo:
+                return
 
-        #此局面的最优下个招法
-        if 'actions' not in fenInfo:
-            return
+            actions = fenInfo['actions']
+            for act in actions.values():
+                if act['diff'] >= -5:
+                    best_next.append(act['iccs'])
+            if best_next:
+                Globl.fenCache[fen]['best_next'] = best_next 
 
-        actions = fenInfo['actions']
-        for act in actions.values():
-            if act['diff'] >= -5:
-                best_next.append(act['iccs'])
-        if best_next:
-            Globl.fenCache[fen]['best_next'] = best_next 
+            #本着法的其他更好的招法    
+            for act in actions.values():
+                if 'score' not in act:
+                    continue
+                new_fen = act['new_fen']
 
-        #本着法的其他更好的招法    
-        for act in actions.values():
-            if 'score' not in act:
-                continue
-            new_fen = act['new_fen']
+                info = { 'score': act['score'], 'diff':act['diff'] }
+                if (act['diff'] < -50) and best_next:
+                    info['alter_best'] = best_next
 
-            info = { 'score': act['score'], 'diff':act['diff'] }
-            if (act['diff'] < -50) and best_next:
-                info['alter_best'] = best_next
+                #TODO？？？    
+                if new_fen not in Globl.fenCache:
+                    Globl.fenCache[new_fen] = {'fen_prev': fen}   
 
-            if new_fen not in Globl.fenCache:
-                Globl.fenCache[new_fen] = {'fen_prev': fen}   
+                Globl.fenCache[new_fen].update(info)
+                        
+            if best_next:
+                Globl.fenCache[fen]['best_next'] = best_next 
 
-            Globl.fenCache[new_fen].update(info)
-                    
-        if best_next:
-            Globl.fenCache[fen]['best_next'] = best_next 
-
-        # 如果这一步的fen不在上个步骤的预测走法里面，需要根据fen_prev的分数建立此步骤的alter_best   
-        fenInfo = Globl.fenCache[fen]
-        
-        if ('diff' not in fenInfo) and ('fen_prev' in fenInfo):
-            move_color = cchess.get_move_color(fen)    
-            fen_prev = fenInfo['fen_prev']
-            if fen_prev in Globl.fenCache :
-                prevInfo = Globl.fenCache[fen_prev]
-                if 'score' in prevInfo:
-                    diff = prevInfo['score'] - fenInfo['score']
-                    if move_color == cchess.BLACK:
-                        diff = -diff 
-                    fenInfo['diff'] = diff
-                    if (diff < -40) and ('best_next' in prevInfo):
-                        fenInfo['alter_best'] = prevInfo['best_next']
-        
+            # 如果这一步的fen不在上个步骤的预测走法里面，需要根据fen_prev的分数建立此步骤的alter_best   
+            fenInfo = Globl.fenCache[fen]
+            
+            if ('diff' not in fenInfo) and ('fen_prev' in fenInfo):
+                move_color = cchess.get_move_color(fen)    
+                fen_prev = fenInfo['fen_prev']
+                if fen_prev in Globl.fenCache :
+                    prevInfo = Globl.fenCache[fen_prev]
+                    if 'score' in prevInfo:
+                        diff = prevInfo['score'] - fenInfo['score']
+                        if move_color == cchess.BLACK:
+                            diff = -diff 
+                        fenInfo['diff'] = diff
+                        if (diff < -40) and ('best_next' in prevInfo):
+                            fenInfo['alter_best'] = prevInfo['best_next']
+            
         for pos in self.positionList:
             if pos['fen'] == fen:
                 self.historyView.onUpdatePosition(pos)
@@ -726,12 +733,14 @@ class MainWindow(QMainWindow):
         
         fen = position['fen']
         
-        #开局库        
-        query = self.openBook.getMoves(fen)    
-        if query:
-            openbook_actions = query['actions']
-        else:
-            openbook_actions = OrderedDict()
+        #开局库  
+        openbook_actions = OrderedDict()
+        if self.openBook is not None:      
+            query = self.openBook.getMoves(fen)    
+            if query:
+                openbook_actions = query['actions']
+        
+        #print(openbook_actions)
 
         #本地库库        
         query = Globl.localBook.getMoves(fen)
@@ -755,23 +764,13 @@ class MainWindow(QMainWindow):
             else:
                 final_actions[iccs] = l_act
 
-        for iccs, o_act in openbook_actions.items():
-            o_act['score'] = ''
-
-        '''        
         #更新分数 
         for act in final_actions.values():
-            if 'new_fen' not in act:
-                continue
             new_fen = act['new_fen']
-            if new_fen not in Globl.fenCache:
-                continue
-            info= Globl.fenCache[new_fen]
-            if 'score' not in info:
-                continue
-            act['score'] = info['score']
-        '''
-
+            if 'score' in act:
+                #Globl.fenCache[new_fen]['score'] = act['score']
+                Globl.fenCache[new_fen]['score_e'] = act['score']
+            
         #boardActions 存储当前局面下的最优走法
         self.boardActions = final_actions
         self.actionsView.updateActions(self.boardActions)
@@ -847,7 +846,7 @@ class MainWindow(QMainWindow):
         
         if (not self.isQueryCloud) or (self.reviewMode == ReviewMode.ByEngine):
             try:
-                self.updateFenCache(fenInfo)
+                self.updateFenCache(fenInfo, isEngine = True)
             except Exception as e:
                 logging.error(f'updateFenCache error {e}')
                 logging.error(f'{fenInfo}')
@@ -1800,7 +1799,8 @@ class MainWindow(QMainWindow):
         Globl.engineManager.quit()
         time.sleep(0.6)
         
-        self.openBook.close()
+        if self.openBook is not None: 
+            self.openBook.close()
         #Globl.bookmarkStore.close()
         Globl.endbookStore.close()
         Globl.localBook.close()
@@ -1819,7 +1819,7 @@ class MainWindow(QMainWindow):
         if skin != DEFAULT_SKIN:
             self.changeSkin(skin)
                     
-        self.openBookFile = Path(Globl.settings.value("openBookFile", str(Path('game','openbook.yfk'))))
+        #self.openBookFile = Path(Globl.settings.value("openBookFile", str(Path('game','openbook.yfk'))))
         self.lastOpenFolder = Globl.settings.value("lastOpenFolder", '')
         
         self.endBookView.loadSettings(Globl.settings)
@@ -1839,7 +1839,7 @@ class MainWindow(QMainWindow):
         
         Globl.settings.setValue("cloudMode", self.queryCloudBox.isChecked())
         
-        Globl.settings.setValue("openBookFile", str(self.openBookFile))
+        #Globl.settings.setValue("openBookFile", str(self.openBookFile))
         Globl.settings.setValue("lastOpenFolder", self.lastOpenFolder)
         Globl.settings.setValue("boardSkin", self.skin)
         

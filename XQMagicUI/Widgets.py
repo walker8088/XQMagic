@@ -322,29 +322,31 @@ class HistoryWidget(QWidget):
         if not self.isShowScore:
             viewItems[2].setIcon(QIcon())
             viewItems[3].setText('')
+            viewItems[4].setText('')
         else: 
-            if fen not in Globl.fenCache:
-                viewItems[2].setIcon(QIcon())    
+            fenInfo = Globl.fenCache[fen] 
+            if (index > 0) and ('score' in fenInfo) :
+                viewItems[3].setText(str(fenInfo['score']))
+            else:
                 viewItems[3].setText('')
-            else:    
-                fenInfo = Globl.fenCache[fen] 
-                if (index > 0) and ('score' in fenInfo) :
-                    viewItems[3].setText(str(fenInfo['score']))
+
+            if (index > 0) and ('score_e' in fenInfo) :
+                viewItems[4].setText(str(fenInfo['score_e']))
+            else:
+                viewItems[4].setText('')
+            
+            if 'diff' in fenInfo:    
+                diff = fenInfo['diff']
+                if diff > -30:
+                    viewItems[2].setIcon(QIcon(":ImgRes/star.png"))
+                elif diff > -70:
+                    viewItems[2].setIcon(QIcon(":ImgRes/good.png"))
+                elif diff > -100:
+                    viewItems[2].setIcon(QIcon(":ImgRes/sad.png"))
                 else:
-                    viewItems[3].setText('')
-                
-                if 'diff' in fenInfo:    
-                    diff = fenInfo['diff']
-                    if diff > -30:
-                        viewItems[2].setIcon(QIcon(":ImgRes/star.png"))
-                    elif diff > -70:
-                        viewItems[2].setIcon(QIcon(":ImgRes/good.png"))
-                    elif diff > -100:
-                        viewItems[2].setIcon(QIcon(":ImgRes/sad.png"))
-                    else:
-                        viewItems[2].setIcon(QIcon(":ImgRes/bad.png"))    
-                else:
-                    viewItems[2].setIcon(QIcon())
+                    viewItems[2].setIcon(QIcon(":ImgRes/bad.png"))    
+            else:
+                viewItems[2].setIcon(QIcon())
 
         header = self.posView.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)   # 序号
@@ -953,8 +955,10 @@ class EngineWidget(QDockWidget):
         
         if self.fastModeBtn.isChecked():
             self.goMode = 'quick'
+            self.multiPVSpin.setValue(self.params["quick.MultiPV"])
         else:
             self.goMode = 'deep'
+            self.multiPVSpin.setValue(self.params["deep.MultiPV"])
         
         self.applyParamsWithPrefix([self.goMode,])
 
