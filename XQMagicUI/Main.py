@@ -655,9 +655,10 @@ class MainWindow(QMainWindow):
                 
             actions = fenInfo['actions']
             for act in actions.values():
-                if 'new_fen' in act: 
-                    new_fen = act['new_fen']
-                    Globl.fenCache[new_fen]['score_e'] = act['score']
+                if ('score' not in act) or ('new_fen' not in act):
+                    continue
+                new_fen = act['new_fen']
+                Globl.fenCache[new_fen]['score_e'] = act['score']
         else:
             best_next = []
             Globl.fenCache[fen].update(fenInfo)
@@ -844,14 +845,8 @@ class MainWindow(QMainWindow):
 
         logging.info(f'Engine[{engine_id}] BestMove {iccs}' )
         
-        if (not self.isQueryCloud) or (self.reviewMode == ReviewMode.ByEngine):
-            try:
-                self.updateFenCache(fenInfo, isEngine = True)
-            except Exception as e:
-                logging.error(f'updateFenCache error {e}')
-                logging.error(f'{fenInfo}')
-                return
-
+        self.updateFenCache(fenInfo, isEngine = True)
+        
         if self.reviewMode == ReviewMode.ByEngine:
             self.onReviewGameStep()
             return
