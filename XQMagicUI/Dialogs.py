@@ -19,6 +19,8 @@ from cchess import ChessBoard
 from .BoardWidgets import ChessBoardEditWidget
 #from .SnippingWidget import SnippingWidget
 
+from . import Globl
+
 #-----------------------------------------------------#
 class NumSlider(QWidget):
     def __init__(self, parent, v_min, v_max, v_step):
@@ -176,8 +178,8 @@ class PositionEditDialog(QDialog):
         if not fileName:
             return
 
-        print(fileName)
-        #self.openFile(fileName)
+        fen = Globl.detector.img_to_fen(fileName)
+        self.boardEdit.from_fen(fen)
 
     def onSnippingCompleted(self, img):
         self.setWindowState(Qt.WindowActive)

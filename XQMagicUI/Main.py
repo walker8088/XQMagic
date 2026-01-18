@@ -41,6 +41,8 @@ from .Ecco import getBookEcco
 
 from .Online import OnlineManager, OnlineDialog
 
+from .Detector import ChessboardDetector
+
 from . import Globl
 
 '''
@@ -165,7 +167,8 @@ class MainWindow(QMainWindow):
         self.createActions()
         self.createMenus()
         self.createToolBars()
-
+        
+        Globl.detector = ChessboardDetector('Models\Detector_0')
         
         self.reviewMode = None
         self.isQueryCloud = False
