@@ -1,2 +1,2 @@
-pyside6-rcc ChessUI/Resource.qrc -o ChessUI/Resource.py
+pyside6-rcc ../XQMagicUI/Resource.qrc -o ../XQMagicUI/Resource.py
 pause

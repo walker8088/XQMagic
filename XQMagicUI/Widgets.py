@@ -527,6 +527,9 @@ class BoardPanelWidget(QWidget):
         #self.showScoreBox.setToolTip('显示走子得分（红优分）')
         #self.showScoreBox.stateChanged.connect(self.onShowScoreChanged)
         
+        self.copyBtn = QPushButton(QIcon(':ImgRes/copy.png'), '') 
+        self.copyBtn.clicked.connect(self.onCopyBoard)
+
         # 2. 下部按钮工具栏
         toolbar_layout = QHBoxLayout()
         toolbar_layout.setContentsMargins(10, 5, 10, 5)
@@ -535,19 +538,19 @@ class BoardPanelWidget(QWidget):
         toolbar_layout.addWidget(self.mirrorBox)
         toolbar_layout.addWidget(self.showBestBox)
         #toolbar_layout.addWidget(self.showScoreBox)
-        #toolbar_layout.addWidget(self.copyBtn)
+        toolbar_layout.addWidget(self.copyBtn)
 
         # ---- 下部右侧按钮组 ----
         self.firstBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowUp), '')
         self.lastBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowDown), '')
         self.nextBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowForward), '')
         self.privBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowBack), '')
- 
+        
         toolbar_layout.addStretch()         
         toolbar_layout.addWidget(self.firstBtn)
+        toolbar_layout.addWidget(self.lastBtn)
         toolbar_layout.addWidget(self.privBtn)
         toolbar_layout.addWidget(self.nextBtn)
-        toolbar_layout.addWidget(self.lastBtn)
         
         #leftView = QWidget()
         layout = QVBoxLayout(self)
@@ -561,19 +564,15 @@ class BoardPanelWidget(QWidget):
         self.flipBox.setChecked(other.flipBox.isChecked())
         self.mirrorBox.setChecked(other.mirrorBox.isChecked())
         self.showBestBox.setChecked(other.showBestBox.isChecked())
-
-    def copyFenToClipboard(self):
-        fen = self.boardView._board.to_fen()        
+    
+    def onCopyBoard(self):
+        fen = self.boardView._board.to_fen()
+        pixmap = self.boardView.getImage()   
         clipboard = QApplication.clipboard()
         clipboard.clear()
         clipboard.setText(fen)
-    
-    def copyImageToClipboard(self):
-        pixmap = self.boardView.getImage()
-        clipboard = QApplication.clipboard()
-        clipboard.clear()
         clipboard.setPixmap(pixmap)
-    
+
     def saveImageToFile(self, file_name):
         pixmap = self.boardView.getImage()
         pixmap.save(file_name)

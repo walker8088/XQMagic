@@ -103,8 +103,8 @@ class PositionEditDialog(QDialog):
         self.setWindowTitle("局面编辑")
 
         self.boardEdit = ChessBoardEditWidget(self, skinFolder)
-        self.redMoveBtn = QRadioButton("红方走", self)
-        self.blackMoveBtn = QRadioButton("黑方走", self)
+        self.redMoveBtn = QRadioButton("红方先行", self)
+        self.blackMoveBtn = QRadioButton("黑方先行", self)
         self.fenLabel = QLabel()
 
         group1 = QButtonGroup(self)
@@ -118,10 +118,10 @@ class PositionEditDialog(QDialog):
 
         initBtn = QPushButton("初始棋盘", self)
         clearBtn = QPushButton("清空棋盘", self)
-        #openImgBtn = QPushButton("打开图片", self)
+        openImgBtn = QPushButton("图片识别", self)
         initBtn.clicked.connect(self.onInitBoard)
         clearBtn.clicked.connect(self.onClearBoard)
-        #openImgBtn.clicked.connect(self.onOpenImage)
+        openImgBtn.clicked.connect(self.onOpenImage)
         
         okBtn = QPushButton("确定", self)
         cancelBtn = QPushButton("取消", self)
@@ -136,7 +136,7 @@ class PositionEditDialog(QDialog):
         hbox.addWidget(self.blackMoveBtn)
         hbox.addWidget(initBtn)
         hbox.addWidget(clearBtn)
-        #hbox.addWidget(openImgBtn)
+        hbox.addWidget(openImgBtn)
         hbox.addWidget(okBtn)
         hbox.addWidget(cancelBtn)
 
@@ -167,7 +167,17 @@ class PositionEditDialog(QDialog):
         self.boardEdit.set_move_color(cchess.BLACK)
     
     def onOpenImage(self):
-        self.snippingWidget.start()
+        options = QFileDialog.Options()
+        #options |= QFileDialog.DontUseNativeDialog
+
+        fileName, _ = QFileDialog.getOpenFileName(
+            self, "打开文件", '', "图片文件(*.jpg;*.jpeg;*.png;);;", options=options)
+
+        if not fileName:
+            return
+
+        print(fileName)
+        #self.openFile(fileName)
 
     def onSnippingCompleted(self, img):
         self.setWindowState(Qt.WindowActive)
