@@ -249,7 +249,7 @@ class TimerMessageBox(QMessageBox):
 
      
 #-----------------------------------------------------#
-def QueryFromCloudDB(fen, score_limit = 70):
+def QueryFromCloudDB(fen, score_limit = 100):
     url = 'http://www.chessdb.cn/chessdb.php'
     param = {"action": 'queryall'}
     param['board'] = fen
@@ -300,3 +300,50 @@ def QueryFromCloudDB(fen, score_limit = 70):
                 continue
         ret.append(it)       
     return  ret        
+
+#-----------------------------------------------------#
+BASE_URL = "https://www.wfmrwh.com/board_server"
+ 
+#-----------------------------------------------------#
+class BoardImageClient():
+    def __init__(self, url = BASE_URL):
+        self.url = base_url
+        self.headers = {
+            #"Authorization": f"Bearer {token}"
+        }
+        
+    def image_to_fen(self, img_file, time_out = 30):    
+        
+        try:
+            with open(image_path, "rb") as f:
+                files = {"image": (os.path.basename(image_path), f, "image/jpeg")}
+                response = requests.post(
+                    f'{self.base_url}/recognize' ,
+                    headers=self.headers,
+                    files=files,
+                    #verify=False,
+                    timeout=timeout
+                )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "status" not in data:
+                    return {"status": "unknown", "raw": data}
+
+                status = data["status"]     
+                if status in ['ok', "busy", "error"]:
+                    return data
+
+            else:
+                return {
+                    "status": "http_error",
+                    "code": response.status_code,
+                    "text": response.text,
+                }
+        
+        except requests.exceptions.Timeout:
+            return {"status": "client_timeout", "message": f"超过 {timeout} 秒未响应"}
+        except requests.exceptions.RequestException as e:
+            return {"status": "client_request_error", "message": str(e)}
+
+#-----------------------------------------------------#
