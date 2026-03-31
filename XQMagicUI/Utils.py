@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import os
 import sys
 import csv
 import uuid
@@ -12,7 +12,7 @@ import psutil
 import requests
 
 from PyQt5.QtCore import QTimer, QThread, Qt, pyqtSignal, QObject
-from PyQt5.QtWidgets import QMessageBox, QApplication
+from PyQt5.QtWidgets import QMessageBox, QApplication, QInputDialog
 
 #import numpy as np
 #import cv2 as cv
@@ -247,6 +247,48 @@ class TimerMessageBox(QMessageBox):
         self.timer.stop()
         event.accept()
 
+#--------------------------------------------------------------#
+class LongTextInputDialog(QInputDialog):
+    """
+    自定义 QInputDialog，使输入框更宽（默认 500 px，可自行调节）。
+    同时支持单行（QLineEdit）或多行（QTextEdit）两种模式。
+    """
+    def __init__(self, title: str = "", label: str = "", parent=None,
+                 multiline: bool = False, width: int = 500):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setLabelText(label)
+        self.multiline = multiline
+        self.desired_width = width
+
+        # 移除默认的 QLineEdit
+        self.layout().removeWidget(self.findChild(QLineEdit))
+
+        if self.multiline:
+            from PyQt5.QtWidgets import QTextEdit
+            self.text_edit = QTextEdit()
+            self.text_edit.setAcceptRichText(False)
+            self.text_edit.setFixedHeight(100)   # 多行时给个合适高度
+        else:
+            self.text_edit = QLineEdit()
+            self.text_edit.setMinimumWidth(self.desired_width)
+
+        # 重新加入布局（QInputDialog 的布局是 QGridLayout）
+        self.layout().addWidget(self.text_edit, 1, 0, 1, 2)
+
+        # 让对话框自适应宽度
+        self.resize(self.desired_width + 100, self.sizeHint().height())
+
+    def textValue(self) -> str:
+        return self.text_edit.toPlainText().strip() if self.multiline else self.text_edit.text()
+
+    @staticmethod
+    def getText(parent, title, label, text="", multiline=False, width=500):
+        dialog = LongTextInputDialog(title, label, parent, multiline, width)
+        dialog.setTextValue(text)
+        if dialog.exec_() == QDialog.Accepted:
+            return dialog.textValue(), True
+        return "", False
      
 #-----------------------------------------------------#
 def QueryFromCloudDB(fen, score_limit = 100):
@@ -306,8 +348,8 @@ BASE_URL = "https://www.wfmrwh.com/board_server"
  
 #-----------------------------------------------------#
 class BoardImageClient():
-    def __init__(self, url = BASE_URL):
-        self.url = base_url
+    def __init__(self, base_url = BASE_URL):
+        self.base_url = base_url
         self.headers = {
             #"Authorization": f"Bearer {token}"
         }
@@ -315,20 +357,20 @@ class BoardImageClient():
     def image_to_fen(self, img_file, time_out = 30):    
         
         try:
-            with open(image_path, "rb") as f:
-                files = {"image": (os.path.basename(image_path), f, "image/jpeg")}
+            with open(img_file, "rb") as f:
+                files = {"image": (os.path.basename(img_file), f, "image/jpeg")}
                 response = requests.post(
                     f'{self.base_url}/recognize' ,
                     headers=self.headers,
                     files=files,
                     #verify=False,
-                    timeout=timeout
+                    timeout=15,
                 )
             
             if response.status_code == 200:
                 data = response.json()
                 if "status" not in data:
-                    return {"status": "unknown", "raw": data}
+                    return {"status": "error", "raw": data}
 
                 status = data["status"]     
                 if status in ['ok', "busy", "error"]:
@@ -336,14 +378,14 @@ class BoardImageClient():
 
             else:
                 return {
-                    "status": "http_error",
+                    "status": "error",
                     "code": response.status_code,
                     "text": response.text,
                 }
         
         except requests.exceptions.Timeout:
-            return {"status": "client_timeout", "message": f"超过 {timeout} 秒未响应"}
+            return {"status": "error", "message": f"超时未响应"}
         except requests.exceptions.RequestException as e:
-            return {"status": "client_request_error", "message": str(e)}
+            return {"status": "error", "message": str(e)}
 
 #-----------------------------------------------------#

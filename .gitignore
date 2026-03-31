@@ -90,5 +90,7 @@ ENV/
 
 # Rope project settings
 .ropeproject
-
 *.epg
+
+Engine/Detector/
+ *.onnx

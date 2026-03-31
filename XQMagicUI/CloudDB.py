@@ -14,117 +14,130 @@ from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager
 
 from . import Globl
 
-#------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
 def updateCache(qResult):
-    fen = qResult['fen']
+    fen = qResult["fen"]
     if fen not in Globl.fenCache:
         Globl.fenCache[fen] = {}
-    Globl.fenCache[fen].update({'score': qResult['score']}) 
+    Globl.fenCache[fen].update({"score": qResult["score"]})
 
     best_moves = []
-    actions = qResult['actions']
+    actions = qResult["actions"]
     for act in actions.values():
-        if act['diff'] == 0:
-            best_moves.append(act['iccs'])
-        m = {'score': act['score'], 'diff': act['diff']}
-        new_fen = act['new_fen']
+        if act["diff"] == 0:
+            best_moves.append(act["iccs"])
+        m = {"score": act["score"], "diff": act["diff"]}
+        new_fen = act["new_fen"]
         if new_fen not in Globl.fenCache:
             Globl.fenCache[new_fen] = m
         else:
-            Globl.fenCache[new_fen].update(m)    
-    
-    if len(best_moves) > 0: 
-        Globl.fenCache[fen].update({ 'best_moves': best_moves })
-        #print(Globl.fenCache[fen])        
-        
+            Globl.fenCache[new_fen].update(m)
 
-#------------------------------------------------------------------------------
+    if len(best_moves) > 0:
+        Globl.fenCache[fen].update({"best_moves": best_moves})
+        # print(Globl.fenCache[fen])
+
+
+# ------------------------------------------------------------------------------
 class NetQuery(QObject):
     query_ret_signal = pyqtSignal(str, str)
     query_err_signal = pyqtSignal(str)
-    
+
     def __init__(self, parent, fen, url):
         super().__init__(parent)
-        
+
         self.fen = fen
-        
+
         self.url = url
         self.net_mgr = parent.net_mgr
         self.req = None
 
         self.reply = None
         self.tryCount = 0
-        
-    def startQuery(self):
 
+    def startQuery(self):
         url = QUrl(self.url)
         query = QUrlQuery()
-        query.addQueryItem('board', self.fen)
-        query.addQueryItem("action", 'queryall')
+        query.addQueryItem("board", self.fen)
+        query.addQueryItem("action", "queryall")
         url.setQuery(query)
-        
+
         self.req = QNetworkRequest(url)
         self.reply = self.net_mgr.get(self.req)
         self.reply.finished.connect(self.onQueryFinished)
         self.reply.errorOccurred.connect(self.onQueryError)
-        
+
     def onQueryFinished(self):
         if not self.reply:
             return
 
-        resp = self.reply.readAll().data().decode().rstrip('\0')
+        resp = self.reply.readAll().data().decode().rstrip("\0")
         self.query_ret_signal.emit(self.fen, resp)
 
     def onQueryError(self, error):
         self.reply = None
-        
+
         self.tryCount += 1
         if self.tryCount < 1:
-            logging.warning(f'Query From CloudDB Error, retry { self.tryCount}')
+            logging.warning(f"Query From CloudDB Error, retry {self.tryCount}")
             time.sleep(2)
             self.reply = self.net_mgr.get(self.req)
             self.reply.finished.connect(self.onQueryFinished)
             self.reply.errorOccurred.connect(self.onQueryError)
         else:
             self.query_err_signal.emit(self.fen)
-    
-#------------------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
 class CloudDB(QObject):
     query_result_signal = pyqtSignal(dict)
-    
+
     def __init__(self, parent):
         super().__init__(parent)
-        self.url = 'http://www.chessdb.cn/chessdb.php'
-        
+        self.url = "http://www.chessdb.cn/chessdb.php"
+
         self.move_cache = {}
         self.query_worker = {}
+        self.query_queue = []
 
         self.net_mgr = QNetworkAccessManager()
-        
-    def startQuery(self, position, score_limit = 100):
 
-        fen = position['fen']
-        
+    def startQuery(self, position, score_limit=100):
+        fen = position["fen"]
+
         logging.info(f"Cloud Query: {fen}")
 
         if fen in self.move_cache:
             ret = self.move_cache[fen]
             self.query_result_signal.emit(ret)
-            return 
+            return
 
-        #还在工作尚未完成             
+        # 还在工作尚未完成
         if fen in self.query_worker:
+            return
+
+        # 检查是否已在队列中
+        for q_fen, _q_pos, _q_limit in self.query_queue:
+            if q_fen == fen:
+                return
+
+        # 如果有正在进行的查询，则加入队列
+        if len(self.query_worker) > 0:
+            self.query_queue.append((fen, position, score_limit))
+            logging.info(
+                f"Cloud Query queued: {fen} (queue size: {len(self.query_queue)})"
+            )
             return
 
         q = NetQuery(self, fen, self.url)
         self.query_worker[fen] = q
         q.query_ret_signal.connect(self.onQueryFinished)
-        q.query_err_signal.connect(self.onQueryError) 
+        q.query_err_signal.connect(self.onQueryError)
         q.startQuery()
 
     def onQueryFinished(self, fen, resp):
-        
-        #错误防护
+        # 错误防护
         if fen not in self.query_worker:
             return
 
@@ -133,104 +146,117 @@ class CloudDB(QObject):
 
         self.query_worker.pop(fen)
 
-        #resp: 若局面代码错误，返回 invalid board ，
-        #若所查询的局面没有已知着法，返回 unknown ，若走棋方被将死或困毙，返回 checkmate / stalemate
+        # resp: 若局面代码错误，返回 invalid board ，
+        # 若所查询的局面没有已知着法，返回 unknown ，若走棋方被将死或困毙，返回 checkmate / stalemate
         resp = resp.lower()
-        if resp in ['', 'unknown']:
-            #TOFO fix return
-            return 
-        
-        #杀死
-        if resp == 'checkmate':
-            #ret['index'] = self.index
-            ret['fen'] = fen
-            ret['score'] = 30000
-            ret['mate'] = 0
-            ret['actions'] = {}
-        
+        if resp in ["", "unknown"]:
+            # TOFO fix return
+            return
+
+        # 杀死
+        if resp == "checkmate":
+            # ret['index'] = self.index
+            ret["fen"] = fen
+            ret["score"] = 30000
+            ret["mate"] = 0
+            ret["actions"] = {}
+
             self.move_cache[fen] = ret
             self.reply = None
             self.query_result_signal.emit(ret)
-            
+
             return
 
-        board = ChessBoard(fen)    
-        move_color = board.get_move_color()    
+        board = ChessBoard(fen)
+        move_color = board.get_move_color()
         moves = []
-        
-        #数据分割
+
+        # 数据分割
         try:
-            steps = resp.split('|')
+            steps = resp.split("|")
             for index, it in enumerate(steps):
-                segs = it.strip().split(',')
-                items =[x.split(':') for x in segs]
+                segs = it.strip().split(",")
+                items = [x.split(":") for x in segs]
                 it_dict = {}
                 for name, value in items:
-                    if name == 'score':
-                        it_dict['score'] = value
-                    elif name == 'move':
-                        it_dict['iccs'] = value
-                #if index > 3:
-                #    break        
+                    if name == "score":
+                        it_dict["score"] = value
+                    elif name == "move":
+                        it_dict["iccs"] = value
+                # if index > 3:
+                #    break
                 moves.append(it_dict)
         except Exception as e:
             logging.error(f"云库查询数据解析错误：{e} {resp}")
-            
-        if not moves: 
+
+        if not moves:
             return
 
-        score_best = int(moves[0]['score'])
+        score_best = int(moves[0]["score"])
         for act in moves:
-            move_it = board.copy().move_iccs(act['iccs'])
+            move_it = board.copy().move_iccs(act["iccs"])
             if move_it:
-                act['text'] = move_it.to_text()
-            act['score'] = int(act['score']) 
-            act['diff'] =  act['score'] - score_best
+                act["text"] = move_it.to_text()
+            act["score"] = int(act["score"])
+            act["diff"] = act["score"] - score_best
             if move_color == cchess.BLACK:
-                act['score'] = -act['score']
-            act['new_fen'] = move_it.board_done.to_fen()
+                act["score"] = -act["score"]
+            act["new_fen"] = move_it.board_done.to_fen()
 
-            
-        #moves = filter(lambda x : is_odd, moves)        
+        # moves = filter(lambda x : is_odd, moves)
 
-        #for it in moves:
+        # for it in moves:
         #   if self. score_limit > 0 and abs(it['diff']) >  self.score_limit:
         #           continue
-        
-        moves =  sorted(moves, key = lambda x:x['diff'], reverse = True) 
-        
+
+        moves = sorted(moves, key=lambda x: x["diff"], reverse=True)
+
         moves_clean = OrderedDict()
-        score_best = moves[0]['score']
+        score_best = moves[0]["score"]
         for it in moves:
-            it['diff'] =  it['score'] - score_best
-            if move_color == cchess.BLACK :
-                it['diff'] = -it['diff']
-            if self.score_limit > 0 and abs(it['diff']) >  self.score_limit:
-                    continue
-                    
-            moves_clean[it['iccs']] = it
-            
-        #ret['index'] = self.index
-        ret['fen'] = fen
-        ret['score'] = score_best
-        ret['actions'] = moves_clean
-            
-        self.move_cache[fen]  = ret
-        
+            it["diff"] = it["score"] - score_best
+            if move_color == cchess.BLACK:
+                it["diff"] = -it["diff"]
+            if self.score_limit > 0 and abs(it["diff"]) > self.score_limit:
+                continue
+
+            moves_clean[it["iccs"]] = it
+
+        # ret['index'] = self.index
+        ret["fen"] = fen
+        ret["score"] = score_best
+        ret["actions"] = moves_clean
+
+        self.move_cache[fen] = ret
+
         updateCache(ret)
 
         self.reply = None
         self.query_result_signal.emit(ret)
-        
+        self._processNextQuery()
+
     def onQueryError(self, fen):
-        #错误防护
+        # 错误防护
         if fen not in self.query_worker:
             return
 
         self.query_worker.pop(fen)
+        self._processNextQuery()
 
-#------------------------------------------------------------------------------
-'''
+    def _processNextQuery(self):
+        if len(self.query_queue) == 0:
+            return
+        fen, position, score_limit = self.query_queue.pop(0)
+        logging.info(f"Cloud Query dequeued: {fen}")
+        q = NetQuery(self, fen, self.url)
+        self.query_worker[fen] = q
+        q.query_ret_signal.connect(self.onQueryFinished)
+        q.query_err_signal.connect(self.onQueryError)
+        q.startQuery()
+
+
+# ------------------------------------------------------------------------------
+"""
 class MyScoreDB(QObject):
     query_result_signal = pyqtSignal(dict)
     
@@ -348,4 +374,4 @@ class MyScoreDB(QObject):
         else:
             self.query_result_signal.emit({})
         
-'''
+"""
