@@ -169,8 +169,6 @@ class PositionHistDialog(QDialog):
 
 
 # --------------------------------------------------------------#
-
-
 class ImageToBoardDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
@@ -200,7 +198,7 @@ class ImageToBoardDialog(QDialog):
         # openImgBtn.clicked.connect(self.onOpenImage)
 
         okBtn = QPushButton("确定", self)
-        cancelBtn = QPushButton("取消", self)
+        #cancelBtn = QPushButton("取消", self)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.imageView)
@@ -214,8 +212,7 @@ class ImageToBoardDialog(QDialog):
         hbox.addWidget(clearBtn)
         # hbox.addWidget(openImgBtn)
         hbox.addWidget(okBtn)
-        hbox.addWidget(cancelBtn)
-
+        
         vbox.addLayout(hbox)
         self.setLayout(vbox)
 
@@ -224,7 +221,7 @@ class ImageToBoardDialog(QDialog):
         # self.blackMoveBtn.clicked.connect(self.onBlackMoveBtnClicked)
 
         okBtn.clicked.connect(self.accept)
-        cancelBtn.clicked.connect(self.close)
+        #cancelBtn.clicked.connect(self.close)
 
     def onInitBoard(self):
         self.boardEdit.from_fen(cchess.FULL_INIT_FEN)
@@ -376,10 +373,17 @@ class PositionEditDialog(QDialog):
                 self.flipedBox.setChecked(is_fliped)
 
                 self.boardEdit.flip_board = is_fliped
-                     
+
                 if marked_pixmap:
                     self.imageView.setImage(marked_pixmap)
                     self.imageView.show()
+                    h = self.height()
+                    w_new = h * 2
+                    center_x = self.x() + self.width() // 2
+                    center_y = self.y() + self.height() // 2
+                    self.resize(w_new, h)
+                    self.move(center_x - w_new // 2, center_y - h // 2)
+                    QApplication.processEvents()
                     total = self.splitter.width()
                     self.splitter.setSizes([total // 2, total // 2])
             else:

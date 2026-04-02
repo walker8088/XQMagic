@@ -3,7 +3,7 @@ import sys
 import shutil
 from pathlib import Path
 
-from MagicUI.Version import release_version
+from XQMagicUI.Version import release_version
 
 cmd = ".\\.venv\\Scripts\\pyinstaller.exe XQMagic.py -i ImgRes\\app.ico --clean --noconsole"
 
