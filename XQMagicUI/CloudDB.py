@@ -9,7 +9,7 @@ from collections import OrderedDict
 import cchess
 from cchess import ChessBoard
 
-from PyQt5.QtCore import QObject, pyqtSignal, QUrl, QUrlQuery
+from PyQt5.QtCore import QTimer, QObject, pyqtSignal, QUrl, QUrlQuery
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager
 
 from . import Globl
@@ -100,8 +100,11 @@ class CloudDB(QObject):
         self.move_cache = {}
         self.query_worker = {}
         self.query_queue = []
+        
+        self.errorCount = 0
 
         self.net_mgr = QNetworkAccessManager()
+       
 
     def startQuery(self, position, score_limit=100):
         fen = position["fen"]
@@ -117,26 +120,18 @@ class CloudDB(QObject):
         if fen in self.query_worker:
             return
 
-        # 检查是否已在队列中
-        for q_fen, _q_pos, _q_limit in self.query_queue:
-            if q_fen == fen:
-                return
-
-        # 如果有正在进行的查询，则加入队列
-        if len(self.query_worker) > 0:
-            self.query_queue.append((fen, position, score_limit))
-            logging.info(
-                f"Cloud Query queued: {fen} (queue size: {len(self.query_queue)})"
-            )
-            return
-
         q = NetQuery(self, fen, self.url)
-        self.query_worker[fen] = q
         q.query_ret_signal.connect(self.onQueryFinished)
         q.query_err_signal.connect(self.onQueryError)
-        q.startQuery()
-
+        
+        self.query_worker[fen] = q
+        if len(self.query_worker)  == 1:
+            q.startQuery()
+        
     def onQueryFinished(self, fen, resp):
+        
+        self.errorCount = 0
+
         # 错误防护
         if fen not in self.query_worker:
             return
@@ -233,27 +228,25 @@ class CloudDB(QObject):
 
         self.reply = None
         self.query_result_signal.emit(ret)
-        self._processNextQuery()
-
+        QTimer.singleShot(500, self.onNextQuery)
+        
     def onQueryError(self, fen):
+        self.errorCount += 1
         # 错误防护
         if fen not in self.query_worker:
             return
 
         self.query_worker.pop(fen)
-        self._processNextQuery()
+        QTimer.singleShot(500, self.onNextQuery)
 
-    def _processNextQuery(self):
-        if len(self.query_queue) == 0:
+    def onNextQuery(self):
+        if len(self.query_worker) == 0:
             return
-        fen, position, score_limit = self.query_queue.pop(0)
-        logging.info(f"Cloud Query dequeued: {fen}")
-        q = NetQuery(self, fen, self.url)
-        self.query_worker[fen] = q
-        q.query_ret_signal.connect(self.onQueryFinished)
-        q.query_err_signal.connect(self.onQueryError)
+        key = list(self.query_worker.keys())[-1]
+        q = self.query_worker[key]
         q.startQuery()
 
+        
 
 # ------------------------------------------------------------------------------
 """

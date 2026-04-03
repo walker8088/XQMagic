@@ -13,7 +13,7 @@ from collections import OrderedDict
 from configparser import ConfigParser
 
 # from PyQt5 import
-from PyQt5.QtCore import Qt, pyqtSignal, QByteArray, QUrl
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QByteArray, QUrl
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QApplication,
@@ -45,7 +45,6 @@ from .LocalDB import OpenBookYfk, OpenBookPF, MasterBook, LocalBook
 
 from .Utils import (
     GameMode,
-    ReviewMode,
     TimerMessageBox,
     QGameManager,
     getTitle,
@@ -207,7 +206,7 @@ class MainWindow(QMainWindow):
 
         Globl.detector = ChessboardDetector(Path("Engine", "Detector"))
 
-        self.reviewMode = None
+        #self.reviewMode = None
         self.isQueryCloud = False
         self.lastOpenFolder = ""
         self.isNeedSave = False
@@ -232,13 +231,22 @@ class MainWindow(QMainWindow):
             sys.exit(-1)
 
         Globl.engineManager.start()
+        
+        #创建一个定时器，每秒触发一次
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.onIdleTask)
+        self.timer.start(1000) # 1000毫秒
+
+    def onIdleTask(self):
+        QApplication.processEvents() # 确保界面响应
+        #self.label.setText("空闲中...")
 
     # -----------------------------------------------------------------------
     # 初始化
     def clearAll(self):
         self.positionList = []
         self.currPosition = None
-        self.reviewMode = None
+        #self.reviewMode = None
 
         self.historyView.clear()
         self.engineView.clear()
@@ -836,7 +844,7 @@ class MainWindow(QMainWindow):
         if not query or not self.positionList:
             return
 
-        if self.isQueryCloud or (self.reviewMode == ReviewMode.ByCloud):
+        if self.isQueryCloud: #or (self.reviewMode == ReviewMode.ByCloud):
             self.updateFenCache(query)
 
         fen = query["fen"]
@@ -867,8 +875,8 @@ class MainWindow(QMainWindow):
         self.boardActions = x
         self.actionsView.updateActions(self.boardActions)
 
-        if self.reviewMode == ReviewMode.ByCloud:
-            self.onReviewGameStep()
+        #if self.reviewMode == ReviewMode.ByCloud:
+        #    self.onReviewGameStep()
 
     def showBestHint(self, fenInfo):
         best = []
@@ -896,9 +904,9 @@ class MainWindow(QMainWindow):
 
         self.updateFenCache(fenInfo, isEngine=True)
 
-        if self.reviewMode == ReviewMode.ByEngine:
-            self.onReviewGameStep()
-            return
+        #if self.reviewMode == ReviewMode.ByEngine:
+        #    self.onReviewGameStep()
+        #    return
 
         if self.moveEvent.is_set():
             return
@@ -978,7 +986,7 @@ class MainWindow(QMainWindow):
             return
 
         needRun = sum(self.engineRunColor) > 0
-        if needRun and (not self.isRunEngine) and (not self.reviewMode):
+        if needRun and (not self.isRunEngine): # and (not self.reviewMode):
             self.runEngine(self.currPosition)
 
     def runEngine(self, position):
@@ -1085,8 +1093,8 @@ class MainWindow(QMainWindow):
         self.updateEcco()
 
     def onSelectHistoryPosition(self, move_index):
-        if self.reviewMode:
-            return
+        #if self.reviewMode:
+        #    return
 
         if (move_index < 0) or (move_index >= len(self.positionList)):
             return
@@ -1109,6 +1117,7 @@ class MainWindow(QMainWindow):
 
     # -------------------------------------------------------------------
     # Game Review
+    '''
     def onReviewByCloud(self):
         if not Globl.gameManager.reviewMode:
             self.reviewMode = ReviewMode.ByCloud
@@ -1173,7 +1182,7 @@ class MainWindow(QMainWindow):
         self.reviewMode = None
         self.actionsView.queryCloudBox.setEnabled(True)
         # self.engineModeBtn.setEnabled(True)
-
+    '''
     def setQueryCloud(self, yes):
         if yes == self.isQueryCloud:  # 模式未变
             return

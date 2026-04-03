@@ -48,7 +48,6 @@ from cchess import ChessBoard
 from .Utils import (
     Stage,
     GameMode,
-    ReviewMode,
     getTitle,
     TimerMessageBox,
     getFreeMem,
@@ -784,7 +783,7 @@ class EngineWidget(QDockWidget):
         self.engineManager = engineMgr
 
         Globl.gameManager.game_mode_changed_signal.connect(self.onGameModeChanged)
-        Globl.gameManager.review_mode_changed_signal.connect(self.onReviewModeChanged)
+        #Globl.gameManager.review_mode_changed_signal.connect(self.onReviewModeChanged)
 
         self.goMode = "deep"
         self.gameMode = None
@@ -989,6 +988,7 @@ class EngineWidget(QDockWidget):
         self.setMultiPV()
         self.applyAllParams()
 
+    '''    
     def onReviewBegin(self, mode):
         self.onReviewModeChanged(mode, Stage.Begin)
 
@@ -1014,6 +1014,7 @@ class EngineWidget(QDockWidget):
             self.analysisBox.setEnabled(True)
 
             self.analysisBox.setChecked(self.savedCheckState)
+    '''
 
     def onConfigEngine(self):
         dlg = EngineConfigDialog(self.parent)
