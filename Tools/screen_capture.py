@@ -1,17 +1,17 @@
 import sys
 
+import cv2
+import numpy as np
+from PIL import ImageGrab
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 
-import numpy as np
-import cv2
-from PIL import ImageGrab
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
-            MainWindow.setObjectName(u"MainWindow")
+            MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1000, 1000)
         sizePolicy = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
@@ -22,23 +22,25 @@ class Ui_MainWindow(object):
         MainWindow.setMaximumSize(QSize(16777215, 16777215))
         MainWindow.setTabShape(QTabWidget.Rounded)
         self.centralwidget = QWidget(MainWindow)
-        self.centralwidget.setObjectName(u"centralwidget")
+        self.centralwidget.setObjectName("centralwidget")
         sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
+        sizePolicy1.setHeightForWidth(
+            self.centralwidget.sizePolicy().hasHeightForWidth()
+        )
         self.centralwidget.setSizePolicy(sizePolicy1)
         self.centralwidget.setMinimumSize(QSize(1000, 1000))
         self.gridLayout = QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName(u"gridLayout")
+        self.gridLayout.setObjectName("gridLayout")
         self.pushButton_area = QPushButton(self.centralwidget)
-        self.pushButton_area.setObjectName(u"pushButton_area")
+        self.pushButton_area.setObjectName("pushButton_area")
         self.pushButton_area.setMinimumSize(QSize(800, 0))
 
         self.gridLayout.addWidget(self.pushButton_area, 0, 0, 1, 1)
 
         self.label = QLabel(self.centralwidget)
-        self.label.setObjectName(u"label")
+        self.label.setObjectName("label")
         sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
@@ -50,7 +52,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.label, 2, 0, 2, 1)
 
         self.pushButton_full = QPushButton(self.centralwidget)
-        self.pushButton_full.setObjectName(u"pushButton_full")
+        self.pushButton_full.setObjectName("pushButton_full")
         self.pushButton_full.setMinimumSize(QSize(800, 0))
 
         self.gridLayout.addWidget(self.pushButton_full, 1, 0, 1, 1)
@@ -62,12 +64,22 @@ class Ui_MainWindow(object):
         QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Snipping Tool", None))
-        MainWindow.setAccessibleName(QCoreApplication.translate("MainWindow", u"Snipping Tool", None))
-        self.pushButton_area.setText(QCoreApplication.translate("MainWindow", u"Select Area", None))
-        self.pushButton_full.setText(QCoreApplication.translate("MainWindow", u"Fullscreen", None))
+        MainWindow.setWindowTitle(
+            QCoreApplication.translate("MainWindow", "Snipping Tool", None)
+        )
+        MainWindow.setAccessibleName(
+            QCoreApplication.translate("MainWindow", "Snipping Tool", None)
+        )
+        self.pushButton_area.setText(
+            QCoreApplication.translate("MainWindow", "Select Area", None)
+        )
+        self.pushButton_full.setText(
+            QCoreApplication.translate("MainWindow", "Fullscreen", None)
+        )
+
 
 # Refer to https://github.com/harupy/snipping-tool
+
 
 class SnippingWidget(QWidget):
     is_snipping = False
@@ -84,13 +96,15 @@ class SnippingWidget(QWidget):
         self.onSnippingCompleted = None
 
     def fullscreen(self):
-        img = ImageGrab.grab(bbox=(0, 0, self.screen.size().width(), self.screen.size().height()))
+        img = ImageGrab.grab(
+            bbox=(0, 0, self.screen.size().width(), self.screen.size().height())
+        )
 
         try:
             img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-        except:
+        except Exception:
             img = None
-            
+
         if self.onSnippingCompleted is not None:
             self.onSnippingCompleted(img)
 
@@ -114,7 +128,7 @@ class SnippingWidget(QWidget):
 
         self.setWindowOpacity(opacity)
         qp = QPainter(self)
-        qp.setPen(QPen(QColor('black'), lw))
+        qp.setPen(QPen(QColor("black"), lw))
         qp.setBrush(QColor(*brush_color))
         rect = QRectF(self.begin, self.end)
         qp.drawRect(rect)
@@ -142,13 +156,14 @@ class SnippingWidget(QWidget):
 
         try:
             img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-        except:
+        except Exception:
             img = None
-            
+
         if self.onSnippingCompleted is not None:
             self.onSnippingCompleted(img)
 
         self.close()
+
 
 class MainWindow(QMainWindow):
     useQThread = True
@@ -169,20 +184,26 @@ class MainWindow(QMainWindow):
     def onSnippingCompleted(self, frame):
         self.setWindowState(Qt.WindowActive)
         if frame is None:
-            return 
+            return
 
-        image = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
+        image = QImage(
+            frame,
+            frame.shape[1],
+            frame.shape[0],
+            frame.strides[0],
+            QImage.Format_RGB888,
+        )
         pixmap = QPixmap.fromImage(image)
         self._pixmap = self.resizeImage(pixmap)
         self.ui.label.setPixmap(self._pixmap)
 
     def snipArea(self):
         self.setWindowState(Qt.WindowMinimized)
-        self.snippingWidget.start()    
+        self.snippingWidget.start()
 
     def snipFull(self):
         self.setWindowState(Qt.WindowMinimized)
-        self.snippingWidget.fullscreen()    
+        self.snippingWidget.fullscreen()
 
     def dragEnterEvent(self, event):
         event.acceptProposedAction()
@@ -221,15 +242,16 @@ class MainWindow(QMainWindow):
         msgBox.exec_()
 
     def closeEvent(self, event):
-    
         msg = "Close the app?"
-        reply = QMessageBox.question(self, 'Message', 
-                        msg, QMessageBox.Yes, QMessageBox.No)
+        reply = QMessageBox.question(
+            self, "Message", msg, QMessageBox.Yes, QMessageBox.No
+        )
 
         if reply == QMessageBox.Yes:
             event.accept()
         else:
             event.ignore()
+
 
 def main():
     app = QApplication(sys.argv)
@@ -237,5 +259,6 @@ def main():
     window.show()
     sys.exit(app.exec())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

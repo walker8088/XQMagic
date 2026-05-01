@@ -1,25 +1,24 @@
 # -*- coding: utf-8 -*-
-import logging
+# 默认 Widget 尺寸
+DEFAULT_DOCK_WIDTH = 150
+DEFAULT_DOCK_HEIGHT = 500
+
 import os
-import traceback
 from collections import OrderedDict
 from pathlib import Path
 
 import cchess
 from cchess import ChessBoard
-from PyQt5.QtCore import QModelIndex, QSize, Qt, QTimer, pyqtSignal
-from PyQt5.QtGui import QBrush, QColor, QIcon, QStandardItem, QStandardItemModel
+from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QIcon, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
-    QButtonGroup,
     QCheckBox,
     QComboBox,
     QDialog,
-    QDialogButtonBox,
     QDockWidget,
     QFileDialog,
-    QFormLayout,
     QHBoxLayout,
     QHeaderView,
     QInputDialog,
@@ -43,12 +42,14 @@ from PyQt5.QtWidgets import (
 )
 
 from . import Globl
-from .BoardWidgets import ChessBoardEditWidget, ChessBoardWidget
+from .BoardWidgets import ChessBoardWidget
 from .Dialogs import EngineConfigDialog
-from .SnippingWidget import SnippingWidget
 from .Utils import (
+    CLOUD_QUERY_DELAY,
+    ICON_DIFF_GOOD,
+    ICON_DIFF_SAD,
+    ICON_DIFF_STAR,
     GameMode,
-    Stage,
     TimerMessageBox,
     getFreeMem,
     getStepsTextFromFenMoves,
@@ -384,11 +385,11 @@ class HistoryWidget(QWidget):
 
             if "diff" in fenInfo:
                 diff = fenInfo["diff"]
-                if diff > -30:
+                if diff > ICON_DIFF_STAR:
                     viewItems[2].setIcon(QIcon(":ImgRes/star.png"))
-                elif diff > -70:
+                elif diff > ICON_DIFF_GOOD:
                     viewItems[2].setIcon(QIcon(":ImgRes/good.png"))
-                elif diff > -100:
+                elif diff > ICON_DIFF_SAD:
                     viewItems[2].setIcon(QIcon(":ImgRes/sad.png"))
                 else:
                     viewItems[2].setIcon(QIcon(":ImgRes/bad.png"))
@@ -779,7 +780,6 @@ class EngineWidget(QDockWidget):
         self.engineManager = engineMgr
 
         Globl.gameManager.game_mode_changed_signal.connect(self.onGameModeChanged)
-        # Globl.gameManager.review_mode_changed_signal.connect(self.onReviewModeChanged)
 
         self.goMode = "deep"
         self.gameMode = None
@@ -983,34 +983,6 @@ class EngineWidget(QDockWidget):
 
         self.setMultiPV()
         self.applyAllParams()
-
-    """
-    def onReviewBegin(self, mode):
-        self.onReviewModeChanged(mode, Stage.Begin)
-
-    def onReviewEnd(self, mode):
-        self.onReviewModeChanged(mode, Stage.End)
-
-    def onReviewModeChanged(self, mode, stage):
-        if stage == Stage.Begin:
-            self.savedCheckState = self.analysisBox.isChecked()
-            self.redBox.setEnabled(False)
-            self.blackBox.setEnabled(False)
-            self.analysisBox.setEnabled(False)
-
-            if mode == ReviewMode.ByEngine:
-                self.analysisBox.setChecked(True)
-
-            elif mode == ReviewMode.ByCloud:
-                self.analysisBox.setChecked(False)
-
-        elif stage == Stage.End:
-            self.redBox.setEnabled(True)
-            self.blackBox.setEnabled(True)
-            self.analysisBox.setEnabled(True)
-
-            self.analysisBox.setChecked(self.savedCheckState)
-    """
 
     def onConfigEngine(self):
         dlg = EngineConfigDialog(self.parent)
@@ -1243,18 +1215,14 @@ class MoveDbWidget(QDockWidget):
 
         menu = QMenu(self)
         importFollowAction = menu.addAction("导入分支(单选)")
-        #importAllFollowAction = menu.addAction("导入分支(全部)")
         menu.addSeparator()
         delBranchAction = menu.addAction("!删除该分支!")
-        #cleanAction = menu.addAction("***清理非法招数***")
 
         action = menu.exec_(self.mapToGlobal(event.pos()))
         if action == importFollowAction:
             self.onImportFollow()
         elif action == delBranchAction:
             self.onDeleteBranch()
-        #elif action == cleanAction:
-        #    self.onCleanMoves()
 
     def onImportFollow(self):
         self.importFollowMode = True
@@ -1402,7 +1370,7 @@ class MoveDbWidget(QDockWidget):
 
         if self.importFollowMode:
             if self.position_len == 1:
-                QTimer.singleShot(500, self.onImportFollowContinue)
+                QTimer.singleShot(CLOUD_QUERY_DELAY, self.onImportFollowContinue)
             else:
                 self.importFollowMode = False
 
@@ -1414,7 +1382,7 @@ class MoveDbWidget(QDockWidget):
         self.selectMoveSignal.emit(act)
 
     def sizeHint(self):
-        return QSize(150, 500)
+        return QSize(DEFAULT_DOCK_WIDTH, DEFAULT_DOCK_HEIGHT)
 """
 
 
@@ -1491,7 +1459,7 @@ class BoardActionsWidget(QDockWidget):
         self.selectMoveSignal.emit(act)
 
     def sizeHint(self):
-        return QSize(110, 500)
+        return QSize(110, DEFAULT_DOCK_HEIGHT)
 
 
 # ------------------------------------------------------------------#
@@ -1667,7 +1635,7 @@ class EndBookWidget(QDockWidget):
             self.updateCurrentBook()
 
     def sizeHint(self):
-        return QSize(150, 500)
+        return QSize(DEFAULT_DOCK_WIDTH, DEFAULT_DOCK_HEIGHT)
 
     def loadSettings(self, settings):
         self.updateBooks()
@@ -1786,7 +1754,7 @@ class BookmarkWidget(QDockWidget):
         self.curr_item = self.bookmarkView.itemFromIndex(index)
 
     def sizeHint(self):
-        return QSize(150, 500)
+        return QSize(DEFAULT_DOCK_WIDTH, DEFAULT_DOCK_HEIGHT)
 
 
 # ------------------------------------------------------------------#
@@ -1840,7 +1808,7 @@ class GameLibWidget(QDockWidget):
         self.curr_item = self.gamesView.itemFromIndex(index)
 
     def sizeHint(self):
-        return QSize(150, 500)
+        return QSize(DEFAULT_DOCK_WIDTH, DEFAULT_DOCK_HEIGHT)
 
 
 # ------------------------------------------------------------------#

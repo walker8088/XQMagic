@@ -1,56 +1,52 @@
-import sys
-import os
 import logging
+import os
+import sys
 import traceback
 
+import cchess
 import cv2
 import numpy as np
-
-from PyQt5.QtCore import Qt, QByteArray, QSize
+from cchess import ChessBoard
+from PyQt5.QtCore import QByteArray, QSize, Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (
-    QStyle,
+    QAbstractItemView,
     QApplication,
-    QMenu,
-    QHBoxLayout,
-    QVBoxLayout,
-    QFormLayout,
-    QDialog,
-    QFileDialog,
-    QLabel,
-    QSpinBox,
-    QCheckBox,
-    QPushButton,
-    QRadioButton,
-    QLineEdit,
-    QTextEdit,
-    QWidget,
-    QDockWidget,
-    QDialogButtonBox,
     QButtonGroup,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QDockWidget,
+    QFileDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QInputDialog,
+    QLabel,
+    QLineEdit,
     QListWidget,
     QListWidgetItem,
-    QInputDialog,
-    QAbstractItemView,
-    QComboBox,
-    QTreeWidgetItem,
-    QTreeWidget,
-    QSplitter,
+    QMenu,
     QMessageBox,
+    QPushButton,
+    QRadioButton,
     QSlider,
-    QGroupBox,
+    QSpinBox,
+    QSplitter,
+    QStyle,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
 )
 
-
-import cchess
-from cchess import ChessBoard
-
+from . import Globl
 from .BoardWidgets import ChessBoardEditWidget
 
 # from .SnippingWidget import SnippingWidget
 from .Utils import TimerMessageBox, getTitle
-
-from . import Globl
 
 
 # --------------------------------------------------------------#
@@ -198,7 +194,7 @@ class ImageToBoardDialog(QDialog):
         # openImgBtn.clicked.connect(self.onOpenImage)
 
         okBtn = QPushButton("确定", self)
-        #cancelBtn = QPushButton("取消", self)
+        # cancelBtn = QPushButton("取消", self)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.imageView)
@@ -212,7 +208,7 @@ class ImageToBoardDialog(QDialog):
         hbox.addWidget(clearBtn)
         # hbox.addWidget(openImgBtn)
         hbox.addWidget(okBtn)
-        
+
         vbox.addLayout(hbox)
         self.setLayout(vbox)
 
@@ -221,7 +217,7 @@ class ImageToBoardDialog(QDialog):
         # self.blackMoveBtn.clicked.connect(self.onBlackMoveBtnClicked)
 
         okBtn.clicked.connect(self.accept)
-        #cancelBtn.clicked.connect(self.close)
+        # cancelBtn.clicked.connect(self.close)
 
     def onInitBoard(self):
         self.boardEdit.from_fen(cchess.FULL_INIT_FEN)
@@ -286,7 +282,7 @@ class PositionEditDialog(QDialog):
         openImgBtn.clicked.connect(self.onOpenImage)
 
         okBtn = QPushButton("确定", self)
-        #cancelBtn = QPushButton("取消", self)
+        # cancelBtn = QPushButton("取消", self)
 
         self.imageView = ImageView(self)
         self.imageView.setMinimumSize(200, 200)
@@ -313,7 +309,7 @@ class PositionEditDialog(QDialog):
         hbox.addWidget(initBtn)
         hbox.addWidget(clearBtn)
         hbox.addWidget(okBtn)
-        #hbox.addWidget(cancelBtn)
+        # hbox.addWidget(cancelBtn)
 
         vbox.addLayout(hbox)
         self.setLayout(vbox)
@@ -324,7 +320,7 @@ class PositionEditDialog(QDialog):
         self.flipedBox.stateChanged.connect(self.onFlipedChanged)
 
         okBtn.clicked.connect(self.accept)
-        #cancelBtn.clicked.connect(self.close)
+        # cancelBtn.clicked.connect(self.close)
 
         self.sourceImage = None
 
@@ -416,20 +412,6 @@ class PositionEditDialog(QDialog):
         else:
             return None
 
-    def edit_img(self, img):
-        self.imageView.setImage(img)
-        if self.exec() == QDialog.Accepted:
-            return "ok"
-        else:
-            return None
-
-    def edit_img(self, img):
-        self.imageView.setImage(img)
-        if self.exec() == QDialog.Accepted:
-            return "ok"
-        else:
-            return None
-
 
 # --------------------------------------------------------------#
 
@@ -457,17 +439,6 @@ class EngineConfigDialog(QDialog):
         # vbox = QVBoxLayout()
         # hbox = QHBoxLayout()
 
-        """
-        self.ruleGroup = QButtonGroup(self)
-        
-        self.asiaBox = QCheckBox('亚洲规则')
-        self.chineseBox = QCheckBox('中国规则')
-        self.skyBox = QCheckBox('天天象棋规则')
-
-        self.ruleGroup.addButton(self.asiaBox)
-        self.ruleGroup.addButton(self.chineseBox)
-        self.ruleGroup.addButton(self.skyBox)
-        """
         self.rules = ["AsianRule", "ChineseRule", "SkyRule"]
         self.ruleCombo = QComboBox(self)
 

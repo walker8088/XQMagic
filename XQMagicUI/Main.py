@@ -14,46 +14,38 @@ from pathlib import Path
 
 import cchess
 from cchess import ChessBoard, EngineErrorException, Game
-
-# from PyQt5 import
 from PyQt5.QtCore import QByteArray, Qt, QTimer, QUrl, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtMultimedia import QAudioOutput, QMediaContent, QMediaPlayer
+from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtWidgets import (
     QAction,
     QActionGroup,
     QApplication,
-    QButtonGroup,
-    QCheckBox,
-    QComboBox,
     QFileDialog,
     QMainWindow,
     QMessageBox,
-    QRadioButton,
     QSizePolicy,
     QStyle,
     QWidget,
 )
 
 from . import Globl
-from .BoardWidgets import DEFAULT_SKIN, ChessBoardWidget
-from .CloudDB import CloudDB  # , MyScoreDB
+from .BoardWidgets import DEFAULT_SKIN
+from .CloudDB import CloudDB
 from .Detector import ChessboardDetector
 from .Dialogs import (
     EngineConfigDialog,
-    ImageToBoardDialog,
     PositionEditDialog,
-    PositionHistDialog,
 )
-
-# from .SnippingWidget import SnippingWidget
 from .Ecco import getBookEcco
 from .Engine import EngineManager
 from .LocalDB import LocalBook, MasterBook, OpenBookPF, OpenBookYfk
 from .Online import OnlineDialog, OnlineManager
-from .Resource import qt_resource_data
 from .Storage import EndBookStore
 from .Utils import (
+    ALTER_BEST_CLOUD,
+    ALTER_BEST_ENGINE,
+    BEST_MOVE_TOLERANCE,
     GameMode,
     QGameManager,
     TimerMessageBox,
@@ -79,6 +71,13 @@ font = QFont("Microsoft YaHei", 16)  # 字体名、字号（可选加粗：font.
 font.setBold(True)
 app.setFont(font, "QPushButton")  # 或指定类：app.setFont(font, "QPushButton")
 """
+
+
+# 路径常量
+GAME_DIR = Path("Game")
+ENGINE_DIR = Path("Engine")
+SKINS_DIR = Path("Skins")
+SOUND_DIR = Path("Sound")
 
 
 # -----------------------------------------------------#
@@ -122,22 +121,21 @@ class MainWindow(QMainWindow):
 
         self.readConfig()
 
-        gamePath = Path("Game")
+        gamePath = GAME_DIR
         gamePath.mkdir(exist_ok=True)
 
         self.openBook = MasterBook()
-        self.openBook.open(Path("Game", "masterbook.db"))
+        self.openBook.open(GAME_DIR / "masterbook.db")
 
-        Globl.endbookStore = EndBookStore(Path(gamePath, "endbooks.json"))
-        # Globl.localbookStore = LocalBookStore(Path(gamePath, 'localbooks.json'))
+        Globl.endbookStore = EndBookStore(GAME_DIR / "endbooks.json")
 
         Globl.localBook = LocalBook()
-        Globl.localBook.open(Path(gamePath, "localbook.db"))
+        Globl.localBook.open(GAME_DIR / "localbook.db")
 
         Globl.engineManager = EngineManager(self, id=1)
 
         self.onlineManager = OnlineManager(self)
-        self.onlineManager.load_schema_file(Path(gamePath, "online.json"))
+        self.onlineManager.load_schema_file(GAME_DIR / "online.json")
 
         self.board = ChessBoard()
         self.changePositionSignal.connect(self.onChangePosition)
@@ -167,7 +165,7 @@ class MainWindow(QMainWindow):
         # self.moveDbView.selectMoveSignal.connect(self.onTryBookMove)
         self.actionsView = BoardActionsWidget(self)
         self.actionsView.selectMoveSignal.connect(self.onTryBookMove)
-        self.actionsView.queryCloudBox.toggled.connect(self.onCloudModeChanged)
+        self.actionsView.queryCloudBox.toggled.connect(self.都onCloudModeChanged)
 
         self.bookmarkView = BookmarkWidget(self)
         self.bookmarkView.setVisible(False)
@@ -199,9 +197,8 @@ class MainWindow(QMainWindow):
         self.createMenus()
         self.createToolBars()
 
-        Globl.detector = ChessboardDetector(Path("Engine", "Detector"))
+        Globl.detector = ChessboardDetector(ENGINE_DIR / "Detector")
 
-        # self.reviewMode = None
         self.isQueryCloud = False
         self.lastOpenFolder = ""
         self.isNeedSave = False
@@ -241,7 +238,6 @@ class MainWindow(QMainWindow):
     def clearAll(self):
         self.positionList = []
         self.currPosition = None
-        # self.reviewMode = None
 
         self.historyView.clear()
         self.engineView.clear()
@@ -324,9 +320,9 @@ class MainWindow(QMainWindow):
         skins = {}
         skins["默认"] = {"Folder": None}
 
-        skinsFolder = Path("Skins")
+        skinsFolder = SKINS_DIR
         for nm in os.listdir(skinsFolder):
-            name = Path(skinsFolder, nm)
+            name = SKINS_DIR / nm
             if name.is_dir():
                 skins[nm] = {"Folder": name}
         return skins
@@ -366,9 +362,7 @@ class MainWindow(QMainWindow):
         if self.soundVolume > 0:
             # self.player.setSource(QUrl.fromLocalFile(Path('Sound', f'{s_type}.wav')))
             self.player.setMedia(
-                QMediaContent(
-                    QUrl.fromLocalFile(os.path.join("Sound", f"{s_type}.wav"))
-                )
+                QMediaContent(QUrl.fromLocalFile(str(SOUND_DIR / f"{s_type}.wav")))
             )
             self.player.setVolume(self.soundVolume)
             self.player.setPosition(0)
@@ -722,7 +716,7 @@ class MainWindow(QMainWindow):
 
             actions = fenInfo["actions"]
             for act in actions.values():
-                if act["diff"] >= -5:
+                if act["diff"] >= BEST_MOVE_TOLERANCE:
                     best_next.append(act["iccs"])
             if best_next:
                 Globl.fenCache[fen]["best_next"] = best_next
@@ -734,7 +728,7 @@ class MainWindow(QMainWindow):
                 new_fen = act["new_fen"]
 
                 info = {"score": act["score"], "diff": act["diff"]}
-                if (act["diff"] < -50) and best_next:
+                if (act["diff"] < ALTER_BEST_CLOUD) and best_next:
                     info["alter_best"] = best_next
 
                 # TODO？？？
@@ -759,7 +753,7 @@ class MainWindow(QMainWindow):
                         if move_color == cchess.BLACK:
                             diff = -diff
                         fenInfo["diff"] = diff
-                        if (diff < -40) and ("best_next" in prevInfo):
+                        if (diff < ALTER_BEST_ENGINE) and ("best_next" in prevInfo):
                             fenInfo["alter_best"] = prevInfo["best_next"]
 
         for pos in self.positionList:
@@ -839,7 +833,7 @@ class MainWindow(QMainWindow):
         if not query or not self.positionList:
             return
 
-        if self.isQueryCloud:  # or (self.reviewMode == ReviewMode.ByCloud):
+        if self.isQueryCloud:
             self.updateFenCache(query)
 
         fen = query["fen"]
@@ -870,9 +864,6 @@ class MainWindow(QMainWindow):
         self.boardActions = x
         self.actionsView.updateActions(self.boardActions)
 
-        # if self.reviewMode == ReviewMode.ByCloud:
-        #    self.onReviewGameStep()
-
     def showBestHint(self, fenInfo):
         best = []
 
@@ -899,10 +890,6 @@ class MainWindow(QMainWindow):
 
         self.updateFenCache(fenInfo, isEngine=True)
 
-        # if self.reviewMode == ReviewMode.ByEngine:
-        #    self.onReviewGameStep()
-        #    return
-
         if self.moveEvent.is_set():
             return
 
@@ -916,9 +903,6 @@ class MainWindow(QMainWindow):
             self.showBestHint(fenInfo)
 
     def onEngineMoveInfo(self, engine_id, fenInfo):
-        # if not self.isQueryCloud or (self.reviewMode == ReviewMode.ByEngine):
-        #    self.updateFenCache(fenInfo)
-
         if not self.currPosition:
             return
 
@@ -981,7 +965,7 @@ class MainWindow(QMainWindow):
             return
 
         needRun = sum(self.engineRunColor) > 0
-        if needRun and (not self.isRunEngine):  # and (not self.reviewMode):
+        if needRun and (not self.isRunEngine):
             self.runEngine(self.currPosition)
 
     def runEngine(self, position):
@@ -1088,9 +1072,6 @@ class MainWindow(QMainWindow):
         self.updateEcco()
 
     def onSelectHistoryPosition(self, move_index):
-        # if self.reviewMode:
-        #    return
-
         if (move_index < 0) or (move_index >= len(self.positionList)):
             return
 
@@ -1105,79 +1086,10 @@ class MainWindow(QMainWindow):
         if (not self.currPosition) or ("move" not in self.currPosition):
             return
 
-        fen_engine = self.currPosition["move"].to_engine_fen()
+        fen_engine = self.currPosition["fen_engine"]
         clipboard = QApplication.clipboard()
         clipboard.clear()
         clipboard.setText(fen_engine)
-
-    # -------------------------------------------------------------------
-    # Game Review
-    """
-    def onReviewByCloud(self):
-        if not Globl.gameManager.reviewMode:
-            self.reviewMode = ReviewMode.ByCloud
-            self.actionsView.queryCloudBox.setEnabled(False)
-            # self.engineModeBtn.setEnabled(False)
-
-            self.clearAllScore()
-            self.historyView.showScoreBox.setChecked(True)
-            self.reviewList = self.positionList[:]
-            self.engineView.onReviewBegin(self.reviewMode)
-            # self.reviewByCloudBtn.setText('停止复盘')
-            logging.info("云库复盘开始")
-
-            self.onReviewGameStep()
-        else:
-            self.onReviewGameEnd(isCanceled=True)
-
-    def onReviewByEngine(self):
-        if not self.reviewMode:
-            self.reviewMode = ReviewMode.ByEngine
-
-            self.actionsView.queryCloudBox.setEnabled(False)
-            # self.engineModeBtn.setEnabled(False)
-
-            self.clearAllScore()
-            self.historyView.showScoreBox.setChecked(True)
-            self.reviewList = self.positionList[:]
-
-            self.engineView.onReviewBegin(self.reviewMode)
-            # self.reviewByEngineBtn.setText('停止复盘')
-            logging.info("引擎复盘开始")
-            self.onReviewGameStep()
-        else:
-            self.onReviewGameEnd(isCanceled=True)
-
-    def onReviewGameStep(self):
-        if len(self.reviewList) > 0:
-            position = self.reviewList.pop(0)
-
-            # print("OnReview", position['index'])
-            self.currPosition = position
-            self.changePositionSignal.emit(True)
-            QApplication.processEvents()
-
-            if self.reviewMode == ReviewMode.ByCloud:
-                self.cloudQuery.startQuery(position)
-            elif self.reviewMode == ReviewMode.ByEngine:
-                self.runEngine(position)
-        else:
-            self.onReviewGameEnd()
-
-    def onReviewGameEnd(self, isCanceled=False):
-        # self.reviewByCloudBtn.setText('云库复盘')
-        # self.reviewByEngineBtn.setText('引擎复盘')
-        self.engineView.onReviewEnd(self.reviewMode)
-
-        if not isCanceled:
-            msgbox = TimerMessageBox("  复盘分析完成。  ", timeout=1)
-            msgbox.exec()
-
-        logging.info("复盘结束")
-        self.reviewMode = None
-        self.actionsView.queryCloudBox.setEnabled(True)
-        # self.engineModeBtn.setEnabled(True)
-    """
 
     def setQueryCloud(self, yes):
         if yes == self.isQueryCloud:  # 模式未变

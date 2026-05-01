@@ -12,6 +12,7 @@ from PyQt5.QtCore import QObject, QTimer, QUrl, QUrlQuery, pyqtSignal
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
 from . import Globl
+from .Utils import CLOUD_QUERY_DELAY, CLOUD_SCORE_LIMIT, calc_move_diff
 
 
 # ------------------------------------------------------------------------------
@@ -133,7 +134,7 @@ class CloudDB(QObject):
         if fen not in self.query_worker:
             return
 
-        self.score_limit = 90
+        self.score_limit = CLOUD_SCORE_LIMIT
         ret = {}
 
         self.query_worker.pop(fen)
@@ -191,9 +192,8 @@ class CloudDB(QObject):
                 act["text"] = move_it.to_text()
                 act["new_fen"] = move_it.board_done.to_fen()
             act["score"] = int(act["score"])
-            act["diff"] = act["score"] - score_best
-            if move_color == cchess.BLACK:
-                act["score"] = -act["score"]
+            act["diff"] = calc_move_diff(act["score"], score_best, move_color)
+            act["score"] = -act["score"] if move_color == cchess.BLACK else act["score"]
 
         # moves = filter(lambda x : is_odd, moves)
 
@@ -206,9 +206,7 @@ class CloudDB(QObject):
         moves_clean = OrderedDict()
         score_best = moves[0]["score"]
         for it in moves:
-            it["diff"] = it["score"] - score_best
-            if move_color == cchess.BLACK:
-                it["diff"] = -it["diff"]
+            it["diff"] = calc_move_diff(it["score"], score_best, move_color)
             if self.score_limit > 0 and abs(it["diff"]) > self.score_limit:
                 continue
 
@@ -225,7 +223,7 @@ class CloudDB(QObject):
 
         self.reply = None
         self.query_result_signal.emit(ret)
-        QTimer.singleShot(500, self.onNextQuery)
+        QTimer.singleShot(CLOUD_QUERY_DELAY, self.onNextQuery)
 
     def onQueryError(self, fen):
         self.errorCount += 1
@@ -234,7 +232,7 @@ class CloudDB(QObject):
             return
 
         self.query_worker.pop(fen)
-        QTimer.singleShot(500, self.onNextQuery)
+        QTimer.singleShot(CLOUD_QUERY_DELAY, self.onNextQuery)
 
     def onNextQuery(self):
         if len(self.query_worker) == 0:
