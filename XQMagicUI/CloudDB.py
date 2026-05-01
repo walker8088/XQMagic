@@ -1,16 +1,15 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 import json
-import time
 import logging
 import threading
-from pathlib import Path
+import time
 from collections import OrderedDict
+from pathlib import Path
 
 import cchess
 from cchess import ChessBoard
-
-from PyQt5.QtCore import QTimer, QObject, pyqtSignal, QUrl, QUrlQuery
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkAccessManager
+from PyQt5.QtCore import QObject, QTimer, QUrl, QUrlQuery, pyqtSignal
+from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
 from . import Globl
 
@@ -100,11 +99,10 @@ class CloudDB(QObject):
         self.move_cache = {}
         self.query_worker = {}
         self.query_queue = []
-        
+
         self.errorCount = 0
 
         self.net_mgr = QNetworkAccessManager()
-       
 
     def startQuery(self, position, score_limit=100):
         fen = position["fen"]
@@ -123,13 +121,12 @@ class CloudDB(QObject):
         q = NetQuery(self, fen, self.url)
         q.query_ret_signal.connect(self.onQueryFinished)
         q.query_err_signal.connect(self.onQueryError)
-        
+
         self.query_worker[fen] = q
-        if len(self.query_worker)  == 1:
+        if len(self.query_worker) == 1:
             q.startQuery()
-        
+
     def onQueryFinished(self, fen, resp):
-        
         self.errorCount = 0
 
         # 错误防护
@@ -192,11 +189,11 @@ class CloudDB(QObject):
             move_it = board.copy().move_iccs(act["iccs"])
             if move_it:
                 act["text"] = move_it.to_text()
+                act["new_fen"] = move_it.board_done.to_fen()
             act["score"] = int(act["score"])
             act["diff"] = act["score"] - score_best
             if move_color == cchess.BLACK:
                 act["score"] = -act["score"]
-            act["new_fen"] = move_it.board_done.to_fen()
 
         # moves = filter(lambda x : is_odd, moves)
 
@@ -229,7 +226,7 @@ class CloudDB(QObject):
         self.reply = None
         self.query_result_signal.emit(ret)
         QTimer.singleShot(500, self.onNextQuery)
-        
+
     def onQueryError(self, fen):
         self.errorCount += 1
         # 错误防护
@@ -246,72 +243,71 @@ class CloudDB(QObject):
         q = self.query_worker[key]
         q.startQuery()
 
-        
 
 # ------------------------------------------------------------------------------
 """
 class MyScoreDB(QObject):
     query_result_signal = pyqtSignal(dict)
-    
+
     def __init__(self, parent):
         super().__init__(parent)
 
         self.url = 'http://212.64.28.112:8887/query'
         #self.url = 'http://127.0.0.1:8887/query'
         self.net_mgr = QNetworkAccessManager()
-        
+
         self.reply = None
         self.fen = None
         self.board = ChessBoard()
         self.tryCount = 0
         self.score_limit = 0
         self.move_cache = {}
-        
+
     def startQuery(self, position):
 
         fen = position['fen']
-        
+
         logging.info(f"Score Query: {fen}")
 
         if fen in self.move_cache:
             ret = self.move_cache[fen]
             self.query_result_signal.emit(ret)
-            return 
-             
+            return
+
         if (self.reply is not None) and (not self.reply.isFinished()):
             self.reply.abort()
-        
+
         self.index = position['index']
         self.fen = fen
         self.board.from_fen(fen)
-        
+
         url = QUrl(self.url)
         query = QUrlQuery()
         query.addQueryItem('fen', fen)
         #query.addQueryItem("action", 'queryall')
         url.setQuery(query)
-        
+
         self.tryCount = 1
         self.req = QNetworkRequest(url)
         self.reply = self.net_mgr.get(self.req)
         self.reply.finished.connect(self.onQueryFinished)
         self.reply.errorOccurred.connect(self.onQueryError)
-        
+
     def onQueryFinished(self):
-        
+
         if not self.reply:
             return
-        
+
         ret = {}
 
         resp = self.reply.readAll().data().decode()
         if len(resp) == 0:
             return
-        
-        move_color = self.board.get_move_color()    
+
+        move_color = self.board.get_move_color()
         moves = json.loads(resp)
-        
-        if not moves: 
+
+        if not moves:
             return
 
         score_best = int(moves[0]['score'])
@@ -320,20 +316,20 @@ class MyScoreDB(QObject):
             move_it = self.board.copy().move_iccs(act['iccs'])
             if move_it:
                 act['text'] = move_it.to_text()
-            act['score'] = int(act['score']) 
+            act['score'] = int(act['score'])
             act['diff'] =  act['score'] - score_best
             if move_color == cchess.BLACK:
                 act['score'] = -act['score']
-            act['new_fen'] = move_it.board_done.to_fen()
-    
-        #moves = filter(lambda x : is_odd, moves)        
+            act['new_fen'] = board.to_fen()
+
+        #moves = filter(lambda x : is_odd, moves)
 
         #for it in moves:
         #   if self. score_limit > 0 and abs(it['diff']) >  self.score_limit:
         #           continue
-        
-        moves =  sorted(moves, key = lambda x:x['diff'], reverse = True) 
-        
+
+        moves =  sorted(moves, key = lambda x:x['diff'], reverse = True)
+
         moves_clean = OrderedDict()
         score_best = moves[0]['score']
         for it in moves:
@@ -342,21 +338,21 @@ class MyScoreDB(QObject):
                 it['diff'] = -it['diff']
             if self.score_limit > 0 and abs(it['diff']) >  self.score_limit:
                     continue
-                    
+
             moves_clean[it['iccs']] = it
-            
+
         ret['index'] = self.index
         ret['fen'] = self.fen
         ret['score'] = score_best
         ret['actions'] = moves_clean
-        
+
         self.reply = None
         self.query_result_signal.emit(ret)
-        
-        
+
+
     def onQueryError(self, error):
         self.reply = None
-        
+
         self.tryCount += 1
         if self.tryCount < 1:
             logging.warning(f'Query from ScoreDB Error, retry { self.tryCount}')
@@ -366,5 +362,5 @@ class MyScoreDB(QObject):
             self.reply.errorOccurred.connect(self.onQueryError)
         else:
             self.query_result_signal.emit({})
-        
+
 """

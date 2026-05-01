@@ -1,8 +1,8 @@
-from pathlib import Path
+﻿from pathlib import Path
 import pytest
 
 def test_localbook_crud(tmp_path):
-    from MagicUI.LocalDB import LocalBook
+    from XQMagicUI.LocalDB import LocalBook
     db = tmp_path / "local.db"
     lb = LocalBook()
     assert lb.open(db)

@@ -5,5 +5,24 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "cchess==1.25.5",
+    "chardet>=7.4.3",
     "onnxruntime==1.20.1",
+    "opencv-python>=4.13.0.92",
+    "peewee==3.17.0",
+    "pillow>=10.0.0",
+    "psutil>=7.2.2",
+    "pygetwindow>=0.0.9",
+    "pyinstaller>=6.19.0",
+    "pyqt5==5.15.11",
+    "pyqt5-qt5==5.15.2",
+    "pyyaml>=6.0.3",
+    "requests>=2.33.1",
+    "tinydb>=4.8.0",
+]
+
+[tool.uv]
+environments = [
+    "sys_platform == 'win32'",
+    "sys_platform == 'AMD64'",
 ]

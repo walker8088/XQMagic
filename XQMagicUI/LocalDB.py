@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 import time
 import logging
@@ -119,7 +119,7 @@ class MoveBookMixIn():
             m['iccs'] = iccs
             move_it = board.copy().move_iccs(iccs)
             m['text'] = move_it.to_text()
-            m['new_fen'] = move_it.board_done.to_fen()
+            m['new_fen'] = board.to_fen()
             
             if score is not None:
                 if score_best is  None:
@@ -206,7 +206,7 @@ class MoveBookMixIn():
             if new_iccs == iccs:
                 return True
 
-            保存数据
+            # 保存数据
             new_record = self.book_cls(board.zhash, step, new_score, new_iccs)
             new_record.save()
                     
@@ -267,7 +267,7 @@ class MasterBook():
             m['iccs'] = iccs
             move_it = board.copy().move_iccs(iccs)
             m['text'] = move_it.to_text()
-            m['new_fen'] = move_it.board_done.to_fen()
+            m['new_fen'] = board.to_fen()
             m['score'] = -score if cchess.BLACK == move_color else score
 
             actions[iccs] = m
@@ -279,7 +279,7 @@ class MasterBook():
                 m2['iccs'] = iccs_m
                 move_it = board.copy().move_iccs(iccs_m)
                 m2['text'] = move_it.to_text()
-                m2['new_fen'] = move_it.board_done.to_fen()
+                m2['new_fen'] = board.to_fen()
                 m2['score'] = m['score']
 
                 actions[iccs_m] = m2
@@ -410,7 +410,7 @@ class MasterBook():
                 new_score = score
             else:
                 new_score = record.score                    
-            #保存数据
+            ## 保存数据
             new_record = PosAction(fen, record.step, new_score, record.actions)
             new_record.save()
 
@@ -539,7 +539,7 @@ class LocalBook():
             move_it = board.copy().move_iccs(iccs)
             if move_it:
                 m['text'] = move_it.to_text()
-                m['new_fen'] = move_it.board_done.to_fen()
+                m['new_fen'] = board.to_fen()
             else:
                 m['text'] = 'move error'
             
@@ -731,7 +731,7 @@ class OpenBookYfk(OpenBookDB):
             move_it = bd.move_iccs(iccs)
             if move_it is not None:
                 m['text'] = move_it.to_text()
-                m['new_fen'] = move_it.board_done.to_fen()
+                m['new_fen'] = board.to_fen()
             else:
                 m['text'] = f'err:{iccs}'
                 logging.error(f"{bd.to_fen()} move {iccs} error")
@@ -811,7 +811,7 @@ class OpenBookPF(OpenBookDB):
             move_it = board.copy().move_iccs(iccs)
             if move_it is not None:
                 m['text'] = move_it.to_text()
-                m['new_fen'] = move_it.board_done.to_fen()
+                m['new_fen'] = board.to_fen()
             else:
                 m['text'] = f'err:{iccs}'
                 logging.error(f"{bd.to_fen()} move {iccs} error")

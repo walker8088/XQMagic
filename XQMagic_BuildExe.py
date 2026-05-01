@@ -3,6 +3,9 @@ import sys
 import shutil
 from pathlib import Path
 
+#os.chdir('../')
+sys.path.append("../")  
+
 from XQMagicUI.Version import release_version
 
 cmd = ".\\.venv\\Scripts\\pyinstaller.exe XQMagic.py -i ImgRes\\app.ico --clean --noconsole"

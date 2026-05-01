@@ -286,7 +286,7 @@ class PositionEditDialog(QDialog):
         openImgBtn.clicked.connect(self.onOpenImage)
 
         okBtn = QPushButton("确定", self)
-        cancelBtn = QPushButton("取消", self)
+        #cancelBtn = QPushButton("取消", self)
 
         self.imageView = ImageView(self)
         self.imageView.setMinimumSize(200, 200)
@@ -313,7 +313,7 @@ class PositionEditDialog(QDialog):
         hbox.addWidget(initBtn)
         hbox.addWidget(clearBtn)
         hbox.addWidget(okBtn)
-        hbox.addWidget(cancelBtn)
+        #hbox.addWidget(cancelBtn)
 
         vbox.addLayout(hbox)
         self.setLayout(vbox)
@@ -324,7 +324,7 @@ class PositionEditDialog(QDialog):
         self.flipedBox.stateChanged.connect(self.onFlipedChanged)
 
         okBtn.clicked.connect(self.accept)
-        cancelBtn.clicked.connect(self.close)
+        #cancelBtn.clicked.connect(self.close)
 
         self.sourceImage = None
 

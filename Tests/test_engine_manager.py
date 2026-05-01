@@ -1,4 +1,4 @@
-import pytest
+﻿import pytest
 from PyQt5.QtCore import QObject
 
 class FakeEngine(QObject):
@@ -25,7 +25,7 @@ class FakeEngine(QObject):
 
 @pytest.mark.qt
 def test_engine_manager_signals(qtbot, monkeypatch):
-    import MagicUI.Engine as Eng
+    import XQMagicUI.Engine as Eng
     monkeypatch.setattr(Eng, "UciEngine", lambda _: FakeEngine())
     monkeypatch.setattr(Eng, "UcciEngine", lambda _: FakeEngine())
     mgr = Eng.EngineManager(None, id=1)

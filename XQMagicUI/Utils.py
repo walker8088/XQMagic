@@ -50,7 +50,7 @@ class ReviewMode(Enum):
 #-----------------------------------------------------#
 class QGameManager(QObject):
     game_mode_changed_signal = pyqtSignal(GameMode, GameMode)
-    review_mode_changed_signal = pyqtSignal(ReviewMode, Stage)
+    review_mode_changed_signal = pyqtSignal(int, int)
     
     def __init__(self):
         super().__init__()
@@ -75,7 +75,7 @@ class QGameManager(QObject):
     def setReivewMode(self, mode, stage):
         self.reviewMode = mode
         self.reviewStage = stage
-        self.review_mode_changed_signal.emit(self.reviewMode, self.reviewStage)
+        self.review_mode_changed_signal.emit(self.reviewMode.value, self.reviewStage.value)
 
 #-----------------------------------------------------#
 class ReviewMode(Enum):

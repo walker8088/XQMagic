@@ -737,7 +737,7 @@ class BoardImageView(QWidget):
             new_width = self.roi_pos.x - x + 1
             new_x = x
         else:
-            new_with = x - self.roi_pos.x + 1
+            new_width = x - self.roi_pos.x + 1
             new_x = self.roi_pos.x
 
         if y < self.roi_pos.y:
@@ -748,7 +748,7 @@ class BoardImageView(QWidget):
             new_y = self.roi_pos.y
         
         self.roi_pos = Point(new_x, new_y)
-        self.roi_size = Size(new_with, new_height)
+        self.roi_size = Size(new_width, new_height)
         
         self.update()
             

@@ -1,82 +1,77 @@
 # -*- coding: utf-8 -*-
-import os
-import sys
-import time
-import logging
 import ctypes
-import traceback
+import logging
+import os
 import platform
+import sys
 import threading
-from enum import Enum, auto
-from pathlib import Path
+import time
+import traceback
 from collections import OrderedDict
 from configparser import ConfigParser
-
-# from PyQt5 import
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QByteArray, QUrl
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QStyle,
-    QSizePolicy,
-    QMessageBox,
-    QWidget,
-    QCheckBox,
-    QRadioButton,
-    QComboBox,
-    QFileDialog,
-    QButtonGroup,
-    QActionGroup,
-    QAction,
-)
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QAudioOutput
+from enum import Enum, auto
+from pathlib import Path
 
 import cchess
-from cchess import ChessBoard, Game, EngineErrorException
+from cchess import ChessBoard, EngineErrorException, Game
 
-from .Version import release_version
-from .Resource import qt_resource_data
-from .Engine import EngineManager
+# from PyQt5 import
+from PyQt5.QtCore import QByteArray, Qt, QTimer, QUrl, pyqtSignal
+from PyQt5.QtGui import QIcon
+from PyQt5.QtMultimedia import QAudioOutput, QMediaContent, QMediaPlayer
+from PyQt5.QtWidgets import (
+    QAction,
+    QActionGroup,
+    QApplication,
+    QButtonGroup,
+    QCheckBox,
+    QComboBox,
+    QFileDialog,
+    QMainWindow,
+    QMessageBox,
+    QRadioButton,
+    QSizePolicy,
+    QStyle,
+    QWidget,
+)
 
-from .Storage import EndBookStore
+from . import Globl
+from .BoardWidgets import DEFAULT_SKIN, ChessBoardWidget
 from .CloudDB import CloudDB  # , MyScoreDB
-from .LocalDB import OpenBookYfk, OpenBookPF, MasterBook, LocalBook
-
-from .Utils import (
-    GameMode,
-    TimerMessageBox,
-    QGameManager,
-    getTitle,
-    getStepsFromFenMoves,
-    trim_fen,
-)
-from .BoardWidgets import ChessBoardWidget, DEFAULT_SKIN
-from .Widgets import (
-    EngineWidget,
-    BookmarkWidget,
-    BoardPanelWidget,
-    BoardActionsWidget,
-    EndBookWidget,
-    GameLibWidget,
-    DockHistoryWidget,
-    MoveListDialog,
-)
+from .Detector import ChessboardDetector
 from .Dialogs import (
+    EngineConfigDialog,
+    ImageToBoardDialog,
     PositionEditDialog,
     PositionHistDialog,
-    ImageToBoardDialog,
-    EngineConfigDialog,
 )
 
 # from .SnippingWidget import SnippingWidget
 from .Ecco import getBookEcco
-
-from .Online import OnlineManager, OnlineDialog
-
-from .Detector import ChessboardDetector
-
-from . import Globl
+from .Engine import EngineManager
+from .LocalDB import LocalBook, MasterBook, OpenBookPF, OpenBookYfk
+from .Online import OnlineDialog, OnlineManager
+from .Resource import qt_resource_data
+from .Storage import EndBookStore
+from .Utils import (
+    GameMode,
+    QGameManager,
+    TimerMessageBox,
+    getStepsFromFenMoves,
+    getTitle,
+    trim_fen,
+)
+from .Version import release_version
+from .Widgets import (
+    BoardActionsWidget,
+    BoardPanelWidget,
+    BookmarkWidget,
+    DockHistoryWidget,
+    EndBookWidget,
+    EngineWidget,
+    GameLibWidget,
+    MoveListDialog,
+)
 
 """
 # 设置全局默认字体
@@ -206,7 +201,7 @@ class MainWindow(QMainWindow):
 
         Globl.detector = ChessboardDetector(Path("Engine", "Detector"))
 
-        #self.reviewMode = None
+        # self.reviewMode = None
         self.isQueryCloud = False
         self.lastOpenFolder = ""
         self.isNeedSave = False
@@ -231,22 +226,22 @@ class MainWindow(QMainWindow):
             sys.exit(-1)
 
         Globl.engineManager.start()
-        
-        #创建一个定时器，每秒触发一次
+
+        # 创建一个定时器，每秒触发一次
         self.timer = QTimer()
         self.timer.timeout.connect(self.onIdleTask)
-        self.timer.start(1000) # 1000毫秒
+        self.timer.start(1000)  # 1000毫秒
 
     def onIdleTask(self):
-        QApplication.processEvents() # 确保界面响应
-        #self.label.setText("空闲中...")
+        QApplication.processEvents()  # 确保界面响应
+        # self.label.setText("空闲中...")
 
     # -----------------------------------------------------------------------
     # 初始化
     def clearAll(self):
         self.positionList = []
         self.currPosition = None
-        #self.reviewMode = None
+        # self.reviewMode = None
 
         self.historyView.clear()
         self.engineView.clear()
@@ -286,7 +281,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(
                 self,
                 f"{getTitle()}",
-                f"加载象棋引擎[{self.engine_exec.absolute()}]出错，请确认该程序能在您的电脑上正确运行。",
+                f"加载象棋引擎[{self.engine_exec}]出错，请确认该程序能在您的电脑上正确运行。",
             )
 
         return ok
@@ -298,11 +293,11 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, f'{getTitle()}', f'配置文件[{self.config_file}]格式错误：{e}')
             return False
-        
+
         ok = Globl.engineManager.loadEngine(engine_exec, engine_type)
         if not ok:
-            QMessageBox.critical(self, f'{getTitle()}', f'加载象棋引擎[{engine_exec.absolute()}]出错，请确认该程序能在您的电脑上正确运行。')
-        
+            QMessageBox.critical(self, f'{getTitle()}', f'加载象棋引擎[{self.engine_exec}]出错，请确认该程序能在您的电脑上正确运行。')
+
         return ok
         """
 
@@ -844,7 +839,7 @@ class MainWindow(QMainWindow):
         if not query or not self.positionList:
             return
 
-        if self.isQueryCloud: #or (self.reviewMode == ReviewMode.ByCloud):
+        if self.isQueryCloud:  # or (self.reviewMode == ReviewMode.ByCloud):
             self.updateFenCache(query)
 
         fen = query["fen"]
@@ -875,7 +870,7 @@ class MainWindow(QMainWindow):
         self.boardActions = x
         self.actionsView.updateActions(self.boardActions)
 
-        #if self.reviewMode == ReviewMode.ByCloud:
+        # if self.reviewMode == ReviewMode.ByCloud:
         #    self.onReviewGameStep()
 
     def showBestHint(self, fenInfo):
@@ -904,7 +899,7 @@ class MainWindow(QMainWindow):
 
         self.updateFenCache(fenInfo, isEngine=True)
 
-        #if self.reviewMode == ReviewMode.ByEngine:
+        # if self.reviewMode == ReviewMode.ByEngine:
         #    self.onReviewGameStep()
         #    return
 
@@ -933,7 +928,7 @@ class MainWindow(QMainWindow):
         if fen != self.currPosition["fen"]:
             return
 
-        """    
+        """
         currmove = fenInfo.get('currmove', None)
         if (not self.isQueryCloud) and currmove:
             self.boardView.showMoveHint([cchess.iccs2pos(currmove)])
@@ -952,7 +947,7 @@ class MainWindow(QMainWindow):
             return
 
         """
-        moveShow = [cchess.iccs2pos(x) for x in moves[:2]]    
+        moveShow = [cchess.iccs2pos(x) for x in moves[:2]]
         if not self.isQueryCloud:
             self.boardView.showMoveHint(moveShow)
         """
@@ -986,7 +981,7 @@ class MainWindow(QMainWindow):
             return
 
         needRun = sum(self.engineRunColor) > 0
-        if needRun and (not self.isRunEngine): # and (not self.reviewMode):
+        if needRun and (not self.isRunEngine):  # and (not self.reviewMode):
             self.runEngine(self.currPosition)
 
     def runEngine(self, position):
@@ -1018,7 +1013,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(
                     self,
                     f"{getTitle()}",
-                    f"加载象棋引擎[{engine_exec.absolute()}]出错，请确认该程序能在您的电脑上正确运行。",
+                    f"加载象棋引擎[{self.engine_exec}]出错，请确认该程序能在您的电脑上正确运行。",
                 )
 
     # ------------------------------------------------------------------------------
@@ -1093,7 +1088,7 @@ class MainWindow(QMainWindow):
         self.updateEcco()
 
     def onSelectHistoryPosition(self, move_index):
-        #if self.reviewMode:
+        # if self.reviewMode:
         #    return
 
         if (move_index < 0) or (move_index >= len(self.positionList)):
@@ -1117,7 +1112,7 @@ class MainWindow(QMainWindow):
 
     # -------------------------------------------------------------------
     # Game Review
-    '''
+    """
     def onReviewByCloud(self):
         if not Globl.gameManager.reviewMode:
             self.reviewMode = ReviewMode.ByCloud
@@ -1182,7 +1177,8 @@ class MainWindow(QMainWindow):
         self.reviewMode = None
         self.actionsView.queryCloudBox.setEnabled(True)
         # self.engineModeBtn.setEnabled(True)
-    '''
+    """
+
     def setQueryCloud(self, yes):
         if yes == self.isQueryCloud:  # 模式未变
             return

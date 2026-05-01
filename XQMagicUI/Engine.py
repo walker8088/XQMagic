@@ -165,7 +165,7 @@ class EngineManager(QObject):
                 ret['score'] = 29999 * mate_flag
             
             
-            new_fen = m.board_done.to_fen()
+            new_fen = board.to_fen()
             iccs_dict = {'iccs': iccs, 'new_fen': new_fen}
             for key in ['score', 'mate']:
                 if key in ret:

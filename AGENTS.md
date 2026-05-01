@@ -240,10 +240,6 @@ CloudDB.startQuery(position)
 
 **Lookup strategy:** All use `zhash` (Zobrist hash), check both normal and mirrored positions.
 
-### Cloud DB
-- Service: `http://www.chessdb.cn/chessdb.php`
-- Async HTTP via `QNetworkAccessManager`
-- Response: pipe-delimited move list with scores
 
 ### Endgame Storage
 - TinyDB (`Game/endbooks.json`) via `EndBookStore`

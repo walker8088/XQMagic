@@ -1,10 +1,17 @@
 import pytest
+import sys
+from unittest.mock import MagicMock
 
 @pytest.mark.qt
 def test_mainwindow_init(qtbot, setup_globl, monkeypatch):
-    from MagicUI.Main import MainWindow
-    from MagicUI.Engine import EngineManager
-    from MagicUI.Utils import GameMode
+    # Mock onnxruntime 和 cchess_board 以避免 DLL 加载失败
+    monkeypatch.setitem(sys.modules, 'onnxruntime', MagicMock())
+    monkeypatch.setitem(sys.modules, 'cchess_board', MagicMock())
+    monkeypatch.setitem(sys.modules, 'cchess_board.detector', MagicMock())
+    
+    from XQMagicUI.Main import MainWindow
+    from XQMagicUI.Engine import EngineManager
+    from XQMagicUI.Utils import GameMode
     monkeypatch.setattr(EngineManager, "loadEngine", lambda self, p, t: True)
     monkeypatch.setattr(EngineManager, "start", lambda self: None)
     win = MainWindow()

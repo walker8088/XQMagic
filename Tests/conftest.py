@@ -1,4 +1,4 @@
-import os
+﻿import os
 from pathlib import Path
 import pytest
 from PyQt5.QtCore import QSettings
@@ -9,7 +9,7 @@ def pytest_sessionstart(session):
 
 @pytest.fixture
 def setup_globl(tmp_path):
-    from MagicUI import Globl
+    from XQMagicUI import Globl
     Globl.APP_NAME = 'XQMagic'
     Globl.APP_NAME_TEXT = '象棋魔术师'
     Globl.settings = QSettings('XQSoft', Globl.APP_NAME)

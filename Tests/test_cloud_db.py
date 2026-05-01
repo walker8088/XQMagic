@@ -1,8 +1,8 @@
-import pytest
+﻿import pytest
 
 def test_clouddb_parse(monkeypatch):
-    from MagicUI.CloudDB import CloudDB
-    from MagicUI import Globl
+    from XQMagicUI.CloudDB import CloudDB
+    from XQMagicUI import Globl
     Globl.fenCache = {}
     c = CloudDB(None)
     fen = "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1"

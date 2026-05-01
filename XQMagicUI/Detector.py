@@ -6,7 +6,7 @@ import cv2
 
 from PyQt5.QtGui import QPixmap, QImage
 
-from cchess import ChessBoard, fen_flip
+from cchess import ChessBoard, fen_mirror
 
 from cchess_board.detector import labels_to_fen
 from cchess_board import ChessboardDetector as _ChessboardDetector

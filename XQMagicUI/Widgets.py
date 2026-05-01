@@ -1,65 +1,61 @@
 # -*- coding: utf-8 -*-
-import os
 import logging
+import os
 import traceback
-from pathlib import Path
 from collections import OrderedDict
-
-from PyQt5.QtCore import pyqtSignal, QSize, Qt, QTimer, QModelIndex
-from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QColor, QBrush
-from PyQt5.QtWidgets import (
-    QStyle,
-    QApplication,
-    QMenu,
-    QHBoxLayout,
-    QVBoxLayout,
-    QFormLayout,
-    QDialog,
-    QFileDialog,
-    QLabel,
-    QSpinBox,
-    QCheckBox,
-    QPushButton,
-    QRadioButton,
-    QToolButton,
-    QWidget,
-    QDockWidget,
-    QDialogButtonBox,
-    QButtonGroup,
-    QListWidget,
-    QListWidgetItem,
-    QInputDialog,
-    QAbstractItemView,
-    QComboBox,
-    QTreeWidgetItem,
-    QTreeWidget,
-    QTextEdit,
-    QSplitter,
-    QMessageBox,
-    QTableView,
-    QWidget,
-    QHeaderView,
-    QAbstractItemView,
-)
+from pathlib import Path
 
 import cchess
 from cchess import ChessBoard
+from PyQt5.QtCore import QModelIndex, QSize, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QBrush, QColor, QIcon, QStandardItem, QStandardItemModel
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QApplication,
+    QButtonGroup,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QDockWidget,
+    QFileDialog,
+    QFormLayout,
+    QHBoxLayout,
+    QHeaderView,
+    QInputDialog,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QMenu,
+    QMessageBox,
+    QPushButton,
+    QRadioButton,
+    QSpinBox,
+    QSplitter,
+    QStyle,
+    QTableView,
+    QTextEdit,
+    QToolButton,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
 
+from . import Globl
+from .BoardWidgets import ChessBoardEditWidget, ChessBoardWidget
+from .Dialogs import EngineConfigDialog
+from .SnippingWidget import SnippingWidget
 from .Utils import (
-    Stage,
     GameMode,
-    getTitle,
+    Stage,
     TimerMessageBox,
     getFreeMem,
     getStepsTextFromFenMoves,
-    loadEglib,
+    getTitle,
     loadCsvlib,
+    loadEglib,
 )
-from .BoardWidgets import ChessBoardWidget, ChessBoardEditWidget
-from .SnippingWidget import SnippingWidget
-from .Dialogs import EngineConfigDialog
-
-from . import Globl
 
 
 # ------------------------------------------------------------------#
@@ -229,14 +225,14 @@ class HistoryWidget(QWidget):
                 }
                 QTableView::item:selected {
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                                stop:0 #3399ff, stop:1 #1e88e5);
-                    color: white;
+                                                stop:0 #e3f0ff, stop:1 #d0e4fc);
+                    color: #1a1a1a;
                 }
                 /* 关键：失去焦点时依然保持高亮！ */
                 QTableView::item:selected:!active {
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                                stop:0 #3399ff, stop:1 #1e88e5);
-                    color: white;
+                                                stop:0 #e3f0ff, stop:1 #d0e4fc);
+                    color: #1a1a1a;
                 }
             """)
 
@@ -706,7 +702,7 @@ class MoveListDialog(QDialog):
 
         """
         bottom_layout = QHBoxLayout()
-        bottom_layout.addStretch() 
+        bottom_layout.addStretch()
 
         close_btn = QPushButton("关闭")
         close_btn.setFixedWidth(120)
@@ -783,7 +779,7 @@ class EngineWidget(QDockWidget):
         self.engineManager = engineMgr
 
         Globl.gameManager.game_mode_changed_signal.connect(self.onGameModeChanged)
-        #Globl.gameManager.review_mode_changed_signal.connect(self.onReviewModeChanged)
+        # Globl.gameManager.review_mode_changed_signal.connect(self.onReviewModeChanged)
 
         self.goMode = "deep"
         self.gameMode = None
@@ -988,7 +984,7 @@ class EngineWidget(QDockWidget):
         self.setMultiPV()
         self.applyAllParams()
 
-    '''    
+    """
     def onReviewBegin(self, mode):
         self.onReviewModeChanged(mode, Stage.Begin)
 
@@ -1014,7 +1010,7 @@ class EngineWidget(QDockWidget):
             self.analysisBox.setEnabled(True)
 
             self.analysisBox.setChecked(self.savedCheckState)
-    '''
+    """
 
     def onConfigEngine(self):
         dlg = EngineConfigDialog(self.parent)
@@ -1220,12 +1216,12 @@ class MoveDbWidget(QDockWidget):
 
     def __init__(self, parent):
         super().__init__("我的棋谱库", parent)
-        
+
         self.setObjectName("我的棋谱库")
         self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
 
         self.parent = parent
-        
+
         self.moveListView = QTreeWidget()
         self.moveListView.setColumnCount(1)
         self.moveListView.setHeaderLabels(["备选着法", "红优分", '', '备注'])
@@ -1235,14 +1231,14 @@ class MoveDbWidget(QDockWidget):
         self.moveListView.setColumnWidth(3, 20)
 
         self.moveListView.clicked.connect(self.onSelectIndex)
-        
+
         self.importFollowMode = False
 
         self.setWidget( self.moveListView)
 
     def clear(self):
         self.moveListView.clear()
-        
+
     def contextMenuEvent(self, event):
 
         menu = QMenu(self)
@@ -1263,7 +1259,7 @@ class MoveDbWidget(QDockWidget):
     def onImportFollow(self):
         self.importFollowMode = True
         self.onSelectIndex()
-    
+
     def onCleanMoves(self):
         bad_moves = []
         records = Globl.localbookStore.getAllBookMoves()
@@ -1292,7 +1288,7 @@ class MoveDbWidget(QDockWidget):
             delFens[fen] = None
         else:
              delFens[fen] = iccs
-            
+
         while len(todoList) > 0:
             for fen, iccs in todoList:
                 board.from_fen(fen)
@@ -1300,7 +1296,7 @@ class MoveDbWidget(QDockWidget):
                 if move is None:
                     raise Exception('invalid move')
                 board.next_turn()
-                
+
                 new_fen = board.to_fen()
                 record = Globl.localbookStore.getAllBookMoves(new_fen)
                 if len(record) > 0:
@@ -1315,19 +1311,19 @@ class MoveDbWidget(QDockWidget):
                     for act in actions:
                         #print(act)
                         todoListNew.append((new_fen, act['iccs']))
-                        
+
             if (len(todoListNew) == 0):
                 break
             todoList = todoListNew
             todoListNew = []
-                  
+
         ok = QMessageBox.question(self, getTitle(), f"此局面后续有{branchs}个分支，{len(delFens)}个局面, 您确定要全部删除吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if ok == QMessageBox.Yes:
             for fen, iccs in delFens.items():
                 Globl.localbookStore.delBookMoves(fen, iccs)
             QMessageBox.information(self, getTitle(), "已删除。")
             self.onPositionChanged(self.curr_pos, is_new = False)
-            
+
     def onImportFollowContinue(self):
         if self.moveListView.topLevelItemCount() != 1:
             self.importFollowMode = False
@@ -1335,8 +1331,8 @@ class MoveDbWidget(QDockWidget):
         item = self.moveListView.topLevelItem(0)
         self.moveListView.setCurrentItem(item, 0)
         self.onSelectIndex()
-    
-    def onPositionChanged(self, position, is_new):  
+
+    def onPositionChanged(self, position, is_new):
 
         def key_func(it):
             try:
@@ -1350,7 +1346,7 @@ class MoveDbWidget(QDockWidget):
 
         self.curr_pos = position
         fen = position['fen']
-        
+
         self.clear()
         board = ChessBoard(fen)
         book_moves = []
@@ -1368,24 +1364,24 @@ class MoveDbWidget(QDockWidget):
             m = board.copy().move_iccs(act['iccs'])
             if m is None:
                 continue
-            act['text'] = m.to_text()   
+            act['text'] = m.to_text()
             new_fen = m.board_done.to_fen()
 
             #if 'score' in act:
             #    del act['score']
-            
+
             if new_fen in Globl.fenCache:
                 fenInfo = Globl.fenCache[new_fen]
                 if 'score' in fenInfo:
                     act['score'] = fenInfo['score']
             book_moves.append(act)
-            
-        is_reverse  = True if board.get_move_color() == cchess.RED else False        
+
+        is_reverse  = True if board.get_move_color() == cchess.RED else False
         book_moves.sort(key=key_func, reverse = is_reverse)
-        
+
         self.updateBookMoves(book_moves)
         '''
-        
+
     def updateBookMoves(self, book_moves):
         self.moveListView.clear()
         self.position_len = len(book_moves)
@@ -1409,7 +1405,7 @@ class MoveDbWidget(QDockWidget):
                 QTimer.singleShot(500, self.onImportFollowContinue)
             else:
                 self.importFollowMode = False
-       
+
     def onSelectIndex(self):
         item = self.moveListView.currentItem()
         if not item:
