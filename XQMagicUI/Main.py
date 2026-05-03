@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
         # self.moveDbView.selectMoveSignal.connect(self.onTryBookMove)
         self.actionsView = BoardActionsWidget(self)
         self.actionsView.selectMoveSignal.connect(self.onTryBookMove)
-        self.actionsView.queryCloudBox.toggled.connect(self.都onCloudModeChanged)
+        self.actionsView.queryCloudBox.toggled.connect(self.onCloudModeChanged)
 
         self.bookmarkView = BookmarkWidget(self)
         self.bookmarkView.setVisible(False)
@@ -215,6 +215,7 @@ class MainWindow(QMainWindow):
         # self.cloudQuery = MyScoreDB(self) #CloudDB(self)
         self.cloudQuery = CloudDB(self)
         self.cloudQuery.query_result_signal.connect(self.onCloudQueryResult)
+        self.cloudQuery.query_error_signal.connect(self.onCloudQueryError)
 
         self.switchGameMode(GameMode.Free)
 
@@ -863,6 +864,12 @@ class MainWindow(QMainWindow):
 
         self.boardActions = x
         self.actionsView.updateActions(self.boardActions)
+
+    def onCloudQueryError(self, fen, error, error_str):
+        """云库查询错误时显示提示"""
+        msg = f"云库查询失败: {error_str}"
+        logging.warning(msg)
+        self.statusBar().showMessage(msg, 5000)
 
     def showBestHint(self, fenInfo):
         best = []

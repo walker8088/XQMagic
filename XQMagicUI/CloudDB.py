@@ -42,7 +42,7 @@ def updateCache(qResult):
 # ------------------------------------------------------------------------------
 class NetQuery(QObject):
     query_ret_signal = pyqtSignal(str, str)
-    query_err_signal = pyqtSignal(str)
+    query_err_signal = pyqtSignal(str, int, str)  # fen, error_code, error_string
 
     def __init__(self, parent, fen, url):
         super().__init__(parent)
@@ -76,22 +76,22 @@ class NetQuery(QObject):
         self.query_ret_signal.emit(self.fen, resp)
 
     def onQueryError(self, error):
+        error_str = self.reply.errorString() if self.reply else ""
+        logging.error(f"NetQuery Error: fen={self.fen}, code={error}, msg={error_str}")
         self.reply = None
 
         self.tryCount += 1
-        if self.tryCount < 1:
+        if self.tryCount <= 2:
             logging.warning(f"Query From CloudDB Error, retry {self.tryCount}")
-            time.sleep(2)
-            self.reply = self.net_mgr.get(self.req)
-            self.reply.finished.connect(self.onQueryFinished)
-            self.reply.errorOccurred.connect(self.onQueryError)
+            QTimer.singleShot(2000, self.startQuery)
         else:
-            self.query_err_signal.emit(self.fen)
+            self.query_err_signal.emit(self.fen, error, error_str)
 
 
 # ------------------------------------------------------------------------------
 class CloudDB(QObject):
     query_result_signal = pyqtSignal(dict)
+    query_error_signal = pyqtSignal(str, int, str)  # fen, error_code, error_string
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -128,6 +128,8 @@ class CloudDB(QObject):
             q.startQuery()
 
     def onQueryFinished(self, fen, resp):
+        logging.info(f"Cloud Query Done: {fen} resp:[{resp[:20]}...]")
+
         self.errorCount = 0
 
         # 错误防护
@@ -186,14 +188,21 @@ class CloudDB(QObject):
             return
 
         score_best = int(moves[0]["score"])
+        score_best = (
+            -score_best if move_color == cchess.BLACK else score_best
+        )  # 转换到红方视角
         for act in moves:
             move_it = board.copy().move_iccs(act["iccs"])
             if move_it:
                 act["text"] = move_it.to_text()
                 act["new_fen"] = move_it.board_done.to_fen()
             act["score"] = int(act["score"])
-            act["diff"] = calc_move_diff(act["score"], score_best, move_color)
-            act["score"] = -act["score"] if move_color == cchess.BLACK else act["score"]
+            act["score"] = (
+                -act["score"] if move_color == cchess.BLACK else act["score"]
+            )  # 先转换到红方视角
+            act["diff"] = calc_move_diff(
+                act["score"], score_best, move_color
+            )  # 再计算diff
 
         # moves = filter(lambda x : is_odd, moves)
 
@@ -223,15 +232,18 @@ class CloudDB(QObject):
 
         self.reply = None
         self.query_result_signal.emit(ret)
+        # 继续处理队列中的其他排队query
         QTimer.singleShot(CLOUD_QUERY_DELAY, self.onNextQuery)
 
-    def onQueryError(self, fen):
+    def onQueryError(self, fen, error, error_str):
         self.errorCount += 1
-        # 错误防护
+        logging.error(f"CloudDB Error: fen={fen}, code={error}, msg={error_str}")
         if fen not in self.query_worker:
             return
 
         self.query_worker.pop(fen)
+        # 将错误信息转发给 MainWindow，让 UI 有反馈
+        self.query_error_signal.emit(fen, error, error_str)
         QTimer.singleShot(CLOUD_QUERY_DELAY, self.onNextQuery)
 
     def onNextQuery(self):
