@@ -577,14 +577,8 @@ class BoardPanelWidget(QWidget):
         self.showBestBox.setToolTip("提示最佳走法")
         self.showBestBox.stateChanged.connect(self.onShowBestMoveChanged)
 
-        # self.showScoreBox = QCheckBox()
-        # self.showScoreBox.setIcon(QIcon(':ImgRes/info.png'))
-        # self.showScoreBox.setChecked(True)
-        # self.showScoreBox.setToolTip('显示走子得分（红优分）')
-        # self.showScoreBox.stateChanged.connect(self.onShowScoreChanged)
-
-        self.copyBtn = QPushButton(QIcon(":ImgRes/copy.png"), "")
-        self.copyBtn.clicked.connect(self.onCopyBoard)
+        # self.copyBtn = QPushButton(QIcon(":ImgRes/copy.png"), "")
+        # self.copyBtn.clicked.connect(self.onCopyBoard)
 
         # 2. 下部按钮工具栏
         toolbar_layout = QHBoxLayout()
@@ -593,8 +587,7 @@ class BoardPanelWidget(QWidget):
         toolbar_layout.addWidget(self.flipBox)
         toolbar_layout.addWidget(self.mirrorBox)
         toolbar_layout.addWidget(self.showBestBox)
-        # toolbar_layout.addWidget(self.showScoreBox)
-        toolbar_layout.addWidget(self.copyBtn)
+        # toolbar_layout.addWidget(self.copyBtn)
 
         # ---- 下部右侧按钮组 ----
         self.firstBtn = QPushButton(self.style().standardIcon(QStyle.SP_ArrowUp), "")

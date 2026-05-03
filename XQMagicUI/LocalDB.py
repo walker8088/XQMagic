@@ -114,10 +114,13 @@ class MoveBookMixIn:
             m["new_fen"] = board.to_fen()
 
             if score is not None:
+                score_converted = (
+                    -score if move_color == cchess.BLACK else score
+                )  # 先转换到红方视角
                 if score_best is None:
-                    score_best = score
-                m["score"] = -score if move_color == cchess.BLACK else score
-                m["diff"] = calc_move_diff(score, score_best, move_color)
+                    score_best = score_converted
+                m["score"] = score_converted
+                m["diff"] = calc_move_diff(score_converted, score_best, move_color)
 
             # if 'mt' in act:
             #    m['mate'] = act['mt']
