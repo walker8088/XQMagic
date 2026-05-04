@@ -34,6 +34,9 @@ class EngineManager(QObject):
         self.isRunning = False
         self.isReady = False
 
+        # 后台思考相关
+        self.isBackgroundMode = False
+
     def loadEngine(self, engine_path, engine_type):
         if engine_type == "uci":
             engine = UciEngine("")
@@ -73,6 +76,7 @@ class EngineManager(QObject):
         self.fen_engine = fen_engine
         self.fen = fen
         self.params = params
+        self.isBackgroundMode = params.get("_is_background", False)
         self.stopThinking()
 
         logging.info(f"Engine[{self.id}] go: {self.fen_engine} {self.params}")
@@ -165,6 +169,7 @@ class EngineManager(QObject):
                 if key in ret:
                     iccs_dict[key] = ret[key]
 
+            ret["is_background"] = self.isBackgroundMode
             ret["actions"] = {iccs: iccs_dict}
             self.moveBestSignal.emit(self.id, ret)
 

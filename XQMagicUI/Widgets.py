@@ -826,6 +826,10 @@ class EngineWidget(QDockWidget):
         self.redBox = QCheckBox("执红")
         self.blackBox = QCheckBox("执黑")
         self.analysisBox = QCheckBox("局面分析")
+        self.bgThinkingBox = QCheckBox("后台思考")
+        self.bgThinkingBox.setChecked(True)
+        self.bgThinkingBox.setVisible(False)
+        self.bgQueueLabel = QLabel("队列: 0")
         self.configBtn = QPushButton("设置")
         self.configBtn.setEnabled(False)
 
@@ -861,6 +865,7 @@ class EngineWidget(QDockWidget):
         hbox.addWidget(self.engineLabel, 2)
         hbox.addWidget(self.reviewBtn, 0)
         hbox.addWidget(self.analysisBox, 0)
+        hbox.addWidget(self.bgQueueLabel, 0)
 
         vbox = QVBoxLayout()
         vbox.addLayout(hbox)
@@ -880,6 +885,10 @@ class EngineWidget(QDockWidget):
         vbox.addWidget(self.posView)
 
         self.branchs = {}
+
+        # 后台思考队列
+        self.bgQueue = []  # 待分析的局面列表
+        self.bgProcessing = False  # 是否正在处理后台队列
 
     def getGoParams(self):
         params = {}
@@ -1166,9 +1175,32 @@ class EngineWidget(QDockWidget):
     def getDefaultThreads(self):
         return self.MAX_THREADS // 2
 
+    def getBgGoParams(self):
+        """获取后台思考参数（轻量级分析）"""
+        params = {}
+        # 后台思考使用较浅深度，快速返回
+        bg_depth = 15
+        params["depth"] = bg_depth
+        params["_is_background"] = True
+        return params
+
     def clear(self):
         self.posView.clear()
         self.branchs = {}
+        self.clearBgQueue()
+
+    def clearBgQueue(self):
+        """清空后台思考队列"""
+        self.bgQueue.clear()
+        self.bgProcessing = False
+        self.bgQueueLabel.setText("队列: 0")
+
+    def updateBgQueueLabel(self):
+        """更新后台队列计数显示"""
+        count = len(self.bgQueue)
+        if self.bgProcessing:
+            count += 1  # 加上正在分析的1个局面
+        self.bgQueueLabel.setText(f"队列: {count}")
 
     def sizeHint(self):
         return QSize(400, 100)

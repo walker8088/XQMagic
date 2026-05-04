@@ -526,6 +526,7 @@ class MainWindow(QMainWindow):
     def initGame(self, fen):
         Globl.engineManager.stopThinking()
         self.clearAll()
+        self.engineView.clearBgQueue()  # 中断后台思考
         self.moveEvent = threading.Event()
         self.moveEvent.set()
 
@@ -579,6 +580,10 @@ class MainWindow(QMainWindow):
     def onMoveGo(self, move_iccs, quickMode=False):  # , score = None):
         if not self.board.is_valid_iccs_move(move_iccs):
             return False
+
+        # 用户走子时中断后台思考
+        if not quickMode:
+            self.engineView.clearBgQueue()
 
         # --------------------------------
         # 尝试走棋
@@ -694,7 +699,7 @@ class MainWindow(QMainWindow):
 
     # -----------------------------------------------------------
     # fenCache 核心逻辑
-    def updateFenCache(self, fenInfo, isEngine=False):
+    def updateFenCache(self, fenInfo, isEngine=False, isBackground=False):
         fen = fenInfo["fen"]
 
         if isEngine:
@@ -760,6 +765,9 @@ class MainWindow(QMainWindow):
         for pos in self.positionList:
             if pos["fen"] == fen:
                 self.historyView.onUpdatePosition(pos)
+                if isBackground:
+                    # 后台模式下只更新匹配的第一行即可
+                    break
 
     # ------------------------------------------------------------------------------
     # None UI Events
@@ -888,12 +896,28 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------------------
     # Engine 最终着法输出
     def onTryEngineMove(self, engine_id, fenInfo):
+        # 判断是否为后台分析结果
+        is_bg = fenInfo.get("is_background", False)
+        if is_bg:
+            self.onBgEngineMove(engine_id, fenInfo)
+            return
+
         self.isRunEngine = False
 
         fen = trim_fen(fenInfo["fen"])
         iccs = fenInfo.get("iccs", "")
 
         logging.info(f"Engine[{engine_id}] BestMove {iccs}")
+
+        # 安全验证：如果结果fen与当前局面不一致，可能是竞态问题或后台结果
+        if self.currPosition and fen != self.currPosition["fen"]:
+            # 如果正在后台处理，交给后台处理
+            if self.engineView.bgProcessing:
+                self.onBgEngineMove(engine_id, fenInfo)
+                return
+            # 否则忽略此过期结果
+            logging.warning(f"引擎结果fen与当前局面不一致，忽略此结果")
+            return
 
         self.updateFenCache(fenInfo, isEngine=True)
 
@@ -908,6 +932,101 @@ class MainWindow(QMainWindow):
             self.moveEvent.clear()
         elif not self.isQueryCloud:
             self.showBestHint(fenInfo)
+
+        # 前台分析完成，延迟启动后台思考
+        QTimer.singleShot(300, self.startBackgroundThinking)
+
+    def onBgEngineMove(self, engine_id, fenInfo):
+        """处理后台分析结果"""
+        self.updateFenCache(fenInfo, isEngine=True, isBackground=True)
+        # 继续处理队列中的下一个局面
+        self.processNextBgPosition()
+
+    def startBackgroundThinking(self):
+        """启动后台思考：收集未分析的局面并启动分析"""
+        # 检查开关
+        if not self.engineView.bgThinkingBox.isChecked():
+            return
+        # 只在辅助模式下启用后台思考
+        if Globl.gameManager.gameMode not in [GameMode.EngineAssit]:
+            return
+        if not self.positionList:
+            return
+
+        # 清空旧队列
+        self.engineView.bgQueue.clear()
+        seen_fens = set()
+
+        for position in self.positionList:
+            fen = position["fen"]
+            # 去重
+            if fen in seen_fens:
+                continue
+            seen_fens.add(fen)
+            # 跳过空局面
+            if cchess.EMPTY_BOARD in fen:
+                continue
+            # 检查是否已有引擎分数
+            fen_cache = Globl.fenCache[fen] if fen in Globl.fenCache else {}
+            if "score_e" in fen_cache:
+                continue
+            # 加入队列
+            self.engineView.bgQueue.append(position)
+
+        if not self.engineView.bgQueue:
+            return
+
+        self.engineView.bgProcessing = True
+        self.engineView.updateBgQueueLabel()
+
+        # 启动队列处理
+        QTimer.singleShot(200, self.processNextBgPosition)
+
+    def processNextBgPosition(self):
+        """处理后台队列中的下一个局面"""
+        if not self.engineView.bgProcessing:
+            return
+        if not self.engineView.bgQueue:
+            self.engineView.bgProcessing = False
+            self.engineView.updateBgQueueLabel()
+            return
+        # 检查是否仍允许后台思考
+        if not self.engineView.bgThinkingBox.isChecked():
+            self.engineView.bgProcessing = False
+            self.engineView.bgQueue.clear()
+            self.engineView.updateBgQueueLabel()
+            return
+
+        # 取出下一个局面
+        position = self.engineView.bgQueue.pop(0)
+        self.engineView.updateBgQueueLabel()
+
+        # 检查局面是否还在列表中（可能用户已删除后续着法）
+        fen = position["fen"]
+        still_valid = any(p["fen"] == fen for p in self.positionList)
+        if not still_valid:
+            self.processNextBgPosition()
+            return
+
+        # 检查是否已有分数（可能在等待引擎响应时被其他方式填充了）
+        fen_cache = Globl.fenCache[fen] if fen in Globl.fenCache else {}
+        if "score_e" in fen_cache:
+            self.processNextBgPosition()
+            return
+
+        # 设置后台引擎参数：单分支
+        Globl.engineManager.setOption("MultiPV", 1)
+
+        # 发送局面到引擎进行后台分析
+        bgParams = self.engineView.getBgGoParams()
+        fen_engine = position["fen_engine"]
+        try:
+            Globl.engineManager.goFrom(fen_engine, fen, bgParams)
+        except EngineErrorException as e:
+            logging.warning(f"后台思考引擎命令出错: {e}")
+            self.engineView.bgProcessing = False
+            self.engineView.bgQueue.clear()
+            self.engineView.updateBgQueueLabel()
 
     def onEngineMoveInfo(self, engine_id, fenInfo):
         if not self.currPosition:
@@ -987,6 +1106,12 @@ class MainWindow(QMainWindow):
         reload = False
         move_color = position["move_color"]  # cchess.get_move_color(fen)
         if (self.engineRunColor[0] > 0) or (self.engineRunColor[move_color] > 0):
+            # 设置前台引擎参数：多分支（用户设置）
+            fg_multipv = self.engineView.params.get(
+                f"{self.engineView.goMode}.MultiPV", 1
+            )
+            Globl.engineManager.setOption("MultiPV", fg_multipv)
+
             # 首行会没有move项
             params = self.engineView.getGoParams()
             try:
@@ -1072,6 +1197,10 @@ class MainWindow(QMainWindow):
         self.positionList = self.positionList[: step_index + 1]
         self.currPosition = self.positionList[-1]
         self.historyView.onRemoveHistoryFollow(step_index)
+        # 删除分支时重新触发后台思考（因为局面列表变了）
+        if self.engineView.bgProcessing:
+            self.engineView.clearBgQueue()
+            QTimer.singleShot(500, self.startBackgroundThinking)
 
         if len(self.positionList) <= 1:
             self.isNeedSave = False
@@ -1085,6 +1214,9 @@ class MainWindow(QMainWindow):
         # 重复触发同一个事件，忽略
         if move_index == self.currPosition["index"]:
             return
+
+        # 切换局面时中断后台思考
+        self.engineView.clearBgQueue()
 
         self.currPosition = self.positionList[move_index]
         self.changePositionSignal.emit(False)
@@ -1115,10 +1247,30 @@ class MainWindow(QMainWindow):
             # self.reviewByCloudBtn.setEnabled(True)
             if self.currPosition:
                 self.cloudQuery.startQuery(self.currPosition)
+                self.startBgCloudSearch()
         else:
             # self.reviewByEngineBtn.setEnabled(True)
             # self.reviewByCloudBtn.setEnabled(False)
             pass
+
+    def startBgCloudSearch(self):
+        """后台搜索云库：对历史无云库分数的局面进行查询"""
+        seen_fens = set()
+        for position in self.positionList:
+            fen = position["fen"]
+            # 去重
+            if fen in seen_fens:
+                continue
+            seen_fens.add(fen)
+            # 跳过空局面
+            if cchess.EMPTY_BOARD in fen:
+                continue
+            # 检查是否已有云库分数（注意是 score，不是 score_e）
+            fen_cache = Globl.fenCache[fen] if fen in Globl.fenCache else {}
+            if "score" in fen_cache:
+                continue
+            # 加入云库查询队列（CloudDB内部自动排队）
+            self.cloudQuery.startQuery(position)
 
     # ------------------------------------------------------------------------------
     # UI Event Handler
