@@ -827,8 +827,10 @@ class EngineWidget(QDockWidget):
         self.blackBox = QCheckBox("执黑")
         self.analysisBox = QCheckBox("局面分析")
         self.bgThinkingBox = QCheckBox("后台思考")
-        self.bgThinkingBox.setChecked(True)
-        self.bgThinkingBox.setVisible(False)
+        # 默认关闭: 前后台共用同一引擎进程时,后台会抢断前台 bestmove,导致
+        # 走子不响应。保留 checkbox 以便后续需要时手动开启。
+        self.bgThinkingBox.setChecked(False)
+        self.bgThinkingBox.setVisible(True)
         self.bgQueueLabel = QLabel("队列: 0")
         self.configBtn = QPushButton("设置")
         self.configBtn.setEnabled(False)

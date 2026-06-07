@@ -587,8 +587,12 @@ class MainWindow(QMainWindow):
         if not self.board.is_valid_iccs_move(move_iccs):
             return False
 
-        # 用户走子时中断后台思考
+        # 用户走子时中断后台思考:
+        # 1) 先 stop 引擎正在算的后台命令(清队列只是清 Python list,引擎进程里的思考不会停)
+        # 2) 再清空 bgQueue
         if not quickMode:
+            if self.engineView.bgProcessing and Globl.engineManager.isReady:
+                Globl.engineManager.stopThinking()
             self.engineView.clearBgQueue()
 
         # --------------------------------
@@ -959,6 +963,11 @@ class MainWindow(QMainWindow):
         if not self.positionList:
             return
 
+        # 如果引擎正被前台占用,延迟启动后台思考,避免抢断前台 bestmove
+        if Globl.engineManager.isReady and Globl.engineManager._is_analyzing:
+            QTimer.singleShot(500, self.startBackgroundThinking)
+            return
+
         # 清空旧队列
         self.engineView.bgQueue.clear()
         seen_fens = set()
@@ -1001,6 +1010,11 @@ class MainWindow(QMainWindow):
             self.engineView.bgProcessing = False
             self.engineView.bgQueue.clear()
             self.engineView.updateBgQueueLabel()
+            return
+
+        # 互斥检查:如果引擎正被前台占用,不要抢断;300ms 后重试
+        if Globl.engineManager.isReady and Globl.engineManager._is_analyzing:
+            QTimer.singleShot(300, self.processNextBgPosition)
             return
 
         # 取出下一个局面
