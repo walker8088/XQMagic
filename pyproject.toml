@@ -26,3 +26,10 @@ environments = [
     "sys_platform == 'win32'",
     "sys_platform == 'AMD64'",
 ]
+
+[tool.pytest.ini_options]
+# 自定义标记:qt 表示测试需要 Qt 环境(pytest-qt)
+markers = [
+    "qt: tests that use the PyQt5 application (deselect with '-m \"not qt\"')",
+]
+testpaths = ["Tests"]
