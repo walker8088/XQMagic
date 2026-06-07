@@ -42,6 +42,7 @@ from .Engine import EngineManager
 from .LocalDB import LocalBook, MasterBook, OpenBookPF, OpenBookYfk
 from .Online import OnlineDialog, OnlineManager
 from .Storage import EndBookStore
+from .TestRunner import TestRunnerWidget
 from .Utils import (
     ALTER_BEST_CLOUD,
     ALTER_BEST_ENGINE,
@@ -182,6 +183,11 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.historyDoc)
         # self.addDockWidget(Qt.RightDockWidgetArea, self.bookmarkView)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.engineView)
+
+        # 内嵌的 pytest 测试运行器(默认隐藏,从"窗口"菜单打开)
+        self.testRunnerView = TestRunnerWidget(self)
+        self.testRunnerView.setVisible(False)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.testRunnerView)
 
         # self.snippingWidget = SnippingWidget()
         # self.snippingWidget.onSnippingCompleted = self.onSnippingCompleted
@@ -1829,6 +1835,7 @@ class MainWindow(QMainWindow):
         self.winMenu.addAction(self.engineView.toggleViewAction())
         # self.winMenu.addAction(self.moveDbView.toggleViewAction())
         self.winMenu.addAction(self.actionsView.toggleViewAction())
+        self.winMenu.addAction(self.testRunnerView.toggleViewAction())
         self.winMenu.addAction(self.showMoveSoundAct)
 
         self.skinMenu = self.menuBar().addMenu("皮肤")
@@ -1962,6 +1969,8 @@ class MainWindow(QMainWindow):
 
         self.boardPanel.loadSettings(Globl.settings)
 
+        self.testRunnerView.loadSettings(Globl.settings)
+
         cloudMode = Globl.settings.value("cloudMode", True, type=bool)
         self.actionsView.queryCloudBox.setChecked(cloudMode)
 
@@ -1982,6 +1991,8 @@ class MainWindow(QMainWindow):
         self.endBookView.saveSettings(Globl.settings)
         self.historyView.saveSettings(Globl.settings)
         self.boardPanel.saveSettings(Globl.settings)
+
+        self.testRunnerView.saveSettings(Globl.settings)
 
     def about(self):
         QMessageBox.about(

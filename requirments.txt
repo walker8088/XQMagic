@@ -10,4 +10,5 @@ peewee
 tinydb
 pygetwindow
 pyinstaller
+pytest
 pytest-qt
