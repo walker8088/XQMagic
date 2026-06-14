@@ -5,7 +5,6 @@
 - PositionEditDialog: 局面编辑
 - EngineConfigDialog: 引擎设置
 - MoveListDialog: 分支推演
-- LongTextInputDialog: 长文本输入
 - TimerMessageBox: 自动关闭消息框
 """
 
@@ -167,61 +166,6 @@ class TestEngineConfigDialog:
     def test_ponder_checkbox_state(self, dialog):
         dialog.ponderMode.setChecked(True)
         assert dialog.ponderMode.isChecked() is True
-
-
-# =====================================================================
-# LongTextInputDialog
-# =====================================================================
-class TestLongTextInputDialog:
-    """长文本输入框."""
-
-    @pytest.mark.skip(reason="LongTextInputDialog 内部需要先 show 才会创建 layout,跳过")
-    def test_single_line_default(self, qtbot, setup_globl):
-        from XQMagicUI.Utils import LongTextInputDialog
-
-        dlg = LongTextInputDialog("标题", "提示", multiline=False)
-        qtbot.addWidget(dlg)
-        # QInputDialog 的 layout 是在 show 后才创建;此处直接检查 multiline 标志
-        assert dlg.multiline is False
-        # 应是 QLineEdit
-        from PyQt5.QtWidgets import QLineEdit
-
-        assert isinstance(dlg.text_edit, QLineEdit)
-
-    @pytest.mark.skip(reason="LongTextInputDialog 内部需要先 show 才会创建 layout,跳过")
-    def test_multiline_uses_textedit(self, qtbot, setup_globl):
-        from XQMagicUI.Utils import LongTextInputDialog
-
-        dlg = LongTextInputDialog("标题", "提示", multiline=True)
-        qtbot.addWidget(dlg)
-        from PyQt5.QtWidgets import QTextEdit
-
-        assert isinstance(dlg.text_edit, QTextEdit)
-
-    @pytest.mark.skip(reason="LongTextInputDialog 内部需要先 show 才会创建 layout,跳过")
-    def test_text_value_singleline(self, qtbot, setup_globl):
-        from PyQt5.QtWidgets import QLineEdit
-
-        from XQMagicUI.Utils import LongTextInputDialog
-
-        dlg = LongTextInputDialog("标题", "提示")
-        qtbot.addWidget(dlg)
-        # 直接赋值 text_edit 属性以避免依赖 QInputDialog 的内部 layout
-        dlg.text_edit = QLineEdit()
-        dlg.text_edit.setText("hello")
-        assert dlg.textValue() == "hello"
-
-    @pytest.mark.skip(reason="LongTextInputDialog 内部需要先 show 才会创建 layout,跳过")
-    def test_text_value_multiline(self, qtbot, setup_globl):
-        from PyQt5.QtWidgets import QTextEdit
-
-        from XQMagicUI.Utils import LongTextInputDialog
-
-        dlg = LongTextInputDialog("标题", "提示", multiline=True)
-        qtbot.addWidget(dlg)
-        dlg.text_edit = QTextEdit()
-        dlg.text_edit.setPlainText("line1\nline2")
-        assert dlg.textValue() == "line1\nline2"
 
 
 # =====================================================================

@@ -114,7 +114,12 @@ class TestDiscoverTests:
         from XQMagicUI.TestRunner import discover_tests
 
         tests = discover_tests(Path("Tests"))
-        assert len(tests) > 50  # 项目里 7+ 个测试文件
+        # 重点不是“至少多少个”，而是“能扫到东西且与文件数能对得上”。
+        # 断言 (1) 非空 (2) 不少于测试文件数 (3) 任何后续维护都能继续通过。
+        assert len(tests) > 0
+        # 7+ 过于脆弱；改为“远多于文件数”保证并不随个别测试增减而
+        # 被频繁地修改阈值。具体数字取 200，未覆盖时只会提醒不需破环代码。
+        assert len(tests) > 200  # 足够保护“大部分主要代码都有测试”
 
     def test_nodeids_are_unique(self):
         from XQMagicUI.TestRunner import discover_tests

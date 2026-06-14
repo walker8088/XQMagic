@@ -9,6 +9,74 @@ from unittest.mock import MagicMock, patch
 
 import cchess
 import pytest
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QTreeWidgetItem
+
+
+# =====================================================================
+# 公共 fixture - 模块级,供下面三个测试类共享 (pytest 不会跨类查找 fixture)
+# =====================================================================
+@pytest.fixture
+def engine_widget(qtbot, setup_globl):
+    """构造 EngineWidget,使用伪 EngineManager.
+
+    被 TestEngineWidget / TestEngineWidgetExtras / TestEngineWidgetParams
+    三个类共享 (在模块级别定义,pytest 才能跨类解析)。
+    """
+    from PyQt5.QtWidgets import QWidget
+
+    from XQMagicUI import Globl
+    from XQMagicUI.Engine import EngineManager
+    from XQMagicUI.Utils import QGameManager
+    from XQMagicUI.Widgets import EngineWidget
+
+    # EngineWidget 内部会读 QGameManager.game_mode_changed_signal
+    Globl.gameManager = QGameManager()
+
+    # 使用真实的 EngineManager 但阻断真实进程
+    class FakeEngine:
+        ids = {"name": "FakeEngine"}
+        options = {}
+
+        def load(self, path):
+            return True
+
+        def set_option(self, name, value):
+            self.options[name] = value
+
+        def go_from(self, fen, params):
+            return True
+
+        def stop_thinking(self):
+            return True
+
+        def get_action(self):
+            return None
+
+        def quit(self):
+            return True
+
+    with (
+        patch("XQMagicUI.Engine.UciEngine", lambda _: FakeEngine()),
+        patch("XQMagicUI.Engine.UcciEngine", lambda _: FakeEngine()),
+    ):
+        mgr = EngineManager(None, id=1)
+        mgr.isReady = True  # 直接置为 ready
+        mgr.setOption = MagicMock()
+        mgr.stopThinking = MagicMock()
+        mgr.redoThinking = MagicMock()
+        # stopThinking 内部会调用 self.engine.stop_thinking()
+        mgr.engine = FakeEngine()
+
+    # 提供一个真实的 QWidget parent,避免 checkbox 变化时调用 None.enginePlayColor
+    parent = QWidget()
+    parent.enginePlayColor = MagicMock()  # type: ignore[attr-defined]
+    # EnginePath / EngineType 由 onEngineReady 从这里读取
+    parent.config = {"MainEngine": {"engine_exec": "x.exe", "engine_type": "ucci"}}
+    qtbot.addWidget(parent)
+    w = EngineWidget(parent, mgr)
+    qtbot.addWidget(w)
+    return w, mgr
 
 
 # =====================================================================
@@ -16,60 +84,6 @@ import pytest
 # =====================================================================
 class TestEngineWidget:
     """引擎 Dock 控件."""
-
-    @pytest.fixture
-    def engine_widget(self, qtbot, setup_globl):
-        """构造 EngineWidget,使用伪 EngineManager."""
-        from XQMagicUI import Globl
-        from XQMagicUI.Engine import EngineManager
-        from XQMagicUI.Utils import QGameManager
-        from XQMagicUI.Widgets import EngineWidget
-
-        # EngineWidget 内部会读 QGameManager.game_mode_changed_signal
-        Globl.gameManager = QGameManager()
-
-        # 使用真实的 EngineManager 但阻断真实进程
-        class FakeEngine:
-            ids = {"name": "FakeEngine"}
-            options = {}
-
-            def load(self, path):
-                return True
-
-            def set_option(self, name, value):
-                self.options[name] = value
-
-            def go_from(self, fen, params):
-                return True
-
-            def stop_thinking(self):
-                return True
-
-            def get_action(self):
-                return None
-
-            def quit(self):
-                return True
-
-        with (
-            patch("XQMagicUI.Engine.UciEngine", lambda _: FakeEngine()),
-            patch("XQMagicUI.Engine.UcciEngine", lambda _: FakeEngine()),
-        ):
-            mgr = EngineManager(None, id=1)
-            mgr.isReady = True  # 直接置为 ready
-            # 提供 setOption
-            mgr.setOption = MagicMock()
-
-        # 提供一个真实的 QWidget parent,避免 checkbox 变化时调用 None.enginePlayColor
-        # 同时挂上 enginePlayColor mock 方法
-        from PyQt5.QtWidgets import QWidget
-
-        parent = QWidget()
-        parent.enginePlayColor = MagicMock()  # type: ignore[attr-defined]
-        qtbot.addWidget(parent)
-        w = EngineWidget(parent, mgr)
-        qtbot.addWidget(w)
-        return w, mgr
 
     def test_default_mode_buttons(self, engine_widget):
         w, _ = engine_widget
@@ -106,6 +120,17 @@ class TestEngineWidget:
     def test_analysis_box_default_unchecked(self, engine_widget):
         w, _ = engine_widget
         assert w.analysisBox.isChecked() is False
+
+    def test_bg_thinking_box_in_engine_panel_layout(self, engine_widget):
+        """后台思考 checkbox 必须在 engine panel 的 hbox 顶层布局里,
+        不能漂浮在 dockedWidget 之外(否则等于在一个独立 panel 里)。"""
+        w, _ = engine_widget
+        assert w.bgThinkingBox.parent() is w.dockedWidget
+        # 用 isHidden() 检查:反映显式 hide() 状态,不依赖父级是否被 show
+        # (headless 测试中父 dock 默认未 show,直接断言 isVisible 不可靠)
+        assert w.bgThinkingBox.isHidden() is False
+        assert w.bgThinkingBox.text() == "后台思考"
+        assert w.bgThinkingBox.isChecked() is False
 
     def test_red_check_triggers_enginePlayColor(self, engine_widget):
         w, mgr = engine_widget
@@ -171,7 +196,7 @@ class TestEngineWidget:
         w, _ = engine_widget
         w.gameMode = __import__(
             "XQMagicUI.Utils", fromlist=["GameMode"]
-        ).GameMode.EngineEndGame
+        ).GameMode.Puzzle
         # 重构后 puzzle 模式不再特珠,走默认 "go" 前缀
         w.params["go.depth"] = 30
         w.params["go.movetime"] = 0
@@ -198,7 +223,7 @@ class TestEngineWidget:
         w.engineManager.isReady = True
         from XQMagicUI.Utils import GameMode
 
-        w.onGameModeChanged(GameMode.EngineEndGame, GameMode.Free)
+        w.onGameModeChanged(GameMode.Puzzle, GameMode.Free)
         assert w.blackBox.isChecked() is True
         assert w.redBox.isChecked() is False
         assert w.analysisBox.isChecked() is False
@@ -263,3 +288,204 @@ class TestEngineWidget:
         assert bool(w2.redBox.isChecked()) is True
         assert bool(w2.blackBox.isChecked()) is True
         assert bool(w2.analysisBox.isChecked()) is True
+
+
+# =====================================================================
+# EngineWidget 补充 (从 test_ui_misc_widgets.py 迁入, 共享上面 engine_widget fixture)
+# =====================================================================
+INIT_FEN = "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1"
+
+
+class TestEngineWidgetExtras:
+    """EngineWidget 额外行为: applyParams / onViewBranch / onConfigEngine 等."""
+
+    def test_onEngineReady_sets_title(self, engine_widget, setup_globl):
+        from XQMagicUI import Globl
+
+        w, mgr = engine_widget
+        w.onEngineReady(1, "FakeEngine", {})
+        # 标题应更新为包含引擎名
+        assert "FakeEngine" in w.windowTitle()
+        # 配置按钮应被启用
+        assert w.configBtn.isEnabled() is True
+        # params 应被填充
+        assert w.params["EnginePath"] == "x.exe"
+        assert w.params["EngineType"] == "ucci"
+
+    def test_applyParams_sends_to_engine(self, engine_widget):
+        w, mgr = engine_widget
+        w.params["custom.test"] = 42
+        w.applyParams(["custom.test"])
+        mgr.setOption.assert_called_with("test", 42)
+
+    def test_applyParamsWithPrefix_filters_by_prefix(self, engine_widget):
+        w, mgr = engine_widget
+        w.params["deep.depth"] = 25
+        w.params["deep.movetime"] = 100
+        w.params["quick.depth"] = 15
+        w.applyParamsWithPrefix(["deep"])
+        # deep.* 应当被发送
+        called_keys = [c.args[0] for c in mgr.setOption.call_args_list]
+        assert "depth" in called_keys
+        assert "movetime" in called_keys
+
+    def test_applyAllParams_engine_assit(self, engine_widget):
+        w, mgr = engine_widget
+        w.gameMode = __import__(
+            "XQMagicUI.Utils", fromlist=["GameMode"]
+        ).GameMode.EngineAssit
+        w.goMode = "quick"
+        w.params["param.Threads"] = 4
+        w.params["quick.depth"] = 18
+        w.applyAllParams()
+        # 应至少调用 2 次 setOption(一个 param.* 一个 quick.*)
+        assert mgr.setOption.call_count >= 2
+
+    def test_applyAllParams_engine_fight(self, engine_widget):
+        w, mgr = engine_widget
+        w.gameMode = __import__(
+            "XQMagicUI.Utils", fromlist=["GameMode"]
+        ).GameMode.EngineFight
+        w.params["fight.depth"] = 20
+        w.applyAllParams()
+        # fight.* 应当被发送
+        called_keys = [c.args[0] for c in mgr.setOption.call_args_list]
+        assert "depth" in called_keys
+
+    def test_applyAllParams_engine_online(self, engine_widget):
+        w, mgr = engine_widget
+        w.gameMode = __import__(
+            "XQMagicUI.Utils", fromlist=["GameMode"]
+        ).GameMode.EngineOnline
+        w.params["online.depth"] = 22
+        w.applyAllParams()
+        called_keys = [c.args[0] for c in mgr.setOption.call_args_list]
+        assert "depth" in called_keys
+
+    def test_onMultiPVChanged_free_mode_noop(self, engine_widget):
+        # 在 Free 模式下改变 MultiPV 不应触发 redoThinking
+        w, mgr = engine_widget
+        w.gameMode = __import__("XQMagicUI.Utils", fromlist=["GameMode"]).GameMode.Free
+        mgr.stopThinking.reset_mock()
+        mgr.redoThinking.reset_mock()
+        w.multiPVSpin.setValue(5)
+        # Free 模式下不应调用 stopThinking / redoThinking
+        mgr.stopThinking.assert_not_called()
+        mgr.redoThinking.assert_not_called()
+
+    def test_onMultiPVChanged_engine_assit(self, engine_widget):
+        w, mgr = engine_widget
+        w.gameMode = __import__(
+            "XQMagicUI.Utils", fromlist=["GameMode"]
+        ).GameMode.EngineAssit
+        w.goMode = "quick"
+        mgr.stopThinking.reset_mock()
+        mgr.redoThinking.reset_mock()
+        w.params["quick.MultiPV"] = 3
+        w.multiPVSpin.setValue(5)
+        # 应至少调用一次(实际可能因为 valueChanged 多次触发而多次调用)
+        mgr.stopThinking.assert_called()
+        mgr.redoThinking.assert_called()
+        # 参数应被更新
+        assert w.params["quick.MultiPV"] == 5
+
+    def test_setMultiPV_updates_spin(self, engine_widget):
+        w, mgr = engine_widget
+        w.gameMode = __import__(
+            "XQMagicUI.Utils", fromlist=["GameMode"]
+        ).GameMode.EngineAssit
+        w.goMode = "quick"
+        mgr.stopThinking.reset_mock()
+        mgr.redoThinking.reset_mock()
+        w.params["quick.MultiPV"] = 7
+        w.setMultiPV()
+        assert w.multiPVSpin.value() == 7
+
+    def test_getDefaultMem_clamps_to_max(self, engine_widget):
+        w, _ = engine_widget
+        w.MAX_MEM = 500
+        # 来自 getFreeMem, 只要在合法范围
+        mem = w.getDefaultMem()
+        assert 0 < mem <= 500
+        # 应当是 100 的倍数
+        assert mem % 100 == 0
+
+    def test_getDefaultThreads(self, engine_widget):
+        w, _ = engine_widget
+        w.MAX_THREADS = 8
+        assert w.getDefaultThreads() == 4
+
+    def test_onViewBranch_no_item(self, engine_widget):
+        w, _ = engine_widget
+        w.posView.setCurrentItem(None)
+        # 没有选中项时不应抛异常
+        w.onViewBranch()
+
+    def test_onViewBranch_with_item(self, engine_widget):
+        w, _ = engine_widget
+        # 准备一个 branch
+        w.branchs[1] = {
+            "fen": INIT_FEN,
+            "moves": ["h2e2"],
+            "multipv": 1,
+            "depth": 10,
+        }
+        item = QTreeWidgetItem(["10", "1", "炮二平五", ""])
+        item.setData(0, Qt.UserRole, 1)
+        w.posView.addTopLevelItem(item)
+        w.posView.setCurrentItem(item)
+        # 父窗口应被调用 onViewBranch
+        w.parent.onViewBranch = MagicMock()
+        w.onViewBranch()
+        w.parent.onViewBranch.assert_called_once()
+
+    def test_onConfigEngine_no_dialog(self, engine_widget, monkeypatch):
+        # 模拟 onConfigEngine
+        w, _ = engine_widget
+        # 替换 EngineConfigDialog 以避免真实对话框
+        mock_dlg = MagicMock()
+        mock_dlg.config = MagicMock(return_value=False)
+        with patch("XQMagicUI.Widgets.EngineConfigDialog", return_value=mock_dlg):
+            w.onConfigEngine()
+            # 因为 config 返回 False,不应调用 applyAllParams
+            # 但也不抛异常
+            assert True
+
+
+# =====================================================================
+# EngineWidget.params 初始化 (从 test_ui_misc_widgets.py 迁入, 共享上面 engine_widget fixture)
+# =====================================================================
+class TestEngineWidgetParams:
+    """EngineWidget 初始化时的 params 检查."""
+
+    def test_params_contains_expected_keys(self, engine_widget):
+        w, _ = engine_widget
+        # params 应包含所有引擎配置项
+        expected = [
+            "param.Repetition Rule",
+            "param.Ponder",
+            "param.Threads",
+            "param.Hash",
+            "deep.MultiPV",
+            "go.deep.depth",
+            "go.deep.movetime",
+            "go.quick.depth",
+            "go.quick.movetime",
+            "fight.UCI_Elo",
+            "go.fight.depth",
+            "go.fight.movetime",
+        ]
+        for key in expected:
+            assert key in w.params, f"缺少参数: {key}"
+
+    def test_enginePlayColor_called_on_check(self, engine_widget):
+        w, _ = engine_widget
+        w.parent.enginePlayColor.reset_mock()
+        w.redBox.setChecked(True)
+        w.parent.enginePlayColor.assert_called()
+
+    def test_analysis_box_triggers_enginePlayColor(self, engine_widget):
+        w, _ = engine_widget
+        w.parent.enginePlayColor.reset_mock()
+        w.analysisBox.setChecked(True)
+        w.parent.enginePlayColor.assert_called()

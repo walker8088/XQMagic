@@ -97,10 +97,12 @@ class PositionInfo:
         return hasattr(self, key) or key in self.meta
 
     def get(self, key: str, default=None):
-        try:
+        # 原实现用 try/except 依赖 __getitem__ 抛异常;
+        # 但 __getitem__ 对未设值返 None 不抛,导致 default 参数被忽略。
+        # 改为依赖 __contains__:未包含则返回 default。
+        if key in self:
             return self[key]
-        except (AttributeError, KeyError):
-            return default
+        return default
 
 
 # -----------------------------------------------------#

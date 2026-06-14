@@ -449,7 +449,7 @@ class MainWindow(QMainWindow):
             self.editBoardAct.setEnabled(True)
 
             if old_mode in [
-                GameMode.EngineEndGame,
+                GameMode.Puzzle,
             ]:
                 self.initGame(cchess.FULL_INIT_FEN)
 
@@ -470,7 +470,7 @@ class MainWindow(QMainWindow):
             self.editBoardAct.setEnabled(True)
 
             if old_mode in [
-                GameMode.EngineEndGame,
+                GameMode.Puzzle,
             ]:
                 self.initGame(cchess.FULL_INIT_FEN)
 
@@ -492,7 +492,7 @@ class MainWindow(QMainWindow):
 
             self.initGame(cchess.FULL_INIT_FEN)
 
-        elif new_mode == GameMode.EngineEndGame:
+        elif new_mode == GameMode.Puzzle:
             self.myGamesAct.setEnabled(False)
             self.bookmarkAct.setEnabled(False)
             self.endBookView.show()
@@ -510,7 +510,7 @@ class MainWindow(QMainWindow):
             self.endBookView.nextGame()
 
     def onGameOver(self, win_side):
-        if Globl.gameManager.gameMode == GameMode.EngineEndGame:
+        if Globl.gameManager.gameMode == GameMode.Puzzle:
             if win_side == cchess.BLACK:
                 msgbox = TimerMessageBox("挑战失败, 重新再来!")
                 msgbox.exec()
@@ -1301,16 +1301,16 @@ class MainWindow(QMainWindow):
         self.switchGameMode(GameMode.EngineFight)
 
     def onDoEndGame(self):
-        if (Globl.gameManager.gameMode != GameMode.EngineEndGame) and self.isNeedSave:
+        if (Globl.gameManager.gameMode != GameMode.Puzzle) and self.isNeedSave:
             steps = len(self.positionList) - 1
             if not self.getConfirm(
                 f"当前棋谱已经走了 {steps} 步, 您确定要切换到 [残局挑战] 模式并丢弃当前棋谱吗?"
             ):
                 return
-        self.switchGameMode(GameMode.EngineEndGame)
+        self.switchGameMode(GameMode.Puzzle)
 
     def onDoOnline(self):
-        if (Globl.gameManager.gameMode != GameMode.EngineEndGame) and self.isNeedSave:
+        if (Globl.gameManager.gameMode != GameMode.Puzzle) and self.isNeedSave:
             steps = len(self.positionList) - 1
             if not self.getConfirm(
                 f"当前棋谱已经走了 {steps} 步, 您确定要切换到 [残局挑战] 模式并丢弃当前棋谱吗?"
@@ -1352,7 +1352,7 @@ class MainWindow(QMainWindow):
         self.initGame(self.init_fen)
 
     def onSelectEndGame(self, game):
-        if Globl.gameManager.gameMode != GameMode.EngineEndGame:
+        if Globl.gameManager.gameMode != GameMode.Puzzle:
             return
 
         self.currGame = game

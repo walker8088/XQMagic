@@ -807,6 +807,9 @@ class EngineWidget(QDockWidget):
         self.params["go.fight.movetime"] = 0
         self.params["fight.MultiPV"] = 1  # 不参与编辑
 
+        self.params["go.depth"] = 20
+        self.params["go.movetime"] = 0
+
         hbox = QHBoxLayout()
 
         self.engineLabel = QLabel()
@@ -867,6 +870,7 @@ class EngineWidget(QDockWidget):
         hbox.addWidget(self.engineLabel, 2)
         hbox.addWidget(self.reviewBtn, 0)
         hbox.addWidget(self.analysisBox, 0)
+        hbox.addWidget(self.bgThinkingBox, 0)
         hbox.addWidget(self.bgQueueLabel, 0)
 
         vbox = QVBoxLayout()
@@ -980,7 +984,7 @@ class EngineWidget(QDockWidget):
         ]:
             self.analysisBox.setChecked(True)
 
-        elif gameMode == GameMode.EngineEndGame:
+        elif gameMode == GameMode.Puzzle:
             self.redBox.setChecked(False)
             self.blackBox.setChecked(True)
             self.analysisBox.setChecked(False)
@@ -1153,6 +1157,7 @@ class EngineWidget(QDockWidget):
         settings.setValue("engineRed", self.redBox.isChecked())
         settings.setValue("engineBlack", self.blackBox.isChecked())
         settings.setValue("engineAnalysis", self.analysisBox.isChecked())
+        settings.setValue("engineBgThinking", self.bgThinkingBox.isChecked())
 
     def loadSettings(self, settings):
         for key, old_value in self.params.items():
@@ -1165,6 +1170,9 @@ class EngineWidget(QDockWidget):
         self.redBox.setChecked(settings.value("engineRed", False, type=bool))
         self.blackBox.setChecked(settings.value("engineBlack", False, type=bool))
         self.analysisBox.setChecked(settings.value("engineAnalysis", False, type=bool))
+        self.bgThinkingBox.setChecked(
+            settings.value("engineBgThinking", False, type=bool)
+        )
 
     def getDefaultMem(self):
         mem = getFreeMem() / 2
@@ -1504,6 +1512,7 @@ class EndBookWidget(QDockWidget):
         self.dockedWidget = QWidget(self)
         self.setWidget(self.dockedWidget)
 
+        # Add widgets to the layout
         self.bookView = QListWidget()
 
         # Add widgets to the layout
@@ -1511,12 +1520,18 @@ class EndBookWidget(QDockWidget):
         self.bookCombo.currentTextChanged.connect(self.onBookChanged)
         self.importBtn = QPushButton("导入")
         self.importBtn.clicked.connect(self.onImportBtnClick)
+        self.batchImportBtn = QPushButton("批量导入")
+        self.batchImportBtn.setToolTip(
+            "从文件夹导入全部 .eglib 残局库,跳过同名已存在的库"
+        )
+        self.batchImportBtn.clicked.connect(self.onBatchImportBtnClick)
         self.openBtn = QPushButton("打开")
         self.openBtn.clicked.connect(self.onOpenBtnClick)
 
         hbox = QHBoxLayout()
         hbox.addWidget(self.bookCombo, 2)
         hbox.addWidget(self.importBtn, 0)
+        hbox.addWidget(self.batchImportBtn, 0)
         hbox.addWidget(self.openBtn, 0)
 
         vbox = QVBoxLayout()
@@ -1614,6 +1629,56 @@ class EndBookWidget(QDockWidget):
 
     def onOpenBtnClick(self):
         pass
+
+    def onBatchImportBtnClick(self):
+        """批量导入:从文件夹一次性导入所有 .eglib,跳过同名已存在的库.
+
+        用于恢复被误清空的 endbooks.json(从 Books/ 下的原始库恢复)。
+        """
+        options = QFileDialog.Options()
+        default_dir = Path("Books") / "已整理残局Book"
+        if not default_dir.is_dir():
+            default_dir = Path(".")
+        dirName = QFileDialog.getExistingDirectory(
+            self,
+            "选择残局库文件夹",
+            str(default_dir),
+            options=options,
+        )
+        if not dirName:
+            return
+
+        imported, skipped = self.batchImportFromDir(Path(dirName))
+        if imported == 0 and skipped == 0:
+            msgbox = TimerMessageBox(f"未在 {dirName} 中找到 .eglib 文件", timeout=2)
+            msgbox.exec()
+            return
+
+        self.updateBooks()
+        msgbox = TimerMessageBox(
+            f"批量导入完成: 新导入 {imported} 个,跳过 {skipped} 个", timeout=2
+        )
+        msgbox.exec()
+
+    @staticmethod
+    def batchImportFromDir(books_dir):
+        """从 books_dir 下的 .eglib 批量导入到 Globl.endbookStore.
+
+        跳过同名已存在的库(保留挑战进度)。返回 ``(imported, skipped)``。
+        本方法不弹出任何 UI,可被测试直接调用。
+        """
+        eglib_files = sorted(books_dir.glob("*.eglib"))
+        imported = 0
+        skipped = 0
+        for eglib in eglib_files:
+            book_name = eglib.stem
+            if Globl.endbookStore.isEndBookExist(book_name):
+                skipped += 1
+                continue
+            games = list(loadEglib(str(eglib)))
+            Globl.endbookStore.saveEndBook(book_name, games)
+            imported += 1
+        return imported, skipped
 
     def onBookChanged(self, book_name):
         self.bookView.clear()

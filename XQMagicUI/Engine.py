@@ -102,9 +102,11 @@ class EngineManager(QObject):
 
         logging.info(f"Engine[{self.id}] stop")
         self.engine.stop_thinking()
-        # time.sleep(0.2)
-        # self.engine.get_action()
-
+        # 立刻把“分析中”置假：主线程 stop 后通常紧跟 goFrom(例如 initGame
+        # 里的 clearAll + changePositionSignal),如果还在分析中,goFrom 会
+        # 多发一次 stop 并走 pending,体感是“引擎没启动” (Puzzle 模式典型现象).
+        # 旧的 bestmove 抵达时会被 _runOnce 中 _is_analyzing=False 路径丢弃.
+        self._is_analyzing = False
         return True
 
     def redoThinking(self):
@@ -181,6 +183,14 @@ class EngineManager(QObject):
             action["fen"] = self.fen
             board = ChessBoard(self.fen)
             move_color = board.get_move_color()
+
+        # 兜底:stopThinking() 已把 _is_analyzing 置 False 后,
+        # 旧局面的 bestmove 可能还在路上,直接丢弃(避免主线程把旧着法
+        # 当成新局面的着法处理).如果 _pending_go 有值,说明是新 go 在
+        # 等响应,放行让正常 bestmove 处理路径继续.
+        if act_id == "bestmove" and not self._is_analyzing and not self._pending_go:
+            logging.info(f"Engine[{self.id}] discard stale bestmove after stopThinking")
+            return
 
         if act_id == "bestmove":
             ret = {}

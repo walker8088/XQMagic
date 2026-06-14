@@ -116,7 +116,7 @@ class GameMode(Enum):
     Free = 1           # Free practice
     EngineAssit = 2    # Engine assistance
     EngineFight = 3    # Human vs engine
-    EngineEndGame = 4  # Endgame puzzles
+    Puzzle = 4  # Endgame puzzles
     EngineOnline = 5   # Online analysis
 
 class ReviewMode(Enum):

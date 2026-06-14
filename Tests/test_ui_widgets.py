@@ -616,6 +616,52 @@ class TestEndBookWidget:
         w2.loadSettings(Globl.settings)
         assert w2.currBookName == "book1"
 
+    def test_batchImportFromDir_imports_missing_books(self, widget, tmp_path):
+        """从文件夹批量导入应该补齐缺失的库,跳过已存在的库(保留 ok 标记)。"""
+        from XQMagicUI import Globl
+        from XQMagicUI.Widgets import EndBookWidget
+
+        # 在 tmp_path 下准备 .eglib 文件:
+        # book1(已存在,应被跳过)/book3(新,应被导入)
+        books_dir = tmp_path / "books"
+        books_dir.mkdir()
+        (books_dir / "book1.eglib").write_text(
+            "新题目|9/9/9/9/9/9/9/9/9/9 w - - 0 1\n",
+            encoding="utf-8",
+        )
+        (books_dir / "book3.eglib").write_text(
+            "A|9/9/9/9/9/9/9/9/9/9 w - - 0 1\nB|9/9/9/9/9/9/9/9/9/9 b - - 0 1\n",
+            encoding="utf-8",
+        )
+
+        # book1 当前只有"第一局",把它的 ok=True 以便验证保留
+        widget.updateBooks()
+        widget.bookCombo.setCurrentText("book1")
+        widget.currGame["ok"] = True
+        Globl.endbookStore.updateEndBook(widget.currGame)
+
+        imported, skipped = EndBookWidget.batchImportFromDir(books_dir)
+        assert imported == 1
+        assert skipped == 1
+
+        # book3 应被导入
+        all_books = Globl.endbookStore.getAllEndBooks()
+        assert "book3" in all_books
+        assert len(all_books["book3"]) == 2
+
+        # book1 的 ok 标记应被保留
+        book1_games = all_books["book1"]
+        assert any(g["ok"] is True for g in book1_games)
+
+    def test_batchImportFromDir_empty_dir(self, widget, tmp_path):
+        """空文件夹应返回 (0, 0)。"""
+        from XQMagicUI.Widgets import EndBookWidget
+
+        books_dir = tmp_path / "empty_books"
+        books_dir.mkdir()
+        imported, skipped = EndBookWidget.batchImportFromDir(books_dir)
+        assert (imported, skipped) == (0, 0)
+
 
 # =====================================================================
 # GameLibWidget

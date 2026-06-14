@@ -43,7 +43,7 @@ class GameMode(Enum):
     Free = auto()
     EngineAssit = auto()
     EngineFight = auto()
-    EngineEndGame = auto()
+    Puzzle = auto()
     EngineOnline = auto()
 
 
@@ -51,7 +51,7 @@ GameTitle = {
     GameMode.Free: "自由练棋",
     GameMode.EngineAssit: "引擎辅助",
     GameMode.EngineFight: "人机对战",
-    GameMode.EngineEndGame: "杀法挑战",
+    GameMode.Puzzle: "杀法挑战",
     GameMode.EngineOnline: "连线分析",
 }
 

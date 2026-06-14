@@ -44,9 +44,9 @@ class TestQGameManager:
     def test_setGameMode_updates_state(self, gm):
         from XQMagicUI.Utils import GameMode
 
-        gm.setGameMode(GameMode.EngineEndGame)
-        assert gm.gameMode == GameMode.EngineEndGame
-        # 代码中 GameTitle[GameMode.EngineEndGame] 为"杀法挑战"
+        gm.setGameMode(GameMode.Puzzle)
+        assert gm.gameMode == GameMode.Puzzle
+        # 代码中 GameTitle[GameMode.Puzzle] 为"杀法挑战"
         assert gm.getGameModeText() == "杀法挑战"
 
     def test_setGameMode_to_engine_fight(self, gm):

@@ -15,7 +15,6 @@
 import sys
 import threading
 from collections import OrderedDict
-from unittest.mock import MagicMock, patch
 
 import cchess
 import pytest
@@ -27,12 +26,7 @@ EMPTY_FEN = "4k4/9/9/9/9/9/9/9/9/4K4 w - - 0 1"
 # =====================================================================
 # 公共 fixture
 # =====================================================================
-@pytest.fixture
-def patched_modules(monkeypatch):
-    """屏蔽缺失的原生模块(DLL 加载会失败)."""
-    monkeypatch.setitem(sys.modules, "onnxruntime", MagicMock())
-    monkeypatch.setitem(sys.modules, "cchess_board", MagicMock())
-    monkeypatch.setitem(sys.modules, "cchess_board.detector", MagicMock())
+# patched_modules 在 Tests/conftest.py 中定义,这里直接复用
 
 
 @pytest.fixture
@@ -443,7 +437,7 @@ class TestMainWindowReview:
     def test_onSelectEndGame_loads_puzzle(self, main_window, setup_globl):
         from XQMagicUI.Utils import GameMode
 
-        main_window.switchGameMode(GameMode.EngineEndGame)
+        main_window.switchGameMode(GameMode.Puzzle)
         # EMPTY_FEN 只有双王,必须使用王走子作为合法 moves
         game = {
             "name": "测试局",
@@ -504,7 +498,7 @@ class TestMainWindowMisc:
     def test_updateTitle_reflects_mode(self, main_window, setup_globl):
         from XQMagicUI.Utils import GameMode
 
-        main_window.switchGameMode(GameMode.EngineEndGame)
+        main_window.switchGameMode(GameMode.Puzzle)
         # 中文应用名包含"杀法挑战"(代码中该模式名仍为"杀法挑战")
         assert "杀法挑战" in main_window.windowTitle()
 
