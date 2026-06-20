@@ -2,7 +2,7 @@
 """恢复残局库.
 
 如果 ``Game/puzzles.json`` 被误删/清空(比如旧版 conftest 误清用户目录),
-用这个脚本从 ``Books/已整理残局Book/`` 下的 ``.eglib`` 文件批量导入到
+用这个脚本从 ``Books/已整理残局Book/`` 下的 ``.eglib`` / ``.eglib.json`` 文件批量导入到
 TinyDB,恢复出题用的残局库。
 
 已存在的同名残局库会被跳过(不会覆盖用户原有的挑战进度 ``ok`` 标记)。
@@ -27,7 +27,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from XQMagicUI.Storage import PuzzleStore  # noqa: E402
-from XQMagicUI.Utils import loadEglib  # noqa: E402
+from XQMagicUI.Utils import loadEglib, loadEglibJson  # noqa: E402
 
 GAME_DIR = Path("Game")
 BOOKS_DIR = Path("Books") / "已整理残局Book"
@@ -38,7 +38,7 @@ def restore_puzzles(game_path, books_dir, *, dry_run=False):
 
     Args:
         game_path: 目标 TinyDB 文件路径(``Game/puzzles.json``)
-        books_dir: 包含 ``.eglib`` 文件的目录
+        books_dir: 包含 ``.eglib`` / ``.eglib.json`` 文件的目录
         dry_run: True 时只统计会做什么,不实际写入
 
     Returns:
@@ -46,9 +46,11 @@ def restore_puzzles(game_path, books_dir, *, dry_run=False):
     """
     game_path.parent.mkdir(parents=True, exist_ok=True)
 
-    eglib_files = sorted(books_dir.glob("*.eglib"))
+    eglib_files = sorted(
+        list(books_dir.glob("*.eglib")) + list(books_dir.glob("*.eglib.json"))
+    )
     if not eglib_files:
-        print(f"未找到 .eglib 文件: {books_dir}")
+        print(f"未找到 .eglib / .eglib.json 文件: {books_dir}")
         return 0, 0
 
     if dry_run:
@@ -62,12 +64,17 @@ def restore_puzzles(game_path, books_dir, *, dry_run=False):
         imported = 0
         skipped = 0
         for eglib in eglib_files:
-            book_name = eglib.stem
+            lower = eglib.name.lower()
+            if lower.endswith(".eglib.json"):
+                book_name = eglib.stem[: -len(".eglib")]
+                games = loadEglibJson(eglib)
+            else:
+                book_name = eglib.stem
+                games = loadEglib(eglib)
             if store.isPuzzleBookExist(book_name):
                 print(f"跳过: {book_name} (已存在,保留挑战进度)")
                 skipped += 1
                 continue
-            games = list(loadEglib(eglib))
             store.savePuzzles(book_name, games)
             print(f"导入: {book_name} ({len(games)} 个残局)")
             imported += 1

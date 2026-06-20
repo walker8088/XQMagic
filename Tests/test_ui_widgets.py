@@ -662,6 +662,44 @@ class TestPuzzleWidget:
         imported, skipped = PuzzleWidget.batchImportFromDir(books_dir)
         assert (imported, skipped) == (0, 0)
 
+    def test_batchImportFromDir_imports_eglib_json(self, widget, tmp_path):
+        """批量导入应同时支持 .eglib 和 .eglib.json."""
+        import json
+
+        from XQMagicUI import Globl
+        from XQMagicUI.Widgets import PuzzleWidget
+
+        books_dir = tmp_path / "books"
+        books_dir.mkdir()
+        # .eglib.json 新格式
+        (books_dir / "json_book.eglib.json").write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "games": [
+                        {"name": "JSON题", "fen": "9/9/9/9/9/9/9/9/9/9 w - - 0 1"},
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        # .eglib 旧格式
+        (books_dir / "legacy_book.eglib").write_text(
+            "旧题|9/9/9/9/9/9/9/9/9/9 b - - 0 1\n",
+            encoding="utf-8",
+        )
+
+        imported, skipped = PuzzleWidget.batchImportFromDir(books_dir)
+        assert imported == 2
+        assert skipped == 0
+
+        all_books = Globl.puzzleStore.getAllPuzzles()
+        assert "json_book" in all_books
+        assert "legacy_book" in all_books
+        assert len(all_books["json_book"]) == 1
+        assert len(all_books["legacy_book"]) == 1
+
 
 # =====================================================================
 # GameLibWidget

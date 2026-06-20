@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import csv
+import json
 import os
 import sys
 import traceback
@@ -252,6 +253,48 @@ def loadEglib(lib_file):
             games[name]["moves"] = its[2]
 
     return games.values()
+
+
+# -----------------------------------------------------#
+def loadEglibJson(lib_file):
+    """从 .eglib.json 加载题库.
+
+    JSON schema (顶层包对象,防劫持):
+        {
+            "version": 1,
+            "games": [
+                {"name": "...", "fen": "...", "moves": "..."},
+                ...
+            ]
+        }
+    ``moves`` 字段可选. 兼容 ``version`` 缺失的旧 JSON.
+    """
+    with open(lib_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    games = data["games"] if isinstance(data, dict) and "games" in data else data
+    out = []
+    for g in games:
+        item = {"name": g["name"], "fen": g["fen"]}
+        if "moves" in g and g["moves"]:
+            item["moves"] = g["moves"]
+        out.append(item)
+    return out
+
+
+def saveEglibJson(lib_file, games):
+    """保存题库到 .eglib.json.
+
+    ``games`` 为 list[dict],每项至少含 ``name``、``fen``,可选 ``moves``.
+    顶层带 ``version`` 字段,便于未来 schema 演进.
+    """
+    payload = {"version": 1, "games": []}
+    for g in games:
+        item = {"name": g["name"], "fen": g["fen"]}
+        if "moves" in g and g["moves"]:
+            item["moves"] = g["moves"]
+        payload["games"].append(item)
+    with open(lib_file, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
 
 
 # -----------------------------------------------------#

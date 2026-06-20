@@ -197,3 +197,121 @@ def test_handles_comments_and_blank_lines(restore_module, tmp_path):
         assert len(all_books["book_a"]) == 2
     finally:
         store.close()
+
+# ----------------------------------------------------------------------------
+# JSON 格式(.eglib.json)
+# ----------------------------------------------------------------------------
+def _make_eglib_json(path: Path, name_fen_pairs: list):
+    """写入一个简单的 .eglib.json 文件."""
+    import json
+    payload = {
+        "version": 1,
+        "games": [{"name": n, "fen": f} for n, f in name_fen_pairs],
+    }
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def test_restores_eglib_json_files(restore_module, tmp_path):
+    """.eglib.json 应与 .eglib 行为一致:导入到 TinyDB."""
+    books = _make_eglib_dir(tmp_path)
+    _make_eglib_json(
+        books / "book_a.eglib.json",
+        [
+            ("第一题", "9/9/9/9/9/9/9/9/9/9 w - - 0 1"),
+            ("第二题", "9/9/9/9/9/9/9/9/9/9 b - - 0 1"),
+        ],
+    )
+
+    game_path = tmp_path / "Game" / "puzzles.json"
+    imported, skipped = restore_module.restore_puzzles(game_path, books)
+
+    assert imported == 1
+    assert skipped == 0
+
+    from XQMagicUI.Storage import PuzzleStore
+
+    store = PuzzleStore(game_path)
+    try:
+        all_books = store.getAllPuzzles()
+        assert "book_a" in all_books
+        assert len(all_books["book_a"]) == 2
+        names = {g["name"] for g in all_books["book_a"]}
+        assert names == {"第一题", "第二题"}
+    finally:
+        store.close()
+
+
+def test_mixed_eglib_and_eglib_json(restore_module, tmp_path):
+    """同一目录下 .eglib 和 .eglib.json 都能被批量导入."""
+    books = _make_eglib_dir(tmp_path)
+    _make_eglib(
+        books / "old_book.eglib",
+        [("旧题", "9/9/9/9/9/9/9/9/9/9 w - - 0 1")],
+    )
+    _make_eglib_json(
+        books / "new_book.eglib.json",
+        [("新题", "9/9/9/9/9/9/9/9/9/9 b - - 0 1")],
+    )
+
+    game_path = tmp_path / "Game" / "puzzles.json"
+    imported, skipped = restore_module.restore_puzzles(game_path, books)
+
+    assert imported == 2
+    assert skipped == 0
+
+
+def test_save_and_load_eglib_json_roundtrip(tmp_path):
+    """Utils.saveEglibJson / loadEglibJson 往返一致性."""
+    from XQMagicUI.Utils import loadEglibJson, saveEglibJson
+
+    games = [
+        {"name": "题1", "fen": "9/9/9/9/9/9/9/9/9/9 w - - 0 1"},
+        {"name": "题2", "fen": "9/9/9/9/9/9/9/9/9/9 b - - 0 1", "moves": "h2e2"},
+    ]
+    path = tmp_path / "rt.eglib.json"
+    saveEglibJson(path, games)
+
+    loaded = loadEglibJson(path)
+    assert loaded == games
+
+
+def test_load_eglib_json_without_moves(tmp_path):
+    """moves 字段缺省时,loadEglibJson 不应抛错."""
+    import json
+
+    from XQMagicUI.Utils import loadEglibJson
+
+    path = tmp_path / "no_moves.eglib.json"
+    path.write_text(
+        json.dumps(
+            {"version": 1, "games": [{"name": "x", "fen": "9/9/9/9/9/9/9/9/9/9 w - - 0 1"}]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    loaded = loadEglibJson(path)
+    assert len(loaded) == 1
+    assert loaded[0]["name"] == "x"
+    assert "moves" not in loaded[0]
+
+
+def test_load_eglib_json_accepts_legacy_bare_array(tmp_path):
+    """旧 JSON 可能直接是顶层数组,loader 应兼容."""
+    import json
+
+    from XQMagicUI.Utils import loadEglibJson
+
+    path = tmp_path / "legacy.eglib.json"
+    path.write_text(
+        json.dumps(
+            [{"name": "x", "fen": "9/9/9/9/9/9/9/9/9/9 w - - 0 1"}],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    loaded = loadEglibJson(path)
+    assert len(loaded) == 1
+    assert loaded[0]["name"] == "x"

@@ -56,6 +56,7 @@ from .Utils import (
     getTitle,
     loadCsvlib,
     loadEglib,
+    loadEglibJson,
 )
 
 
@@ -1586,7 +1587,7 @@ class PuzzleWidget(QDockWidget):
             self,
             "打开杀局谱文件",
             "",
-            "杀局谱文件(*.eglib);;CSV格式文件(*.csv);;All Files (*)",
+            "杀局谱文件(*.eglib *.eglib.json);;CSV格式文件(*.csv);;All Files (*)",
             options=options,
         )
 
@@ -1594,17 +1595,23 @@ class PuzzleWidget(QDockWidget):
             return
 
         lib_name = Path(fileName).stem
+        # .eglib.json 的 stem 形如 "00.基本杀法",与 .eglib 行为一致
+        if lib_name.endswith(".eglib"):
+            lib_name = lib_name[: -len(".eglib")]
         if Globl.puzzleStore.isPuzzleBookExist(lib_name):
             msgbox = TimerMessageBox(
                 f"杀局谱[{lib_name}]系统中已经存在，不能重复导入。", timeout=2
             )
             msgbox.exec()
             return
-        ext = Path(fileName).suffix.lower()
-        if ext == ".eglib":
+        lower = fileName.lower()
+        if lower.endswith(".eglib.json"):
+            games = loadEglibJson(fileName)
+            Globl.puzzleStore.savePuzzles(lib_name, games)
+        elif lower.endswith(".eglib"):
             games = loadEglib(fileName)
             Globl.puzzleStore.savePuzzles(lib_name, games)
-        if ext == ".csv":
+        elif lower.endswith(".csv"):
             games = loadCsvlib(fileName)
             Globl.puzzleStore.savePuzzles(lib_name, games)
 
@@ -1646,20 +1653,29 @@ class PuzzleWidget(QDockWidget):
 
     @staticmethod
     def batchImportFromDir(books_dir):
-        """从 books_dir 下的 .eglib 批量导入到 Globl.puzzleStore.
+        """从 books_dir 下的 .eglib / .eglib.json 批量导入到 Globl.puzzleStore.
 
+        同时扫描两种格式(向后兼容,优先 .eglib.json)。
         跳过同名已存在的库(保留挑战进度)。返回 ``(imported, skipped)``。
         本方法不弹出任何 UI,可被测试直接调用。
         """
-        eglib_files = sorted(books_dir.glob("*.eglib"))
+        eglib_files = sorted(
+            list(books_dir.glob("*.eglib")) + list(books_dir.glob("*.eglib.json"))
+        )
         imported = 0
         skipped = 0
         for eglib in eglib_files:
-            book_name = eglib.stem
+            lower = eglib.name.lower()
+            if lower.endswith(".eglib.json"):
+                book_name = eglib.stem[: -len(".eglib")]
+                loader = lambda p: loadEglibJson(p)
+            else:
+                book_name = eglib.stem
+                loader = lambda p: loadEglib(p)
             if Globl.puzzleStore.isPuzzleBookExist(book_name):
                 skipped += 1
                 continue
-            games = list(loadEglib(str(eglib)))
+            games = list(loader(str(eglib)))
             Globl.puzzleStore.savePuzzles(book_name, games)
             imported += 1
         return imported, skipped
