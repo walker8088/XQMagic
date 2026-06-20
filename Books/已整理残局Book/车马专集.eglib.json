@@ -1,0 +1,495 @@
+{
+  "version": 1,
+  "games": [
+    {
+      "name": "001车马对车兵",
+      "fen": "9/3k5/7N1/5R3/9/9/9/5K3/3pr4/9 w - - 0 1",
+      "moves": "h7g9,d8d7,g9e8,d7d8,e8g7,d8d9,g7e6,d9e9,e6c7"
+    },
+    {
+      "name": "002车马对车兵",
+      "fen": "9/2N2R3/3k5/9/9/9/9/9/2rp5/5K3 w - - 0 1",
+      "moves": "c8b6,d7e7,b6d5,e7d7,f8e8,c1c0,f0f1,c0c6,e8e2,c6d6,e2d2"
+    },
+    {
+      "name": "005车马对车兵",
+      "fen": "3R5/4k4/9/9/9/4N4/9/9/3pr4/5K3 w - - 0 1",
+      "moves": "e4d6,e8e7,d6f5,e7e8,f5g7,e8e7,d9e9,e7d7,g7e6,e1g1,e9b9,d7e7,b9b7,e7e8,e6g7,e8d8,g7f9,d8e8,b7e7"
+    },
+    {
+      "name": "006车马对车兵",
+      "fen": "3k5/8r/9/6N2/9/9/4R4/9/3p1K3/9 w - - 0 1",
+      "moves": "e3b3,i8i1,f1f2,i1e1,g6f8,d9e9,f8d7,e9d9,b3d3,d1c1,d7f6,d9e9,d3b3,e9d9,f6d5,e1d1,b3b9,d9d8,b9b8,d8d7,d5f6,d7e7,b8b7"
+    },
+    {
+      "name": "007车马对车兵",
+      "fen": "3k5/9/9/2R6/9/4N4/9/9/3pr4/5K3 w - - 0 1",
+      "moves": "e4g5,d9d8,g5f7,d8e8,f7g9"
+    },
+    {
+      "name": "008车马对车兵",
+      "fen": "3k5/9/9/2R2N3/4r4/9/9/5K3/3p5/9 w - - 0 1",
+      "moves": "c6c9,d9d8,c9c4,d8d9,c4d4,d9e9,f6d7"
+    },
+    {
+      "name": "009车马对车兵",
+      "fen": "9/1R4N2/3k5/3r5/9/9/9/9/3p1K3/9 w - - 0 1",
+      "moves": "g8e9,d7e7,e9c8,d6d8,f1f0,d1c1,b8b6,d8c8,b6e6,e7d7,f0e0"
+    },
+    {
+      "name": "010车马对车兵",
+      "fen": "3k5/9/9/2R6/7N1/9/9/9/3pr4/5K3 w - - 0 1",
+      "moves": "h5g7,e1g1,g7f9,d9e9,c6e6,e9d9,f9e7,d9d8,e7c6,d8d9,e6e8"
+    },
+    {
+      "name": "011车马对车兵",
+      "fen": "9/3k5/7N1/9/9/5R3/9/9/3pr4/5K3 w - - 0 1",
+      "moves": "h7g9,d8d7,f4b4,d1c1,g9e8,e1d1,b4b7,d7d8,b7b8,d8d9,e8c7,d9e9,b8e8"
+    },
+    {
+      "name": "012车马对车兵",
+      "fen": "9/5k3/5N3/9/9/9/4R4/9/3r5/2p1K4 w - - 0 1",
+      "moves": "e0f0,c0d0,e3e6,d1d7,e6f6,d7e7,f7h8,f8e8,h8f9,e7e0,f0f1,e0e1,f1f2,e8e9,f9g7,e9d9,g7e6,d9e9,e6c7"
+    },
+    {
+      "name": "013车马对车兵",
+      "fen": "9/4k4/7N1/5R3/9/9/9/9/3pr4/5K3 w - - 0 1",
+      "moves": "h7g9,e8e9,f6f9,e9e8,f9f4,e8e9,g9f7,e9e8,f7d6,e8d8,f4d4,d1c1,d6f7,d8e8,d4d8,e8e7,f7h8"
+    },
+    {
+      "name": "014车马对车兵",
+      "fen": "9/9/3k5/9/9/4NR3/9/4r4/4p4/5K3 w - - 0 1",
+      "moves": "e4f6,e2e6,f4f3,e1d1,f0f1,d1e1,f1f2,e1d1,f6e8,e6c6,e8g7,c6c2,f2f1,c2c1,f3d3,d7e7,g7f9,e7e8,d3e3"
+    },
+    {
+      "name": "015车马对车兵",
+      "fen": "3k5/9/9/2R3N2/9/9/9/9/3pr4/5K3 w - - 0 1",
+      "moves": "g6f8,d9e9,f8e6,e1h1,c6c9,e9e8,e6g7,e8d8,c9c4,d8d9,g7f9,d9e9,c4e4,e9d9,f9e7,d9d8,e7c6,d8d9,e4e8"
+    },
+    {
+      "name": "016车马对车兵",
+      "fen": "9/3k3N1/9/9/9/5R3/9/5K3/3pr4/9 w - - 0 1",
+      "moves": "h8f9,d8d9,f4b4,d9e9,b4b9,e9e8,f9g7,e8d8,b9b6,d8d9,b6d6,d9e9,d6f6,e1e2,f2f1,d1e1,f1f0,e9d9,g7e6,d9e9,e6c7"
+    },
+    {
+      "name": "017车马对车兵",
+      "fen": "4k4/9/9/2r1N4/9/5R3/9/9/3p1K3/9 w - - 0 1",
+      "moves": "f4f9,e9e8,e6g7,e8d8,f9f7,d8d9,g7f9,c6c1,f7d7,d9e9,d7e7,e9d9,f9h8,c1c3,f1f0,c3c0,f0f1,c0c1,h8f7,d9d8,f1f0"
+    },
+    {
+      "name": "018车马对车兵",
+      "fen": "3k5/9/9/6N2/9/2R6/9/5K3/3pr4/9 w - - 0 1",
+      "moves": "g6h8,e1e3,h8f7,e3f3,f2e2"
+    },
+    {
+      "name": "019车马对车兵",
+      "fen": "9/3k5/9/9/7N1/1R7/9/9/3pr4/5K3 w - - 0 1",
+      "moves": "h5g7,d8d9,b4a4,e1g1,g7f9,d9e9,a4e4,e9d9,f9e7,d9d8,e7c6,d8d9,e4e8"
+    },
+    {
+      "name": "020车马对车兵",
+      "fen": "9/9/5kN2/9/9/3R5/9/3K5/4rp3/9 w - - 0 1",
+      "moves": "d4d3,e1e4,d3f3,f7e7,g7f5,e7e8,f5d6,e8d8,f3d3,e4e1,d6f7,d8e8,f7g9"
+    },
+    {
+      "name": "021车马对车兵",
+      "fen": "9/3k5/9/2R6/9/4N4/9/5K3/3pr4/9 w - - 0 1",
+      "moves": "e4f6,d8d9,f6d5,d9e9,c6f6,e1e2,f2f1,d1e1,f1f0,e2d2,f6f9,e9e8,d5c7,d2d7,f9f7"
+    },
+    {
+      "name": "022车马对车兵",
+      "fen": "3k5/9/9/9/7N1/2R6/9/5K3/3pr4/9 w - - 0 1",
+      "moves": "h5g7,e1e3,c4c9,d9d8,c9c6,d8d9,c6d6,d9e9,d6f6,e3e2,f2f1,d1e1,f1f0,e9d9,g7e6,d9e9,e6c7"
+    },
+    {
+      "name": "023车马对车兵",
+      "fen": "3k5/9/6N2/9/9/5R3/9/5K3/3pr4/9 w - - 0 1",
+      "moves": "f4b4,e1e3,b4b9,d9d8,b9b6,d8d9,b6d6,d9e9,d6f6,e3e2,f2f1,d1e1,f1f0,e9d9,g7e6,d9e9,e6c7"
+    },
+    {
+      "name": "024车马对车兵",
+      "fen": "9/3k5/7N1/9/9/5R3/9/5K3/3pr4/9 w - - 0 1",
+      "moves": "h7f6,d8d9,f6d5,d9d8,d5c7,d8d7,f4f3,e1g1,c7d9,d7d8,d9b8,d8e8,f3e3,e8d8,b8c6,d8d9,e3e8"
+    },
+    {
+      "name": "025车马对车兵",
+      "fen": "9/3k5/9/2R6/9/4N4/9/9/3pr4/5K3 w - - 0 1",
+      "moves": "e4f6,d8d9,c6b6,e1i1,b6b9,d9d8,b9b7,d8d9,f6d5,d9e9,b7e7,e9d9,d5c7,d9d8,e7e8,d8d7,c7d9"
+    },
+    {
+      "name": "026车马对车兵",
+      "fen": "6N2/9/3k5/R8/9/9/4r4/5K3/3p5/9 w - - 0 1",
+      "moves": "a6a7,d7d8,g9f7,d8e8,f7d6,e8d8,a7a4,e3e7,a4d4,d1c1,d4d3,c1b1,d3d1,e7i7,d6b7,d8e8,d1e1,i7e7,b7c9"
+    },
+    {
+      "name": "027车马对车兵",
+      "fen": "9/3k3N1/9/5R3/9/9/9/9/3pr4/5K3 w - - 0 1",
+      "moves": "h8f9,d8d9,f6b6,d9e9,b6b9,e9e8,f9g7,e8d8,b9b6,d8d9,b6a6,e1g1,g7f9,d9e9,a6e6,e9d9,f9e7,d9d8,e7c6,d8d9,e6e8"
+    },
+    {
+      "name": "028车马对车兵",
+      "fen": "9/9/3k4r/9/1N7/5R3/9/9/3p1K3/9 w - - 0 1",
+      "moves": "b5d6,i7i9,d6b7,d7e7,f4e4,e7d7,b7c5,d7d8,c5e6,d8d7,e6f8,d7d8,e4c4,d8e8,c4c8,e8e7,f8g6,e7d7,g6e5,d7e7,e5c6"
+    },
+    {
+      "name": "029车马对车兵",
+      "fen": "9/5R3/3k5/7r1/9/4N4/9/9/3p1K3/9 w - - 0 1",
+      "moves": "e4f6,d7e7,f6d5,e7d7,f8f4,d7d8,d5f6,h6h1,f1f0,d8d9,f6d7,h1e1,f4d4,d1c1,d7f6,d9e9,f6d5,e9d9,d4d3,d9d8,d3d2"
+    },
+    {
+      "name": "030车马对车兵",
+      "fen": "9/2Nk5/9/9/5R3/9/9/9/2rp5/5K3 w - - 0 1",
+      "moves": "f5f8,d8d7,f8f6,d7d8,c8a7,d8d9,a7c6,d9e9,f6e6,e9d9,c6e7,d9d8,e7f9,d8d9,e6b6,d9e9,b6b9,e9e8,f9g7,e8d8,b9b7,c1c0,f0f1,c0e0,b7b6,e0e1,f1f2,d8d9,b6d6,d9e9,d6f6,e1e2,f2f1,d1e1,f1f0,e9d9,g7e6,d9e9,e6c7"
+    },
+    {
+      "name": "031车马对车兵",
+      "fen": "9/3k5/7N1/9/9/9/5R3/5K3/3pr4/9 w - - 0 1",
+      "moves": "h7f6,d8d9,f6d5,d9d8,d5c7,d8d7,f3f4,e1h1,c7d9,d7d8,d9b8,d8e8,f4e4,e8d8,b8c6,d8d9,e4e8"
+    },
+    {
+      "name": "032车马对车兵",
+      "fen": "4k4/9/9/3R5/4N4/4r4/9/9/3p1K3/9 w - - 0 1",
+      "moves": "e5f7,e9e8,d6f6,e4e1,f1f2,e1e2,f2f1,d1e1,f1f0,e8e7,f7h8,e1d1,h8f9,e7e8,f9g7,e8e7,f6f7,e7e8,f7f2"
+    },
+    {
+      "name": "033车马对车兵",
+      "fen": "9/4k4/9/9/9/5N3/9/5R3/2rp5/5K3 w - - 0 1",
+      "moves": "f4e6,e8e9,f2e2,e9d9,e2b2,d9e9,b2b9,e9e8,e6g7,e8d8,b9b7,c1c0,f0f1,c0e0,b7b6,e0e1,f1f2,d8d9,b6d6,d9e9,d6f6,e1e2,f2f1,d1e1,f1f0,e9d9,g7e6,d9e9,e6c7"
+    },
+    {
+      "name": "034车马对车兵",
+      "fen": "9/5k3/9/9/5N3/9/3R5/9/5pr2/3K5 w - - 0 1",
+      "moves": "d3d8,f8f7,d8d6,f7f8,f5h4,f8f9,h4g6,f9e9,d6e6,e9f9,g6e7,f9f8,e7d9,f8f9,e6h6,f9e9,h6h9,e9e8,d9c7,e8f8,h9h7,g1g0,d0d1,g0e0,h7h6,e0e1,d1d2,f8f9,h6f6,f9e9,f6d6,e1e2,d2d1,f1e1,d1d0,e9f9,c7e6,f9e9,e6g7"
+    },
+    {
+      "name": "035车马对车兵",
+      "fen": "9/5R3/3k5/7r1/9/4N4/9/5K3/3p5/9 w - - 0 1",
+      "moves": "f8e8,h6c6,f2f1,d1c1,e8e9,d7d8,e4g5,d8d7,g5f7,c6c3,e9b9,d7e7,f7e5,e7e8,b9b8,e8e7,e5g6,e7d7,b8e8,c3f3,f1e1,f3f6,e8e5"
+    },
+    {
+      "name": "036车马对车兵",
+      "fen": "4k4/9/9/1N7/3R5/9/4r4/9/3p1K3/9 w - - 0 1",
+      "moves": "d5f5,e3e1,f1f2,e1e2,f2f1,d1e1,f1f0,e9d9,b6d5,d9d8,d5c7,d8d7,c7b9,e2e6,f5f9,e6e8,f9f6,e8e3,b9a7,e3h3,f6f7,d7d8,a7c6,d8e8,f7e7"
+    },
+    {
+      "name": "037车马对车兵",
+      "fen": "3k5/2R6/9/6N2/9/9/9/5K3/3pr4/9 w - - 0 1",
+      "moves": "g6h8,d9e9,h8f7,e9f9,c8c6,f9f8,c6f6,f8e8,f7d6,e8d8,f6f4,e1e7,f4d4,d1c1,d4d3,c1b1,d3d1,e7i7,d6b7,d8e8,d1e1,i7e7,b7c9"
+    },
+    {
+      "name": "038车马对车兵",
+      "fen": "8N/4k4/9/3R5/9/9/9/4r4/4p4/3K5 w - - 0 1",
+      "moves": "i9g8,e8f8,g8i7,f8e8,d6d8,e8e9,d8d3,e9e8,i7h5,e2e7,h5f6,e8f8,d3f3,e7e2,f6h5,f8e8,h5g7,e8e7,f3d3,e7f7,g7h9,e2e6,d3d9,e6e8,d9d6,e8e3,h9i7,f7f8,d6d8,f8f9,i7h9,e3e7,d8d9,e7e9,h9g7"
+    },
+    {
+      "name": "039车马对车兵",
+      "fen": "9/9/4kNr2/9/5R3/9/9/9/2p2K3/9 w - - 0 1",
+      "moves": "f5e5,e7d7,f7d6,c1d1,e5f5,g7g9,d6b7,d7e7,f5e5,e7d7,b7c5,d7d8,c5e6,d8d7,e5f5,d7e7,f5f7,e7e8,e6c7,e8d8,f7f6,d8d7,c7d9,d7d8,d9b8,d8e8,f6f8,e8e9,b8d7,e9d9,f8e8,g9f9,d7f8"
+    },
+    {
+      "name": "040车马对车兵",
+      "fen": "4k4/9/N2r5/9/9/9/6R2/9/2p6/5K3 w - - 0 1",
+      "moves": "g3e3,e9d9,f0e0,d7d0,e0e1,c1d1,e1f1,d0g0,a7c6,g0g1,f1f2,g1e1,c6e7,d9d8,e7f9,d8d9,e3c3,d9e9,c3c9,e9e8,f9g7,e8d8,c9c6,d8d9,c6d6,d9e9,d6f6,e1e2,f2f1,d1e1,f1f0,e9d9,g7e6,d9e9,e6c7"
+    },
+    {
+      "name": "041车马对车兵",
+      "fen": "9/4k4/9/1N7/5R3/9/4r4/9/3p1K3/9 w - - 0 1",
+      "moves": "b6a8,e3e1,f1f2,e1e2,f2f1,d1e1,f1f0,e8d8,a8c7,d8d7,c7b9,e2e6,f5f9,e6e8,f9f6,e8e3,b9a7,d7d8,f6f8,d8d9,a7b9,e3e7,f8f9,e7e9,b9c7"
+    },
+    {
+      "name": "042车马对车兵",
+      "fen": "4k4/9/9/6N2/3R5/9/9/3K5/4rp3/9 w - - 0 1",
+      "moves": "g6i7,e1e2,d2d1,f1e1,d1d0,e9e8,i7h5,e2e7,h5f6,e8f8,d5f5,e7e2,f6h5,f8e8,h5g7,e8e7,f5d5,e7f7,g7h9,e2e6,d5d9,e6e8,d9d6,e8e3,h9i7,f7f8,d6d8,f8f9,i7h9,e3e7,d8d9,e7e9,h9g7"
+    },
+    {
+      "name": "043车马对车兵",
+      "fen": "9/4k4/9/9/9/2N2R3/9/5K3/3pr4/9 w - - 0 1",
+      "moves": "c4d6,e8d8,d6b7,d8d9,f4c4,d9e9,c4c9,e9e8,b7d6,e8d8,d6f7,d8e8,f7g9,e8d8,c9c3,d8d7,c3h3,e1e4,h3a3,e4e6,a3c3,e6e1,c3c7,d7d8,g9f7,d8e8,f7d6,e8d8,c7c4,d8d7,c4d4,d7e7,d4f4,e1e2,f2f1,d1e1,f1f0,e7d7,d6b7,d7e7,b7c9"
+    },
+    {
+      "name": "044车马对车兵",
+      "fen": "9/4k4/9/9/9/9/5RN2/5K3/3pr4/9 w - - 0 1",
+      "moves": "g3f5,e1e2,f2f1,d1e1,f1f0,e8e9,f5h6,e9d9,f3d3,d9e9,h6f7,e9e8,f7d6,e8e9,d6c8,e9e8,d3f3,e8d8,c8a7,d8e8,a7b5,e2e7,b5d6,e8d8,f3d3,e7e2,d6b5,d8e8,b5c7,e8e7,d3f3,e7d7,c7b9,e2e6,f3f9,e6e8,f9f6,e8e3,b9a7,d7d8,f6f8,d8d9,a7b9,e3e7,f8f9,e7e9,b9c7"
+    },
+    {
+      "name": "045车马对车兵",
+      "fen": "9/3k5/8r/4R4/4N4/9/9/9/3p5/5K3 w - - 0 1",
+      "moves": "e6e9,i7c7,f0f1,d1c1,e9e6,c7h7,e6f6,d8e8,f6f8,e8e9,f8f4,e9e8,e5f7,e8e7,f4e4,e7d7,f7d6,c1d1,e4f4,d7d8,d6f7,d8d7,f7e5,d7d8,e5c6,h7c7,f4f8,d8d9,f8f9,d9d8,f9c9"
+    },
+    {
+      "name": "046车马对车兵",
+      "fen": "9/5R3/3k5/6r2/9/4N4/9/9/3p1K3/9 w - - 0 1",
+      "moves": "e4f6,d7e7,f6d5,e7d7,f8f4,d7d8,d5f6,d8d9,f6d7,d9d8,d7f8,g6g1,f1f0,g1e1,f4a4,d8e8,a4a8,e8e9,f8d7,e9d9,a8a1,d1c1,d7f6,c1d1,f6d5,d9e9,a1a9,e9e8,d5c7,e8e7,a9e9,e7d7,e9d9,d7e7,c7e6,e7e8,e6g7,e8e7,d9e9,e7d7,g7e6,e1h1,e9c9,d7e7,c9c7,e7e8,e6g7,e8d8,g7f9"
+    },
+    {
+      "name": "047车马对车兵",
+      "fen": "9/5R3/3k5/8r/9/4N4/9/9/3p1K3/9 w - - 0 1",
+      "moves": "e4f6,d7e7,f6d5,e7d7,f8f3,d7d8,d5f6,d8d9,f6h7,i6d6,h7g9,d6d7,g9f7,d7d5,f3f4,d5d7,f7e5,d7e7,e5c6,e7e1,f1f2,d9e9,c6a7,e1e2,f2f1,d1e1,f1f0,e9e8,a7b5,e2e7,b5d6,e8d8,f4d4,e7e2,d6b5,d8e8,b5c7,e8e7,d4f4,e7d7,c7b9,e2e6,f4f9,e6e8,f9f6,e8e3,b9a7,d7d8,f6f8,d8d9,a7b9,e3e7,f8f9,e7e9,b9c7"
+    },
+    {
+      "name": "048车马对车双兵",
+      "fen": "9/4k4/9/5R3/2N6/9/6p2/9/2p1r4/5K3 w - - 0 1",
+      "moves": "c5b7,e8e9,b7d6,e9d9,d6f7"
+    },
+    {
+      "name": "049车马对车双兵",
+      "fen": "9/3k5/9/9/2N6/5p3/9/R8/3p4r/5K3 w - - 0 1",
+      "moves": "c5e6,d8e8,e6g7,e8f8,a2a9,f8f7,g7f5,f7f8,a9a8,f8f9,f5g7,f9e9,a8a9"
+    },
+    {
+      "name": "050车马对车双兵",
+      "fen": "5R3/9/4k4/9/7N1/9/9/7p1/3pr4/5K3 w - - 0 1",
+      "moves": "f9e9,e7d7,h5f6,d7d8,f6e4,d8d7,e4c5,d7d8,c5b7,d8d7,e9f9,d7e7,f9f7,e7e8,b7c9,e8d8,f7d7"
+    },
+    {
+      "name": "051车马对车双兵",
+      "fen": "2Nk5/9/9/9/9/5R3/5p3/9/3p3r1/5K3 w - - 0 1",
+      "moves": "f4f9,d9d8,f9f3,d8d9,f3f9,d9d8,c9b7,d8e8,b7d6,e8d8,f9f8,d8d7,d6b7,d7e7,f8f7,e7e8,b7c9,e8d8,f7d7"
+    },
+    {
+      "name": "052车马对车双兵",
+      "fen": "8r/N4R3/3k5/9/9/9/7p1/9/3p1K3/9 w - - 0 1",
+      "moves": "a8b6,d7e7,b6d5,e7d7,f8f6,d7d8,d5c7,d8d7,c7d9,d7d8,d9b8,d8e8,f6f8,e8e9,b8d7,e9d9,f8e8,i9f9,d7f8"
+    },
+    {
+      "name": "053车马对车双兵",
+      "fen": "9/5k3/9/9/5N3/9/5Rp2/9/3pr4/5K3 w - - 0 1",
+      "moves": "f3f4,f8e8,f5g7,e8e7,f4f7,e7e8,f7f8,e8e7,g7f5,e7d7,f8f6,d7d8,f5d4,d8e8,d4e6,e8e7,f6f7,e7e8,e6c7,e8d8,f7f8,d8d7,c7a8,d7e7,f8f7,e7e8,a8c9"
+    },
+    {
+      "name": "054车马对车双兵",
+      "fen": "3N5/1R7/3k5/9/9/9/9/7p1/3pr4/5K3 w - - 0 1",
+      "moves": "b8h8,e1e6,h8h4,d7d8,h4d4,d8e8,d9c7"
+    },
+    {
+      "name": "055车马对车双兵",
+      "fen": "2Nk5/9/9/9/9/1R7/6p2/9/2p1r4/5K3 w - - 0 1",
+      "moves": "b4b9,d9d8,c9b7,d8e8,b7d6,e8d8,d6f7,e1e7,b9b8"
+    },
+    {
+      "name": "056车马对车双兵",
+      "fen": "5R3/9/3k5/7N1/9/9/9/9/3pr2p1/5K3 w - - 0 1",
+      "moves": "h6f7,h1g1,f9d9,d7e7,d9e9,e7d7,f7e5,d7d8,e5c6,d8d7,e9d9"
+    },
+    {
+      "name": "057车马对车双兵",
+      "fen": "9/9/4kN2r/9/9/5R3/6p2/9/2p2K3/9 w - - 0 1",
+      "moves": "f7e9,e7e8,e9g8,i7i1,f1f0,e8d8,g8e7,d8e8,f4e4,e8d8,e7c6,d8d9,e4e8"
+    },
+    {
+      "name": "058车马对车双兵",
+      "fen": "8r/N2k5/9/5R3/9/9/6p2/9/3p1K3/9 w - - 0 1",
+      "moves": "a8c7,d8d7,f6f7,d7d8,f7f4,d8d7,f4d4,d7e7,c7d5,e7e8,d5f6,e8f8,d4f4,i9i1,f1f0,i1i0,f0f1,g3g2,f6d7,f8e8,d7c9"
+    },
+    {
+      "name": "059车马对车双兵",
+      "fen": "7r1/3k5/9/5R1N1/9/4p4/9/9/3p1K3/9 w - - 0 1",
+      "moves": "h6f7,d8d7,f6d6,d7e7,d6e6,e7d7,f7e5,d7d8,e5c6,d8d9,c6b8,d9d8,e6f6,d8e8,f6f8,e8e9,b8d7,e9d9,f8e8,h9f9,d7f8"
+    },
+    {
+      "name": "060车马对车双兵",
+      "fen": "4k4/9/9/1N7/9/9/3R2pp1/9/4r4/5K3 w - - 0 1",
+      "moves": "b6c8,e9e8,c8d6,e8d8,d6f7,d8e8,d3d8,e8e7,f7h8"
+    },
+    {
+      "name": "061车马对车双兵",
+      "fen": "1R7/9/1N1k5/9/9/5p3/9/9/3p4r/5K3 w - - 0 1",
+      "moves": "b9h9,i1i7,h9h5,d1e1,h5d5,d7e7,d5e5,e7d7,b7c9,d7d8,e5d5"
+    },
+    {
+      "name": "062车马对车双兵",
+      "fen": "9/4k1N2/9/7R1/9/5p3/9/9/2p1r4/5K3 w - - 0 1",
+      "moves": "h6h8,e8f8,g8f6,f8f7,h8h7,f7f8,f6d7,f8e8,d7c9,e8f8,h7h6,f8f7,h6f6,f7e7,f6f5"
+    },
+    {
+      "name": "063车马对车双兵",
+      "fen": "9/2Nk5/9/9/9/6R2/6p2/9/2pr5/5K3 w - - 0 1",
+      "moves": "c8a7,g3f3,a7b9,d8e8,g4e4,e8f8,e4f4,f8e8,f4f3,e8e7,b9a7,e7e8,f3e3,e8d8,a7c6,d8d9,e3e8"
+    },
+    {
+      "name": "064车马对车双兵",
+      "fen": "6N2/5R3/3k5/9/9/9/7p1/9/2p2K3/3r5 w - - 0 1",
+      "moves": "g9e8,d7d8,e8d6,d8d9,d6f7,d0d1,f1f0,d9e9,f8g8,e9f9,g8g6,f9f8,g6f6,d1d7,f7d6,f8e8,f6f8,e8e9,f8f9,e9e8,f9d9"
+    },
+    {
+      "name": "065车马对车双兵",
+      "fen": "3k5/9/9/9/2N6/5p3/9/1R7/3p3r1/5K3 w - - 0 1",
+      "moves": "b2b9,d9d8,c5e6,d8e8,e6c7,e8e7,b9e9,e7d7,e9d9,d7e7,c7d5,e7e8,d5f6,e8f8,f6d7,f8e8,d9e9,e8d8,d7e5,h1h0,f0f1,h0c0,e5f7,d8d7,e9e8"
+    },
+    {
+      "name": "066车马对车双兵",
+      "fen": "7N1/9/5k3/3R5/9/9/9/1p7/4rp3/3K5 w - - 0 1",
+      "moves": "d6h6,f7e7,h6h7,e7e8,h9g7,e8e7,g7f9,e7e8,h7h8,e8e9,h8h9,e9e8,f9g7,e8e7,h9e9,e7f7,e9f9,f7e7,g7e6,e7e8,e6c7,e8e7,f9e9,e7f7,c7e6,b2c2,e6g5,f7f8,g5h7,f8f7,e9d9,f7e7,d9d7,e7e8,h7g9,e8f8,d7f7"
+    },
+    {
+      "name": "067车马对车双兵",
+      "fen": "2Nk5/9/9/9/9/5R3/5p3/7r1/3p5/5K3 w - - 0 1",
+      "moves": "f4f9,d9d8,c9b7,d8e8,b7d6,e8d8,f9f3,h2h0,f0f1,h0h9,f3d3,h9h1,f1f2,h1e1,d3d4,d1c1,d6f7,d8e8,d4d8,e8e7,f7h8"
+    },
+    {
+      "name": "068车马对车双兵",
+      "fen": "9/4R4/5k3/9/5N3/9/9/7p1/3p4r/5K3 w - - 0 1",
+      "moves": "e8e6,i1e1,e6f6,f7e7,f6f9,e7e8,f5g7,e8e7,f9e9,e7d7,g7e6,h2g2,e6c5,d7d8,c5b7,d8d7,e9f9,d7e7,f9f7,e7e8,b7c9,e8d8,f7d7"
+    },
+    {
+      "name": "069车马对车双兵",
+      "fen": "9/3k5/7N1/R8/9/9/9/7p1/3pr4/5K3 w - - 0 1",
+      "moves": "h7f6,d8d9,f6d5,d9e9,a6a9,e9e8,d5c7,e8e7,a9e9,e7d7,e9d9,d7e7,c7e6,e7e8,e6g7,e8e7,d9e9,e7d7,g7e6,h2g2,e6c5,d7d8,c5b7,d8d7,e9f9,d7e7,f9f7,e7e8,b7c9,e8d8,f7d7"
+    },
+    {
+      "name": "070车马对车双兵",
+      "fen": "9/4k4/9/9/9/2N2R3/9/7p1/3pr4/5K3 w - - 0 1",
+      "moves": "c4d6,e8d8,d6b7,d8d9,f4c4,d9e9,c4c9,e9e8,b7d6,e8d8,d6f7,d8e8,f7g9,e8d8,c9c2,d8d7,c2h2,d1c1,h2d2,d7e7,d2c2,e7d7,g9e8,e1d1,e8c9,d7d8,c9b7,d8d7,c2c7,d7d8,c7c1"
+    },
+    {
+      "name": "071车马对车双兵",
+      "fen": "2N1k4/9/9/9/9/3R5/6p2/9/2p1r4/5K3 w - - 0 1",
+      "moves": "c9d7,e9e8,d4f4,e8d8,d7b8,d8e8,b8d9,e8d8,f4d4,d8e8,d9c7,e8e7,d4d8"
+    },
+    {
+      "name": "072车马对车双兵",
+      "fen": "2Nk5/9/9/9/9/1R7/6p2/9/3p3r1/5K3 w - - 0 1",
+      "moves": "b4b9,d9d8,c9b7,d8e8,b7d6,e8d8,d6f7,d8e8,f7g9,e8d8,b9b4,d8d7,g9f7,d7e7,b4e4,e7d7,e4e8"
+    },
+    {
+      "name": "073车马对车双兵",
+      "fen": "9/9/3k5/3N5/9/4R4/6p2/9/3p4r/5K3 w - - 0 1",
+      "moves": "d6b7,i1i0,f0f1,i0c0,e4g4,d7e7,g4g7,e7e8,b7d6,e8d8,g7g3,c0c7,g3d3,c7i7,d6b7,d8e8,d3e3,i7e7,b7c9"
+    },
+    {
+      "name": "074车马对车双兵",
+      "fen": "9/3k5/N5R2/9/9/9/5p3/9/2pr5/5K3 w - - 0 1",
+      "moves": "a7c6,d8e8,g7e7,e8f8,f0e0,c1c0,e7e8,f8f9,c6d8,c0d0,e0f0,f3f2,e8e2,f9f8,d8e6,f8f7,e2f2,f7e7,f2f7,e7e8,e6c7,e8d8,f7f9"
+    },
+    {
+      "name": "075车马对车双兵",
+      "fen": "4k4/9/9/3R1N3/9/9/6p2/9/2p1r4/5K3 w - - 0 1",
+      "moves": "f6d7,e9e8,d6f6,e8d8,d7b8,d8e8,b8d9,e8d8,f6d6,d8e8,d9c7,e8e7,d6d8"
+    },
+    {
+      "name": "076车马对车双兵",
+      "fen": "4k4/9/9/5N3/9/9/3R2pp1/9/4r4/5K3 w - - 0 1",
+      "moves": "f6g8,e9e8,d3b3,e8d8,b3b8,d8d9,b8b4,d9d8,b4d4,d8e8,g8f6,e8e9,d4h4,e9f9,h4f4,f9e9,f6g8,e9e8,f4f8,e8e7,f8d8"
+    },
+    {
+      "name": "077车马对车双兵",
+      "fen": "9/9/2Nk5/9/9/5R3/9/8p/3pr4/5K3 w - - 0 1",
+      "moves": "f4f9,i2h2,f9d9,d7e7,c7e6,e7e8,e6g7,e8e7,d9e9,e7d7,g7e6,h2g2,e6c5,d7d8,c5b7,d8d7,e9f9,d7e7,f9f7,e7e8,b7c9,e8d8,f7d7"
+    },
+    {
+      "name": "078车马对车双兵",
+      "fen": "3k5/9/9/4RN3/9/9/6p2/9/2p4r1/5K3 w - - 0 1",
+      "moves": "e6d6,d9e9,f6d7,e9e8,d6f6,h1h0,f0f1,h0h9,f6f4,g3g2,d7f6,e8f8,f6g8,f8e8,f4f8,e8e7,f8d8"
+    },
+    {
+      "name": "079车马对车双兵",
+      "fen": "9/4k1N2/9/3R5/9/9/9/7p1/2p1r4/5K3 w - - 0 1",
+      "moves": "g8f6,e8f8,d6d4,f8f7,d4f4,e1e6,f6h7,f7e7,f4f7,e7e8,h7g9,e8d8,f7f4,d8d7,g9e8,d7d8,e8g7,e6d6,g7f9,d8d9,f9e7,d9d8,f4f8,d8d7,e7f9"
+    },
+    {
+      "name": "080车马对车双兵",
+      "fen": "9/4R4/5k3/9/5N3/9/6p2/9/3p4r/5K3 w - - 0 1",
+      "moves": "e8e6,i1e1,e6f6,f7e7,f6f9,e7e8,f5g7,e8e7,f9f7,e7e8,f7f3,e8e7,g7f5,e7e8,f5d6,e8d8,f3g3,e1e7,g3d3,d1c1,d3d2,c1b1,d2d1,e7i7,d6b7,d8e8,d1e1,i7e7,b7c9"
+    },
+    {
+      "name": "081车马对车双兵",
+      "fen": "9/4k4/N8/9/9/6R2/9/6p2/2pr5/5K3 w - - 0 1",
+      "moves": "g4e4,e8d8,a7b9,d8d7,e4g4,d1d0,f0f1,g2g1,f1e1,c1d1,e1e2,d0e0,e2f2,e0e1,g4g7,e1e7,g7g1,e7e1,g1g7,e1e7,g7g6,e7i7,g6a6,i7i2,f2f1,d7e7,a6a7,e7e8,b9c7,e8e7,c7e6,e7e8,e6g7,e8d8,g7f9,d8e8,a7e7"
+    },
+    {
+      "name": "082车马对车双兵",
+      "fen": "9/9/5k3/3R5/7N1/9/4r4/1p2p4/3K5/9 w - - 0 1",
+      "moves": "h5i7,e2e1,d1d0,e3g3,d6f6,f7e7,f6e6,e7f7,e6e1,g3g0,d0d1,g0g7,i7h9,g7g9,e1h1,f7e7,h1h7,e7e8,h9g7,e8e9,g7e6,e9e8,e6c7,e8f8,h7h6,f8f9,d1e1,g9g1,e1e2,g1f1,c7d9"
+    },
+    {
+      "name": "083车马对车双兵",
+      "fen": "4k4/9/9/9/2p2N3/9/5R3/5K3/3pr4/9 w - - 0 1",
+      "moves": "f5h6,e1e2,f2f1,d1e1,f1f0,e9d9,f3d3,d9e9,h6g4,e9e8,g4f6,e8e9,f6d7,e9e8,d3f3,e8d8,d7b8,d8e8,b8d9,e8d8,f3d3,d8e8,d9c7,e8e7,d3f3,e7d7,c7b9,e1d1,f3b3,d7e7,b3b7,e7e8,b9c7,e8e7,c7d5,e7e8,b7b8,e8e9,b8b9,e9e8,d5c7"
+    },
+    {
+      "name": "084车马对车双兵",
+      "fen": "9/2Nk5/6R2/9/9/9/6p2/9/2pr5/5K3 w - - 0 1",
+      "moves": "g7g8,d8d9,c8e7,d9e9,g8g3,d1d0,f0f1,d0d7,g3e3,e9e8,e7g6,e8d8,g6e5,d7c7,f1f0,c7h7,e3f3,d8e8,e5f7,e8e7,f3e3,e7d7,f7d6,d7d8,e3d3,h7e7,d3d2,c1b1,d2d1,e7i7,d6b7,d8e8,d1e1,i7e7,b7c9"
+    },
+    {
+      "name": "085车马对车双兵",
+      "fen": "9/4k1N2/9/3R5/9/9/6p2/9/2p1r4/5K3 w - - 0 1",
+      "moves": "d6b6,e8d8,b6b8,d8d9,b8b3,e1d1,g8e7,d9e9,b3g3,d1d0,f0f1,d0d7,g3e3,e9e8,e7g6,e8d8,g6e5,d7c7,f1f0,c7h7,e3f3,d8e8,e5f7,e8e7,f3e3,e7d7,f7d6,d7d8,e3d3,h7e7,d3d2,c1b1,d2d1,e7i7,d6b7,d8e8,d1e1,i7e7,b7c9"
+    },
+    {
+      "name": "086车马对车双兵",
+      "fen": "4k4/9/9/6N2/1R7/5p3/9/9/3p3r1/5K3 w - - 0 1",
+      "moves": "b5e5,e9f9,g6e7,f9f8,e7d9,f8f9,e5i5,h1h0,f0f1,h0h9,d9e7,f9f8,i5i8,f8f7,e7f5,f4g4,i8i6,f7f8,i6f6,f8e8,f5d6,e8d8,f6f8,d8d7,f8f5,d7d8,f5f3,h9i9,f3d3,i9i1,f1f2,g4f4,d6b5,d8e8,b5c7,e8e7,c7d5,e7e8,d3e3,e8f8,d5f4,i1e1,e3f3,f8e8,f4d5,e1e2,f2f1,d1e1,f1f0,e8d8,d5c7,d8d7,c7b9,e2e6,f3f9,e6e8,f9f6,e8e3,b9a7,d7d8,f6f8,d8d9,a7b9,e3e7,f8f9,e7e9,b9c7"
+    },
+    {
+      "name": "087车马对其他",
+      "fen": "9/4k4/5R3/5N3/9/9/9/6p1B/1p2r2p1/5K3 w - - 0 1",
+      "moves": "f7f9,e8d8,f9f8,d8d9,f6d5,e1c1,f8f6,g2f2,f6f2,c1c0,f0f1,c0c5,d5e7,d9d8,e7f9,d8d9,f2d2,d9e9,d2e2,e9d9,f1e1"
+    },
+    {
+      "name": "088车马对其他",
+      "fen": "2b2k3/9/4b4/3R5/2rN5/9/9/9/9/3AKA3 w - - 0 1",
+      "moves": "d6d9,f9f8,d9d8,f8f7,d5f6,c5e5,d0e1,e5g5,f6h7,g5g7,h7i9,c9a7,i9g8,a7c5,e1d0"
+    },
+    {
+      "name": "089车马对其他",
+      "fen": "5Rb2/3k5/4b4/3N5/6r2/9/9/9/9/3AKA3 w - - 0 1",
+      "moves": "f9f8,d8d9,d6f5,e7c5,f5d6,g5g7,d6c8,c5e7,f8e8,g7g6,e8e9,d9d8,c8a7"
+    },
+    {
+      "name": "090车马对其他",
+      "fen": "2ba1a3/9/5k1N1/9/9/9/9/4Bp3/3ppn3/2R2K3 w - - 0 1",
+      "moves": "c0c7,c9e7,h7g9,f7f8,c7e7,f9e8,e7i7,f8f9,i7i9,f9f8,g9h7,f8f7,i9i7,f1h0,h7i5,f7f8,i5g6"
+    },
+    {
+      "name": "091车马对其他",
+      "fen": "2b6/9/3a1k3/9/5N3/9/9/4B4/1r1p1p1R1/3AKA3 w - - 0 1",
+      "moves": "h1h7,f7f8,h7h8,f8f7,f5d6,f7e7,h8f8,d7e8,f8f4,b1c1,d6f5,e7f7,f5h6,f7e7,h6g8,e7d7,f4d4"
+    },
+    {
+      "name": "092车马对其他",
+      "fen": "3a1a3/9/1N2k4/9/1P7/2B5R/6P2/3pBp3/4rn1p1/4nKc2 w - - 0 1",
+      "moves": "i4e4,e7d7,b7c5,d7d8,c5e6,d8d7,e4i4,d7e7,e6c7,e7d7,c7d5,d9e8,i4d4,e0c1,d5b6,d7e7,b6c8,e7f7,d4f4"
+    },
+    {
+      "name": "093车马对其他",
+      "fen": "2Na1a3/3k5/9/9/1P2R4/2B6/6P2/3pBp3/4rn1p1/4nKc2 w - - 0 1",
+      "moves": "c9b7,d8d7,e5c5,d7e7,b7d6,e7d7,d6f5,d7d8,c5c8,d8d7,c8c6,d7d8,c6d6,d8e8,d6e6,e8d8,f5d4,d9e8,e6b6,e8d7,b6b8,d8d9,b8b9,d9d8,b9e9,d7e8,d4c6,d8d7,e9b9"
+    },
+    {
+      "name": "094车马对其他",
+      "fen": "3a1a1N1/9/3k5/9/1P2R1b2/2B6/6P2/3pBp3/4rn1p1/4nKc2 w - - 0 1",
+      "moves": "h9f8,d7d8,e5c5,d9e8,c5c8,d8d7,f8h7,d7e7,h7f6,e8d7,f6g8,e7f7,g8h6,f7e7,h6f5,e7f7,f5d6,f7e7,c8f8,d7e8,f8f4,e7d7,f4d4"
+    },
+    {
+      "name": "095车马对其他",
+      "fen": "2b2a3/1R2a4/4k4/9/1PN6/2B6/6P2/3pBp3/4rn1p1/4nKc2 w - - 0 1",
+      "moves": "b8b7,e8d7,c5d7,e7e8,b7b8,e8e7,d7c9,e7f7,b8b7,f7f8,b7b6,f8f7,b6f6,f7e7,f6c6,e7f7,c6c7,f7f8,c7c5,f8f7,c5f5,f7e7,f5e5,e7f7,c9b7,f7f8,b7d6"
+    },
+    {
+      "name": "096车马对其他",
+      "fen": "5a3/1R2a4/1N1k5/9/1P7/2B6/6P2/3pBp3/4rn1p1/4nKc2 w - - 0 1",
+      "moves": "b8c8,d7e7,c8c5,e8d9,c5e5,e7d7,b7c5,d7d8,c5e6,d8d7,e5c5,d7e7,e6g7,e7f7,g7f5,f7f8,f5d6"
+    },
+    {
+      "name": "097车马对其他",
+      "fen": "5ab2/1R2a4/1N1k5/9/1P7/2B6/6P2/3pBp3/4rn1p1/4nKc2 w - - 0 1",
+      "moves": "b7c5,d7e7,b8b7,e8d7,c5d7,e7e8,d7f6,e8f8,b7e7,g0h0,e7e4,h0g0,f6d7,f8f7,e4h4,f7e7,h4h7,e7e8,h7h8,e8e7,d7c9,e7f7,h8h7,f7f8,h7h5,f9e8,h5f5,e8f7,f5e5,f7e8,e5e8,f8f9,c9d7,g9e7,e8e7,f9f8,e7e6,f8f7,e6e8,e1e2,c4e2"
+    },
+    {
+      "name": "098车马对其他",
+      "fen": "4k4/9/9/4N4/9/2B6/9/nR1pBp3/p2r5/c3K4 w - - 0 1",
+      "moves": "b2b9,e9e8,e6c7,e8f8,b9b5,f8f9,b5f5,f9e9,f5i5,e9f9,c7e6,f9e9,e6g7,e9d9,i5d5,d9e9,d5f5,e9d9,f5f9,d9d8,g7e6,d8e8,e6c7,e8e7,f9i9,e7d7,c7d5,d7d8,i9i8,d8d9,d5c7,d9e9,i8i9"
+    },
+    {
+      "name": "099车马对其他",
+      "fen": "2bakab2/9/9/9/4N2R1/2P6/9/B3B4/r2pA4/c3KA3 w - - 0 1",
+      "moves": "e5f7,e9e8,f7d6,e8d8,d6b7,d8d7,b7c9,d7d8,h5d5,d8e8,d5d9,d1c1,d9d5,e8e9,c9d7,e9e8,d7f6,e8e9,d5d8,f9e8,d8e8,e9d9,f6d7,c1c0,e1d0,c0d0,e0d0,a1b1,d0e0,a0b0,d7f8,b1f1,e2g4,b0f0,e8e9,d9d8,e9d9"
+    },
+    {
+      "name": "100车马对其他",
+      "fen": "2b1k4/7N1/4b4/9/9/9/3pp4/5p3/1p2p4/3K4R w - - 0 1",
+      "moves": "i0i9,e9e8,i9i8,e7c5,h8f9,e8e9,f9g7,e9d9,i8i9,d9d8,i9i5,d8d9,i5d5,d9e9,d5c5,c9e7,c5b5,e9d9,b5b9,d9d8,g7f9,d8e8,b9d9,e8f8,f9h8,f8e8,h8i6,e7c5,i6g7,e8e7,d9c9,e7f7,g7f5,f7f8,c9c8,f8f7,f5d6,f7e7,c8c7"
+    }
+  ]
+}
