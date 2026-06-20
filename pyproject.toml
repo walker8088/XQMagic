@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "cchess==1.25.5",
+    "cchess>=1.26.2",
     "chardet>=7.4.3",
     "onnxruntime==1.20.1",
     "opencv-python>=4.13.0.92",

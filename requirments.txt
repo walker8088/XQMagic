@@ -1,6 +1,6 @@
 pyinstalller
 pyyaml
-cchess>=1.0
+cchess>=1.26.2
 pyqt5
 opencv-python
 pillow
