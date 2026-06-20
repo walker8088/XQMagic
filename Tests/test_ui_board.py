@@ -324,10 +324,8 @@ class TestChessBoardEditWidget:
     def test_removePiece_removes_from_board(self, widget):
         widget.newPiece("R", (4, 0))
         widget.removePiece((4, 0))
-        assert (
-            widget._board.get_fench((4, 0)) is None
-            or widget._board.get_fench((4, 0)) == ""
-        )
+        # cchess 1.26.x 用 ``'.'`` 表示空位 (旧版 None 或空串)
+        assert widget._board.get_fench((4, 0)) in (None, "", ".")
 
     def test_set_move_color(self, widget):
         widget.set_move_color(cchess.BLACK)

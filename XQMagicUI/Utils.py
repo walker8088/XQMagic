@@ -11,7 +11,8 @@ from enum import Enum, auto
 
 import psutil
 import requests
-from cchess import BLACK, ChessBoard, Move
+from cchess import SIDE_BLACK as BLACK
+from cchess import ChessBoard, Move
 from PyQt5.QtCore import QObject, Qt, QThread, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox
 

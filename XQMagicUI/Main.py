@@ -13,7 +13,8 @@ from enum import Enum, auto
 from pathlib import Path
 
 import cchess
-from cchess import ChessBoard, EngineErrorException, Game
+from cchess import Book as Game
+from cchess import ChessBoard, EngineError
 from PyQt5.QtCore import QByteArray, Qt, QTimer, QUrl, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
@@ -1042,7 +1043,7 @@ class MainWindow(QMainWindow):
         fen_engine = position["fen_engine"]
         try:
             Globl.engineManager.goFrom(fen_engine, fen, bgParams)
-        except EngineErrorException as e:
+        except EngineError as e:
             logging.warning(f"后台思考引擎命令出错: {e}")
             self.engineView.bgProcessing = False
             self.engineView.bgQueue.clear()
@@ -1137,7 +1138,7 @@ class MainWindow(QMainWindow):
             try:
                 ok = Globl.engineManager.goFrom(fen_engine, fen, params)
                 self.isRunEngine = ok
-            except EngineErrorException as e:
+            except EngineError as e:
                 QMessageBox.critical(
                     self, f"{getTitle()}", f"象棋引擎发送命令出错[{e}]，自动重启引擎。"
                 )

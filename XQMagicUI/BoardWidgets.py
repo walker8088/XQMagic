@@ -7,7 +7,8 @@ from pathlib import Path
 
 # from PyQt5.QtSvg import QSvgRenderer
 import cchess
-from cchess import ChessBoard, Piece, iccs2pos
+from cchess import ChessBoard, iccs2pos
+from cchess.piece import is_valid_pos
 from PyQt5.QtCore import QPoint, QRect, QSize, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QColor, QCursor, QPainter, QPen, QPixmap, QPolygon
 from PyQt5.QtWidgets import QApplication, QDialog, QMenu, QWidget, qApp
@@ -799,8 +800,7 @@ class ChessBoardEditWidget(ChessBoardBaseWidget):
         key = x, y = self.view_to_board(pos.x(), pos.y())
 
         if (0 <= x <= 8) and (0 <= y <= 9):
-            piece = Piece.create(self._board, free_item.fench, key)
-            if piece.is_valid_pos(key):
+            if is_valid_pos(free_item.fench, key):
                 self._board.put_fench(free_item.fench, key)
             elif self.last_pickup:
                 self._board.put_fench(free_item.fench, self.last_pickup)

@@ -20,6 +20,14 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
+# 在模块加载阶段就 mock 掉会触发原生 DLL 加载的模块,
+# 避免 collection 期 XQMagicUI.Detector import 时进程级崩溃。
+from unittest.mock import MagicMock as _MagicMock
+
+sys.modules.setdefault("onnxruntime", _MagicMock())
+sys.modules.setdefault("cchess_board", _MagicMock())
+sys.modules.setdefault("cchess_board.detector", _MagicMock())
+
 # 在无显示器的 CI 上避免 Qt 启动失败
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
