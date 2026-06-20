@@ -237,22 +237,9 @@ class HistoryWidget(QWidget):
                 }
             """)
 
-        self.annotationView = QTextEdit()
-        self.annotationView.readOnly = True
-
-        self.branchView = QListWidget(self)
-
-        self.vsplitter = QSplitter(Qt.Vertical)
-        self.vsplitter.addWidget(LabelWidget("注释", self.annotationView))
-        self.vsplitter.addWidget(LabelWidget("变招列表", self.branchView))
-
+        # 注:注释/变招面板暂不需要,只保留走子表 posView
         self.hsplitter = QSplitter(Qt.Horizontal)
         self.hsplitter.addWidget(self.posView)
-        self.hsplitter.addWidget(self.vsplitter)
-
-        self.reviewByCloudBtn = QPushButton("云库复盘")
-        self.reviewByCloudBtn.setEnabled(False)
-        self.reviewByEngineBtn = QPushButton("引擎复盘")
 
         self.addBookmarkBtn = QPushButton("收藏局面")
         self.addBookmarkBtn.clicked.connect(self.onAddBookmarkBtnClick)
@@ -267,8 +254,6 @@ class HistoryWidget(QWidget):
         self.showScoreBox.setToolTip("显示走子得分（红优分）")
 
         hbox = QHBoxLayout()
-        # hbox.addWidget(self.reviewByCloudBtn)
-        # hbox.addWidget(self.reviewByEngineBtn)
         hbox.addWidget(self.addBookmarkBookBtn)
         hbox.addWidget(self.addBookmarkBtn)
 
@@ -507,9 +492,16 @@ class HistoryWidget(QWidget):
             self.onUpdatePosition(position)
 
     def setSimpleMode(self, yes):
-        if yes:
-            self.hsplitter.widget(1).hide()
-            self.hsplitter.refresh()
+        """切换简洁模式:无右侧面板,仅作为接口保留(空操作).
+
+        历史上该方法用于隐藏注释/变招面板,目前已不再需要。
+        """
+        right = self.hsplitter.widget(1)
+        if right is not None:
+            if yes:
+                right.hide()
+            else:
+                right.show()
 
     def clear(self):
         self.posModel.setRowCount(0)
@@ -520,9 +512,7 @@ class HistoryWidget(QWidget):
 
     def saveSettings(self, settings):
         h_sizes = self.hsplitter.sizes()
-        v_sizes = self.vsplitter.sizes()
         settings.setValue("history/h_splitter/sizes", h_sizes)
-        settings.setValue("history/v_splitter/sizes", v_sizes)
         settings.setValue("showScore", self.showScoreBox.isChecked())
 
     def loadSettings(self, settings):
@@ -530,12 +520,6 @@ class HistoryWidget(QWidget):
             h_sizes = settings.value("history/h_splitter/sizes")
             if h_sizes and len(h_sizes) == 2:
                 self.hsplitter.setSizes([int(size) for size in h_sizes])
-
-        # 恢复垂直分割器状态
-        if settings.contains("history/v_splitter/sizes"):
-            v_sizes = settings.value("history/v_splitter/sizes")
-            if v_sizes and len(v_sizes) == 2:
-                self.vsplitter.setSizes([int(size) for size in v_sizes])
 
         showScore = settings.value("showScore", True, type=bool)
         self.showScoreBox.setChecked(showScore)
@@ -1336,7 +1320,7 @@ class MoveDbWidget(QDockWidget):
         self.onSelectIndex()
 
     def onPositionChanged(self, position, is_new):
-
+        
         def key_func(it):
             try:
                 return int(it['score'])
@@ -1344,47 +1328,47 @@ class MoveDbWidget(QDockWidget):
                 return 0
             except KeyError:
                 return 0
-            except  TypeError:
+            except TypeError:
                 return 0
-
+        
         self.curr_pos = position
         fen = position['fen']
-
+        
         self.clear()
         board = ChessBoard(fen)
         book_moves = []
-
+        
         ret = Globl.localbook.getMoves(fen)
         '''
         if len(ret) == 0:
-            return
+        return
         elif len(ret) > 1:
-            raise Exception(f'database error: {fen}, {ret}')
-
+        raise Exception(f'database error: {fen}, {ret}')
+        
         it = ret[0]
         for act in it['actions']:
-            act['fen'] = fen
-            m = board.copy().move_iccs(act['iccs'])
-            if m is None:
-                continue
-            act['text'] = m.to_text()
-            new_fen = m.board_done.to_fen()
-
-            #if 'score' in act:
-            #    del act['score']
-
-            if new_fen in Globl.fenCache:
-                fenInfo = Globl.fenCache[new_fen]
-                if 'score' in fenInfo:
-                    act['score'] = fenInfo['score']
-            book_moves.append(act)
-
+        act['fen'] = fen
+        m = board.copy().move_iccs(act['iccs'])
+        if m is None:
+            continue
+        act['text'] = m.to_text()
+        new_fen = m.board_done.to_fen()
+        
+        #if 'score' in act:
+        #    del act['score']
+        
+        if new_fen in Globl.fenCache:
+            fenInfo = Globl.fenCache[new_fen]
+            if 'score' in fenInfo:
+                act['score'] = fenInfo['score']
+        book_moves.append(act)
+        
         is_reverse  = True if board.get_move_color() == cchess.RED else False
         book_moves.sort(key=key_func, reverse = is_reverse)
-
+        
         self.updateBookMoves(book_moves)
         '''
-
+        
     def updateBookMoves(self, book_moves):
         self.moveListView.clear()
         self.position_len = len(book_moves)
