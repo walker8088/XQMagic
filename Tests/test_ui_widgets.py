@@ -225,10 +225,11 @@ class TestHistoryWidget:
         items = widget.posList[0]["view"]
         assert items[3].text() == "99"
 
-    def test_setSimpleMode_hides_vsplitter(self, widget):
+    def test_setSimpleMode_is_noop_when_no_right_panel(self, widget):
+        # 不再有右侧面板,setSimpleMode 应为安全空操作(不抛异常)
         widget.setSimpleMode(True)
-        # setSimpleMode=True 时 vsplitter 子控件应被隐藏
-        assert not widget.vsplitter.widget(0).isVisible()
+        # hsplitter 只含 posView,索引 1 应为 None
+        assert widget.hsplitter.widget(1) is None
 
     def test_selectRow_out_of_range_is_noop(self, widget):
         # 不应抛异常

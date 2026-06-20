@@ -47,7 +47,11 @@ def setup_globl(tmp_path):
     # 重置关键全局对象,避免被前一个测试覆盖
     Globl.APP_NAME = "XQMagic"
     Globl.APP_NAME_TEXT = "象棋魔术师"
-    Globl.settings = QSettings("XQSoft", Globl.APP_NAME)
+    # 使用独立的临时 INI 文件作为 QSettings 后端,而非全局注册表,
+    # 避免 pytest-xdist / CI 并行测试时多进程互相覆盖同一个注册表键。
+    # 同时也防止覆盖用户真实的 XQMagic 设置。
+    settings_path = tmp_path / "qt_settings.ini"
+    Globl.settings = QSettings(str(settings_path), QSettings.IniFormat)
     Globl.settings.clear()
     # 关闭云库默认,避免单元测试中走外网
     Globl.settings.setValue("cloudMode", False)
