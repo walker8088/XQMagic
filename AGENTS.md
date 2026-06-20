@@ -24,7 +24,7 @@ XQMagic/
 │   ├── CloudDB.py          # Cloud DB client (chessdb.cn)
 │   ├── LocalDB.py          # Local SQLite databases (~827 lines)
 │   ├── Engine.py           # UCI/UCCI engine manager
-│   ├── Storage.py          # TinyDB storage (bookmarks, endbooks)
+│   ├── Storage.py          # TinyDB storage (bookmarks, puzzles)
 │   ├── Online.py           # Screen capture & board recognition
 │   ├── Dialogs.py          # Dialog windows (~570 lines)
 │   ├── Utils.py            # Enums, utilities, helpers (~391 lines)
@@ -34,7 +34,7 @@ XQMagic/
 │   ├── SnippingWidget.py   # Screen snipping tool
 │   └── Version.py          # Version string ('26.1')
 ├── Engine/                 # Chess engines (Pikafish, Eleeye, EccoDLL)
-├── Game/                   # Runtime data (masterbook.db, localbook.db, endbooks.json)
+├── Game/                   # Runtime data (masterbook.db, localbook.db, puzzles.json)
 ├── Books/                  # Opening book collections
 ├── Skins/                  # Board skins
 ├── Sound/                  # Sound effects
@@ -60,7 +60,7 @@ XQMagic.py
 **MainWindow init flow:**
 1. Create `QGameManager`, connect `game_mode_changed_signal`
 2. Read `XQMagic.ini` config
-3. Open databases: `MasterBook`, `EndBookStore`, `LocalBook`
+3. Open databases: `MasterBook`, `PuzzleStore`, `LocalBook`
 4. Create `EngineManager` and `OnlineManager`
 5. Create `ChessBoard` and all UI widgets
 6. Set up dock widgets and connect signals
@@ -138,7 +138,7 @@ class ReviewMode(Enum):
 | `HistoryWidget` (in `DockHistoryWidget`) | Right | Move list table with scores, annotations, branches |
 | `EngineWidget` | Bottom | Engine controls, MultiPV analysis tree |
 | `BoardActionsWidget` | Left | Best moves panel with "搜索云库" checkbox at top |
-| `EndBookWidget` | Left | Endgame puzzle library |
+| `PuzzleWidget` | Left | Puzzle library |
 | `BookmarkWidget` | Left | Saved positions/games |
 | `GameLibWidget` | Left | Game library viewer |
 
@@ -242,7 +242,7 @@ CloudDB.startQuery(position)
 
 
 ### Endgame Storage
-- TinyDB (`Game/endbooks.json`) via `EndBookStore`
+- TinyDB (`Game/puzzles.json`) via `PuzzleStore`
 
 ---
 

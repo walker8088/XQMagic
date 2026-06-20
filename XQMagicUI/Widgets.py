@@ -1320,7 +1320,7 @@ class MoveDbWidget(QDockWidget):
         self.onSelectIndex()
 
     def onPositionChanged(self, position, is_new):
-        
+
         def key_func(it):
             try:
                 return int(it['score'])
@@ -1330,21 +1330,21 @@ class MoveDbWidget(QDockWidget):
                 return 0
             except TypeError:
                 return 0
-        
+
         self.curr_pos = position
         fen = position['fen']
-        
+
         self.clear()
         board = ChessBoard(fen)
         book_moves = []
-        
+
         ret = Globl.localbook.getMoves(fen)
         '''
         if len(ret) == 0:
         return
         elif len(ret) > 1:
         raise Exception(f'database error: {fen}, {ret}')
-        
+
         it = ret[0]
         for act in it['actions']:
         act['fen'] = fen
@@ -1353,22 +1353,22 @@ class MoveDbWidget(QDockWidget):
             continue
         act['text'] = m.to_text()
         new_fen = m.board_done.to_fen()
-        
+
         #if 'score' in act:
         #    del act['score']
-        
+
         if new_fen in Globl.fenCache:
             fenInfo = Globl.fenCache[new_fen]
             if 'score' in fenInfo:
                 act['score'] = fenInfo['score']
         book_moves.append(act)
-        
+
         is_reverse  = True if board.get_move_color() == cchess.RED else False
         book_moves.sort(key=key_func, reverse = is_reverse)
-        
+
         self.updateBookMoves(book_moves)
         '''
-        
+
     def updateBookMoves(self, book_moves):
         self.moveListView.clear()
         self.position_len = len(book_moves)
@@ -1482,12 +1482,12 @@ class BoardActionsWidget(QDockWidget):
 
 
 # ------------------------------------------------------------------#
-class EndBookWidget(QDockWidget):
-    selectEndGameSignal = pyqtSignal(dict)
+class PuzzleWidget(QDockWidget):
+    selectPuzzleSignal = pyqtSignal(dict)
 
     def __init__(self, parent):
         super().__init__("残局库", parent)
-        self.setObjectName("EndBook")
+        self.setObjectName("Puzzle")
 
         self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
 
@@ -1534,7 +1534,7 @@ class EndBookWidget(QDockWidget):
         self.currBook = []
         self.currGame = None
 
-        self.books = Globl.endbookStore.getAllEndBooks()
+        self.books = Globl.puzzleStore.getAllPuzzles()
         self.bookCombo.clear()
         if len(self.books) > 0:
             self.bookCombo.addItems(self.books.keys())
@@ -1548,7 +1548,7 @@ class EndBookWidget(QDockWidget):
             self.currGame = self.currBook[0]
 
         if self.currGame["ok"] is False:
-            self.selectEndGameSignal.emit(self.currGame)
+            self.selectPuzzleSignal.emit(self.currGame)
 
         index = self.currGame["index"]
         while self.currGame["ok"] is True:
@@ -1594,7 +1594,7 @@ class EndBookWidget(QDockWidget):
             return
 
         lib_name = Path(fileName).stem
-        if Globl.endbookStore.isEndBookExist(lib_name):
+        if Globl.puzzleStore.isPuzzleBookExist(lib_name):
             msgbox = TimerMessageBox(
                 f"杀局谱[{lib_name}]系统中已经存在，不能重复导入。", timeout=2
             )
@@ -1603,10 +1603,10 @@ class EndBookWidget(QDockWidget):
         ext = Path(fileName).suffix.lower()
         if ext == ".eglib":
             games = loadEglib(fileName)
-            Globl.endbookStore.saveEndBook(lib_name, games)
+            Globl.puzzleStore.savePuzzles(lib_name, games)
         if ext == ".csv":
             games = loadCsvlib(fileName)
-            Globl.endbookStore.saveEndBook(lib_name, games)
+            Globl.puzzleStore.savePuzzles(lib_name, games)
 
         self.updateBooks()
         self.bookCombo.setCurrentText(lib_name)
@@ -1617,7 +1617,7 @@ class EndBookWidget(QDockWidget):
     def onBatchImportBtnClick(self):
         """批量导入:从文件夹一次性导入所有 .eglib,跳过同名已存在的库.
 
-        用于恢复被误清空的 endbooks.json(从 Books/ 下的原始库恢复)。
+        用于恢复被误清空的 puzzles.json(从 Books/ 下的原始库恢复)。
         """
         options = QFileDialog.Options()
         default_dir = Path("Books") / "已整理残局Book"
@@ -1646,7 +1646,7 @@ class EndBookWidget(QDockWidget):
 
     @staticmethod
     def batchImportFromDir(books_dir):
-        """从 books_dir 下的 .eglib 批量导入到 Globl.endbookStore.
+        """从 books_dir 下的 .eglib 批量导入到 Globl.puzzleStore.
 
         跳过同名已存在的库(保留挑战进度)。返回 ``(imported, skipped)``。
         本方法不弹出任何 UI,可被测试直接调用。
@@ -1656,11 +1656,11 @@ class EndBookWidget(QDockWidget):
         skipped = 0
         for eglib in eglib_files:
             book_name = eglib.stem
-            if Globl.endbookStore.isEndBookExist(book_name):
+            if Globl.puzzleStore.isPuzzleBookExist(book_name):
                 skipped += 1
                 continue
             games = list(loadEglib(str(eglib)))
-            Globl.endbookStore.saveEndBook(book_name, games)
+            Globl.puzzleStore.savePuzzles(book_name, games)
             imported += 1
         return imported, skipped
 
@@ -1685,7 +1685,7 @@ class EndBookWidget(QDockWidget):
         if current is None:
             return
         self.currGame = current.data(Qt.UserRole)
-        self.selectEndGameSignal.emit(self.currGame)
+        self.selectPuzzleSignal.emit(self.currGame)
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
@@ -1700,14 +1700,14 @@ class EndBookWidget(QDockWidget):
         elif action == remarkAction:
             if self.currGame:
                 self.currGame["ok"] = False
-                Globl.endbookStore.updateEndBook(self.currGame)
+                Globl.puzzleStore.updatePuzzle(self.currGame)
             self.updateCurrentBook()
 
         elif action == remarkAllAction:
             for i, game in enumerate(self.books[self.currBookName]):
                 if game["ok"] is True:
                     game["ok"] = False
-                    Globl.endbookStore.updateEndBook(game)
+                    Globl.puzzleStore.updatePuzzle(game)
             self.updateCurrentBook()
 
     def sizeHint(self):
@@ -1716,22 +1716,22 @@ class EndBookWidget(QDockWidget):
     def loadSettings(self, settings):
         self.updateBooks()
 
-        endBookName = settings.value("endBookName", "")
-        if endBookName:
-            self.onBookChanged(endBookName)
+        puzzleBookName = settings.value("puzzleBookName", "")
+        if puzzleBookName:
+            self.onBookChanged(puzzleBookName)
 
-        index = settings.value("endBookIndex", -1)
+        index = settings.value("puzzleBookIndex", -1)
         if index < 0:
             self.currGame = None
         else:
             self.bookView.setCurrentRow(index)
 
     def saveSettings(self, settings):
-        settings.setValue("endBookName", self.currBookName)
+        settings.setValue("puzzleBookName", self.currBookName)
         if self.currGame:
-            settings.setValue("endBookIndex", self.currGame["index"])
+            settings.setValue("puzzleBookIndex", self.currGame["index"])
         else:
-            settings.setValue("endBookIndex", -1)
+            settings.setValue("puzzleBookIndex", -1)
 
 
 # ------------------------------------------------------------------#

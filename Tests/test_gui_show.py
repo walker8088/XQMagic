@@ -119,7 +119,7 @@ def show_main_window(qtbot, qapp_show, tmp_path, monkeypatch):
 
     from XQMagicUI import Globl
     from XQMagicUI.Cache import CacheManager
-    from XQMagicUI.Storage import EndBookStore
+    from XQMagicUI.Storage import PuzzleStore
 
     Globl.APP_NAME = "XQMagic"
     Globl.APP_NAME_TEXT = "象棋魔术师"
@@ -130,7 +130,7 @@ def show_main_window(qtbot, qapp_show, tmp_path, monkeypatch):
     Globl.settings.setValue("cloudMode", False)
     Globl.fenCache = CacheManager(max_size=10000)
     Globl.puzzleStore = None
-    Globl.endbookStore = EndBookStore(tmp_path / "endbooks.json")
+    Globl.puzzleStore = PuzzleStore(tmp_path / "puzzles.json")
 
     # 阻断真实引擎/云库请求,避免在人工运行期间触发下载或加载外部进程
     from XQMagicUI.CloudDB import CloudDB
@@ -292,7 +292,7 @@ class TestShowDocks:
             ("engineView", w.engineView),
             ("actionsView", w.actionsView),
             ("historyDoc", w.historyDoc),
-            ("endBookView", w.endBookView),
+            ("puzzleView", w.puzzleView),
             ("bookmarkView", w.bookmarkView),
             ("gamelibView", w.gamelibView),
             ("testRunnerView", w.testRunnerView),

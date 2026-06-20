@@ -41,7 +41,7 @@ from .Ecco import getBookEcco
 from .Engine import EngineManager
 from .LocalDB import LocalBook, MasterBook, OpenBookPF, OpenBookYfk
 from .Online import OnlineDialog, OnlineManager
-from .Storage import EndBookStore
+from .Storage import PuzzleStore
 from .TestRunner import TestRunnerWidget
 from .Utils import (
     ALTER_BEST_CLOUD,
@@ -60,7 +60,7 @@ from .Widgets import (
     BoardPanelWidget,
     BookmarkWidget,
     DockHistoryWidget,
-    EndBookWidget,
+    PuzzleWidget,
     EngineWidget,
     GameLibWidget,
     MoveListDialog,
@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
         self.openBook = MasterBook()
         self.openBook.open(GAME_DIR / "masterbook.db")
 
-        Globl.endbookStore = EndBookStore(GAME_DIR / "endbooks.json")
+        Globl.puzzleStore = PuzzleStore(GAME_DIR / "puzzles.json")
 
         Globl.localBook = LocalBook()
         Globl.localBook.open(GAME_DIR / "localbook.db")
@@ -158,9 +158,9 @@ class MainWindow(QMainWindow):
         self.historyView.positionChangeSignal.connect(self.onSelectHistoryPosition)
         self.historyView.showScoreBox.stateChanged.connect(self.onShowScoreChanged)
 
-        self.endBookView = EndBookWidget(self)
-        self.endBookView.setVisible(False)
-        self.endBookView.selectEndGameSignal.connect(self.onSelectEndGame)
+        self.puzzleView = PuzzleWidget(self)
+        self.puzzleView.setVisible(False)
+        self.puzzleView.selectPuzzleSignal.connect(self.onSelectPuzzle)
 
         # self.moveDbView = MoveDbWidget(self)
         # self.moveDbView.selectMoveSignal.connect(self.onTryBookMove)
@@ -178,7 +178,7 @@ class MainWindow(QMainWindow):
         self.engineView = EngineWidget(self, Globl.engineManager)
 
         self.addDockWidget(Qt.LeftDockWidgetArea, self.actionsView)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.endBookView)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.puzzleView)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.gamelibView)
         self.addDockWidget(Qt.RightDockWidgetArea, self.historyDoc)
         # self.addDockWidget(Qt.RightDockWidgetArea, self.bookmarkView)
@@ -424,7 +424,7 @@ class MainWindow(QMainWindow):
             self.doCaptureAct.setEnabled(False)
             self.myGamesAct.setEnabled(True)
             self.bookmarkAct.setEnabled(True)
-            self.endBookView.hide()
+            self.puzzleView.hide()
             self.actionsView.show()
 
             # self.showBestBox.setChecked(True)
@@ -439,7 +439,7 @@ class MainWindow(QMainWindow):
             self.doCaptureAct.setEnabled(False)
             self.myGamesAct.setEnabled(True)
             self.bookmarkAct.setEnabled(True)
-            self.endBookView.hide()
+            self.puzzleView.hide()
             self.actionsView.show()
 
             # self.showScoreBox.setChecked(True)
@@ -458,7 +458,7 @@ class MainWindow(QMainWindow):
             self.myGamesAct.setEnabled(True)
             self.bookmarkAct.setEnabled(False)
             self.bookmarkView.hide()
-            self.endBookView.hide()
+            self.puzzleView.hide()
             self.gamelibView.hide()
             self.actionsView.hide()
 
@@ -479,7 +479,7 @@ class MainWindow(QMainWindow):
             self.myGamesAct.setEnabled(False)
             self.bookmarkAct.setEnabled(False)
             self.bookmarkView.hide()
-            self.endBookView.hide()
+            self.puzzleView.hide()
             self.gamelibView.hide()
             self.actionsView.hide()
 
@@ -495,7 +495,7 @@ class MainWindow(QMainWindow):
         elif new_mode == GameMode.Puzzle:
             self.myGamesAct.setEnabled(False)
             self.bookmarkAct.setEnabled(False)
-            self.endBookView.show()
+            self.puzzleView.show()
             self.bookmarkView.hide()
             self.gamelibView.hide()
             self.actionsView.hide()
@@ -507,7 +507,7 @@ class MainWindow(QMainWindow):
             self.openFileAct.setEnabled(False)
             self.editBoardAct.setEnabled(False)
 
-            self.endBookView.nextGame()
+            self.puzzleView.nextGame()
 
     def onGameOver(self, win_side):
         if Globl.gameManager.gameMode == GameMode.Puzzle:
@@ -519,9 +519,9 @@ class MainWindow(QMainWindow):
                 msgbox = TimerMessageBox("太棒了！ 挑战成功！！！")
                 msgbox.exec()
                 self.currGame["ok"] = True
-                Globl.endbookStore.updateEndBook(self.currGame)
-                self.endBookView.updateCurrent(self.currGame)
-                self.endBookView.nextGame()
+                Globl.puzzleStore.updatePuzzle(self.currGame)
+                self.puzzleView.updateCurrent(self.currGame)
+                self.puzzleView.nextGame()
         else:
             win_msg = "红方被将死!" if win_side == cchess.BLACK else "黑方被将死!"
             msgbox = TimerMessageBox(win_msg)
@@ -1300,7 +1300,7 @@ class MainWindow(QMainWindow):
     def onDoFightRobot(self):
         self.switchGameMode(GameMode.EngineFight)
 
-    def onDoEndGame(self):
+    def onDoPuzzle(self):
         if (Globl.gameManager.gameMode != GameMode.Puzzle) and self.isNeedSave:
             steps = len(self.positionList) - 1
             if not self.getConfirm(
@@ -1351,7 +1351,7 @@ class MainWindow(QMainWindow):
 
         self.initGame(self.init_fen)
 
-    def onSelectEndGame(self, game):
+    def onSelectPuzzle(self, game):
         if Globl.gameManager.gameMode != GameMode.Puzzle:
             return
 
@@ -1493,7 +1493,7 @@ class MainWindow(QMainWindow):
 
         self.openFile(fileName)
 
-    def onOpenEndGameFile(self):
+    def onOpenPuzzleFile(self):
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
 
@@ -1692,12 +1692,12 @@ class MainWindow(QMainWindow):
             triggered=self.onOpenFile,
         )
 
-        self.openEndGameFileAct = QAction(
+        self.openPuzzleFileAct = QAction(
             self.style().standardIcon(QStyle.SP_DialogOpenButton),
             "打开残局挑战库",
             self,
             statusTip="打开残局挑战库文件（.CSV）",
-            triggered=self.onOpenEndGameFile,
+            triggered=self.onOpenPuzzleFile,
         )
 
         self.useOpenBookAct = QAction(
@@ -1727,12 +1727,12 @@ class MainWindow(QMainWindow):
             triggered=self.onDoFreeGame,
         )
 
-        self.doEndGameAct = QAction(
-            QIcon(":ImgRes/endbook.png"),
+        self.doPuzzleAct = QAction(
+            QIcon(":ImgRes/puzzle.png"),
             "残局中局",
             self,
             statusTip="残局杀法，中局战术",
-            triggered=self.onDoEndGame,
+            triggered=self.onDoPuzzle,
         )
 
         self.doRobotAct = QAction(
@@ -1833,7 +1833,7 @@ class MainWindow(QMainWindow):
         self.fileMenu.addAction(self.saveFileAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.useOpenBookAct)
-        self.fileMenu.addAction(self.openEndGameFileAct)
+        self.fileMenu.addAction(self.openPuzzleFileAct)
         self.fileMenu.addSeparator()
         # self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)
@@ -1882,7 +1882,7 @@ class MainWindow(QMainWindow):
         ag = QActionGroup(self)
         ag.setExclusive(True)
         ag.addAction(self.doOpenBookAct)
-        ag.addAction(self.doEndGameAct)
+        ag.addAction(self.doPuzzleAct)
         ag.addAction(self.doRobotAct)
         ag.addAction(self.doOnlineAct)
 
@@ -1891,7 +1891,7 @@ class MainWindow(QMainWindow):
 
         self.gameBar.addAction(self.doOpenBookAct)
         self.gameBar.addAction(self.doRobotAct)
-        self.gameBar.addAction(self.doEndGameAct)
+        self.gameBar.addAction(self.doPuzzleAct)
         # self.gameBar.addAction(self.doOnlineAct)
 
         self.gameBar.addAction(self.restartAct)
@@ -1959,7 +1959,7 @@ class MainWindow(QMainWindow):
         if self.openBook is not None:
             self.openBook.close()
         # Globl.bookmarkStore.close()
-        Globl.endbookStore.close()
+        Globl.puzzleStore.close()
         Globl.localBook.close()
 
         logging.info("应用关闭.")
@@ -1978,7 +1978,7 @@ class MainWindow(QMainWindow):
         # self.openBookFile = Path(Globl.settings.value("openBookFile", str(Path('game','openbook.yfk'))))
         self.lastOpenFolder = Globl.settings.value("lastOpenFolder", "")
 
-        self.endBookView.loadSettings(Globl.settings)
+        self.puzzleView.loadSettings(Globl.settings)
         self.historyView.loadSettings(Globl.settings)
 
         self.boardPanel.loadSettings(Globl.settings)
@@ -2002,7 +2002,7 @@ class MainWindow(QMainWindow):
         Globl.settings.setValue("boardSkin", self.skin)
 
         self.engineView.saveSettings(Globl.settings)
-        self.endBookView.saveSettings(Globl.settings)
+        self.puzzleView.saveSettings(Globl.settings)
         self.historyView.saveSettings(Globl.settings)
         self.boardPanel.saveSettings(Globl.settings)
 

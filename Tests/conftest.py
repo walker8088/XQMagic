@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """测试共享的 fixture.
 
 提供:
@@ -57,7 +57,6 @@ def setup_globl(tmp_path):
     Globl.settings.setValue("cloudMode", False)
     Globl.fenCache = CacheManager(max_size=10000)
     Globl.puzzleStore = None
-    Globl.endbookStore = None
     Globl.gameManager = None
     Globl.bookmarkView = None
     Globl.boardPanel = None

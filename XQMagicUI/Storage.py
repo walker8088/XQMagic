@@ -122,18 +122,18 @@ class BookmarkStore():
 
 
 # ------------------------------------------------------------------------------
-# Endbooks
-class EndBookStore:
+# Puzzles
+class PuzzleStore:
     def __init__(self, fileName):
-        self.endbooks = TinyDB(fileName)
+        self.puzzles = TinyDB(fileName)
 
     def close(self):
-        self.endbooks.close()
+        self.puzzles.close()
 
-    def getAllEndBooks(self):
+    def getAllPuzzles(self):
         q = Query()
         books = {}
-        ret = self.endbooks.search(q.book_name.exists())
+        ret = self.puzzles.search(q.book_name.exists())
         for it in ret:
             if "ok" not in it:
                 it["ok"] = False
@@ -143,39 +143,39 @@ class EndBookStore:
             books[book_name].append(it)
         return books
 
-    def saveEndBook(self, book_name, games):
+    def savePuzzles(self, book_name, games):
         q = Query()
         for game in games:
             game["book_name"] = book_name
-            ret = self.endbooks.search(
+            ret = self.puzzles.search(
                 (q.book_name == book_name) & (q.name == game["name"])
             )
             if len(ret) == 0:
-                self.endbooks.insert(game)
+                self.puzzles.insert(game)
                 # yield game['name']
 
-    def updateEndBook(self, game):
+    def updatePuzzle(self, game):
         q = Query()
 
-        ret = self.endbooks.search(
+        ret = self.puzzles.search(
             (q.book_name == game["book_name"]) & (q.name == game["name"])
         )
         if len(ret) != 1:
             raise Exception(f"Game Not Exist：{game}")
         else:
-            self.endbooks.update(
+            self.puzzles.update(
                 {"ok": game["ok"]},
                 ((q.book_name == game["book_name"]) & (q.name == game["name"])),
             )
 
-    def isEndBookExist(self, book_name):
+    def isPuzzleBookExist(self, book_name):
         q = Query()
-        ret = self.endbooks.search((q.book_name == book_name))
+        ret = self.puzzles.search((q.book_name == book_name))
         return len(ret) >= 1
 
-    def deleteEndBook(self, book_name):
+    def deletePuzzleBook(self, book_name):
         q = Query()
-        self.endbooks.remove((q.book_name == book_name))
+        self.puzzles.remove((q.book_name == book_name))
 
 
 # ------------------------------------------------------------------------------

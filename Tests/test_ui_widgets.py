@@ -7,7 +7,7 @@
 - BoardPanelWidget: 棋盘面板(flip / mirror / showBest)
 - BoardActionsWidget: 备选着法列表
 - BookmarkWidget: 我的收藏
-- EndBookWidget: 残局库
+- PuzzleWidget: 残局库
 - GameLibWidget: 棋库
 """
 
@@ -522,21 +522,21 @@ class TestBookmarkWidget:
 
 
 # =====================================================================
-# EndBookWidget
+# PuzzleWidget
 # =====================================================================
-class TestEndBookWidget:
+class TestPuzzleWidget:
     """残局库."""
 
     @pytest.fixture
     def widget(self, qtbot, tmp_path, setup_globl):
         from XQMagicUI import Globl
-        from XQMagicUI.Storage import EndBookStore
-        from XQMagicUI.Widgets import EndBookWidget
+        from XQMagicUI.Storage import PuzzleStore
+        from XQMagicUI.Widgets import PuzzleWidget
 
         # 准备 2 个 残局库(使用 TinyDB 存储)
-        endbooks_db = tmp_path / "endbooks.json"
-        store = EndBookStore(endbooks_db)
-        store.saveEndBook(
+        puzzles_db = tmp_path / "puzzles.json"
+        store = PuzzleStore(puzzles_db)
+        store.savePuzzles(
             "book1",
             [
                 {
@@ -547,7 +547,7 @@ class TestEndBookWidget:
                 }
             ],
         )
-        store.saveEndBook(
+        store.savePuzzles(
             "book2",
             [
                 {
@@ -558,10 +558,9 @@ class TestEndBookWidget:
                 }
             ],
         )
-        Globl.endbookStore = store
-        Globl.puzzleStore = None
+        Globl.puzzleStore = store
 
-        w = EndBookWidget(None)
+        w = PuzzleWidget(None)
         qtbot.addWidget(w)
         w.parent = MagicMock()
         w.parent.board = MagicMock()
@@ -585,7 +584,7 @@ class TestEndBookWidget:
         # 预先连接信号
         spy = []
 
-        widget.selectEndGameSignal.connect(lambda game: spy.append(game))
+        widget.selectPuzzleSignal.connect(lambda game: spy.append(game))
 
         widget.updateBooks()
         widget.bookCombo.setCurrentText("book1")
@@ -611,16 +610,16 @@ class TestEndBookWidget:
         widget.bookCombo.setCurrentText("book1")
         widget.saveSettings(Globl.settings)
         # 新建 widget,加载设置
-        from XQMagicUI.Widgets import EndBookWidget
+        from XQMagicUI.Widgets import PuzzleWidget
 
-        w2 = EndBookWidget(None)
+        w2 = PuzzleWidget(None)
         w2.loadSettings(Globl.settings)
         assert w2.currBookName == "book1"
 
     def test_batchImportFromDir_imports_missing_books(self, widget, tmp_path):
         """从文件夹批量导入应该补齐缺失的库,跳过已存在的库(保留 ok 标记)。"""
         from XQMagicUI import Globl
-        from XQMagicUI.Widgets import EndBookWidget
+        from XQMagicUI.Widgets import PuzzleWidget
 
         # 在 tmp_path 下准备 .eglib 文件:
         # book1(已存在,应被跳过)/book3(新,应被导入)
@@ -639,14 +638,14 @@ class TestEndBookWidget:
         widget.updateBooks()
         widget.bookCombo.setCurrentText("book1")
         widget.currGame["ok"] = True
-        Globl.endbookStore.updateEndBook(widget.currGame)
+        Globl.puzzleStore.updatePuzzle(widget.currGame)
 
-        imported, skipped = EndBookWidget.batchImportFromDir(books_dir)
+        imported, skipped = PuzzleWidget.batchImportFromDir(books_dir)
         assert imported == 1
         assert skipped == 1
 
         # book3 应被导入
-        all_books = Globl.endbookStore.getAllEndBooks()
+        all_books = Globl.puzzleStore.getAllPuzzles()
         assert "book3" in all_books
         assert len(all_books["book3"]) == 2
 
@@ -656,11 +655,11 @@ class TestEndBookWidget:
 
     def test_batchImportFromDir_empty_dir(self, widget, tmp_path):
         """空文件夹应返回 (0, 0)。"""
-        from XQMagicUI.Widgets import EndBookWidget
+        from XQMagicUI.Widgets import PuzzleWidget
 
         books_dir = tmp_path / "empty_books"
         books_dir.mkdir()
-        imported, skipped = EndBookWidget.batchImportFromDir(books_dir)
+        imported, skipped = PuzzleWidget.batchImportFromDir(books_dir)
         assert (imported, skipped) == (0, 0)
 
 

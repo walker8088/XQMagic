@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """恢复残局库.
 
-如果 ``Game/endbooks.json`` 被误删/清空(比如旧版 conftest 误清用户目录),
+如果 ``Game/puzzles.json`` 被误删/清空(比如旧版 conftest 误清用户目录),
 用这个脚本从 ``Books/已整理残局Book/`` 下的 ``.eglib`` 文件批量导入到
 TinyDB,恢复出题用的残局库。
 
@@ -10,10 +10,10 @@ TinyDB,恢复出题用的残局库。
 用法::
 
     # 在 XQMagic 项目根目录下
-    python Tools/restore_endbooks.py
+    python Tools/restore_puzzles.py
 
     # 预览会导入哪些库(不实际写文件)
-    python Tools/restore_endbooks.py --dry-run
+    python Tools/restore_puzzles.py --dry-run
 """
 
 import argparse
@@ -26,18 +26,18 @@ _ROOT = _HERE.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from XQMagicUI.Storage import EndBookStore  # noqa: E402
+from XQMagicUI.Storage import PuzzleStore  # noqa: E402
 from XQMagicUI.Utils import loadEglib  # noqa: E402
 
 GAME_DIR = Path("Game")
 BOOKS_DIR = Path("Books") / "已整理残局Book"
 
 
-def restore_endbooks(game_path, books_dir, *, dry_run=False):
+def restore_puzzles(game_path, books_dir, *, dry_run=False):
     """从 books_dir 下的 .eglib 导入到 game_path.
 
     Args:
-        game_path: 目标 TinyDB 文件路径(``Game/endbooks.json``)
+        game_path: 目标 TinyDB 文件路径(``Game/puzzles.json``)
         books_dir: 包含 ``.eglib`` 文件的目录
         dry_run: True 时只统计会做什么,不实际写入
 
@@ -57,18 +57,18 @@ def restore_endbooks(game_path, books_dir, *, dry_run=False):
             print(f"将导入: {eglib.stem}")
         return len(eglib_files), 0
 
-    store = EndBookStore(game_path)
+    store = PuzzleStore(game_path)
     try:
         imported = 0
         skipped = 0
         for eglib in eglib_files:
             book_name = eglib.stem
-            if store.isEndBookExist(book_name):
+            if store.isPuzzleBookExist(book_name):
                 print(f"跳过: {book_name} (已存在,保留挑战进度)")
                 skipped += 1
                 continue
             games = list(loadEglib(eglib))
-            store.saveEndBook(book_name, games)
+            store.savePuzzles(book_name, games)
             print(f"导入: {book_name} ({len(games)} 个残局)")
             imported += 1
         return imported, skipped
@@ -78,13 +78,13 @@ def restore_endbooks(game_path, books_dir, *, dry_run=False):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="从 Books/ 下的 .eglib 恢复残局库到 Game/endbooks.json"
+        description="从 Books/ 下的 .eglib 恢复残局库到 Game/puzzles.json"
     )
     parser.add_argument(
         "--game",
         type=Path,
-        default=GAME_DIR / "endbooks.json",
-        help="目标 endbooks.json 路径 (默认: Game/endbooks.json)",
+        default=GAME_DIR / "puzzles.json",
+        help="目标 puzzles.json 路径 (默认: Game/puzzles.json)",
     )
     parser.add_argument(
         "--books",
@@ -99,7 +99,7 @@ def main():
     )
     args = parser.parse_args()
 
-    imported, skipped = restore_endbooks(args.game, args.books, dry_run=args.dry_run)
+    imported, skipped = restore_puzzles(args.game, args.books, dry_run=args.dry_run)
     if not args.dry_run:
         print(f"\n完成: 导入 {imported} 个,跳过 {skipped} 个")
     return 0

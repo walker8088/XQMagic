@@ -37,12 +37,12 @@ def main_window(
     # 把所有 Game 相关路径重定向到 tmp_path
     import XQMagicUI.Main as M
     from XQMagicUI import Globl
-    from XQMagicUI.Storage import EndBookStore
+    from XQMagicUI.Storage import PuzzleStore
 
     monkeypatch.setattr(M, "GAME_DIR", tmp_path)
-    # 初始化一个空的 EndBookStore 到 tmp_path
-    endbooks_path = tmp_path / "endbooks.json"
-    Globl.endbookStore = EndBookStore(endbooks_path)
+    # 初始化一个空的 PuzzleStore 到 tmp_path
+    puzzles_path = tmp_path / "puzzles.json"
+    Globl.puzzleStore = PuzzleStore(puzzles_path)
     Globl.puzzleStore = None
 
     from XQMagicUI.Main import MainWindow
@@ -79,7 +79,7 @@ class TestMainWindowBasics:
         from PyQt5.QtWidgets import QDockWidget
 
         # 主要 dock 控件已挂载
-        for attr in ("actionsView", "endBookView", "historyDoc", "engineView"):
+        for attr in ("actionsView", "puzzleView", "historyDoc", "engineView"):
             obj = getattr(main_window, attr, None)
             assert obj is not None, f"缺少 {attr}"
         # 必须是 QDockWidget
@@ -434,7 +434,7 @@ class TestMainWindowReview:
         assert len(main_window.positionList) == 1
         assert main_window.positionList[0]["fen"].startswith("rnbakabnr")
 
-    def test_onSelectEndGame_loads_puzzle(self, main_window, setup_globl):
+    def test_onSelectPuzzle_loads_puzzle(self, main_window, setup_globl):
         from XQMagicUI.Utils import GameMode
 
         main_window.switchGameMode(GameMode.Puzzle)
@@ -445,18 +445,18 @@ class TestMainWindowReview:
             "book_name": "book1",
             "moves": "e0e1",  # (4,0) 红帅到 (4,1),合法走子
         }
-        main_window.onSelectEndGame(game)
+        main_window.onSelectPuzzle(game)
         # 应初始化到 puzzle 的 FEN
         assert main_window.currPosition["fen"] == EMPTY_FEN
         assert main_window.currGame is game
 
-    def test_onSelectEndGame_ignored_in_other_modes(self, main_window, setup_globl):
+    def test_onSelectPuzzle_ignored_in_other_modes(self, main_window, setup_globl):
         from XQMagicUI.Utils import GameMode
 
         main_window.switchGameMode(GameMode.Free)
         # 强制设置 currGame 也要被忽略
         main_window.currGame = None
-        main_window.onSelectEndGame({"name": "x", "fen": EMPTY_FEN})
+        main_window.onSelectPuzzle({"name": "x", "fen": EMPTY_FEN})
         assert main_window.currGame is None
 
     def test_updateEcco_short_game_noop(self, main_window, setup_globl):
