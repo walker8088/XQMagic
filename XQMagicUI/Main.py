@@ -1493,21 +1493,6 @@ class MainWindow(QMainWindow):
 
         self.openFile(fileName)
 
-    def onOpenPuzzleFile(self):
-        options = QFileDialog.Options()
-        # options |= QFileDialog.DontUseNativeDialog
-
-        fileName, _ = QFileDialog.getOpenFileName(
-            self,
-            "打开文件",
-            self.lastOpenFolder,
-            "残局挑战库文件(*.csv);;",
-            options=options,
-        )
-
-        if not fileName:
-            return
-
     def onSaveFile(self):
         if not self.positionList:
             return
@@ -1692,14 +1677,6 @@ class MainWindow(QMainWindow):
             triggered=self.onOpenFile,
         )
 
-        self.openPuzzleFileAct = QAction(
-            self.style().standardIcon(QStyle.SP_DialogOpenButton),
-            "打开残局挑战库",
-            self,
-            statusTip="打开残局挑战库文件（.CSV）",
-            triggered=self.onOpenPuzzleFile,
-        )
-
         self.useOpenBookAct = QAction(
             self.style().standardIcon(QStyle.SP_DialogOpenButton),
             "开局库选择",
@@ -1833,7 +1810,6 @@ class MainWindow(QMainWindow):
         self.fileMenu.addAction(self.saveFileAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.useOpenBookAct)
-        self.fileMenu.addAction(self.openPuzzleFileAct)
         self.fileMenu.addSeparator()
         # self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)

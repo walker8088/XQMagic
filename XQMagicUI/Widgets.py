@@ -13,6 +13,7 @@ from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QIcon, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (
     QAbstractItemView,
+    QAction,
     QApplication,
     QCheckBox,
     QComboBox,
@@ -1503,21 +1504,30 @@ class PuzzleWidget(QDockWidget):
         # Add widgets to the layout
         self.bookCombo = QComboBox(self)
         self.bookCombo.currentTextChanged.connect(self.onBookChanged)
-        self.importBtn = QPushButton("导入")
-        self.importBtn.clicked.connect(self.onImportBtnClick)
-        self.batchImportBtn = QPushButton("批量导入")
-        self.batchImportBtn.setToolTip(
-            "从文件夹导入全部 .eglib 残局库,跳过同名已存在的库"
-        )
-        self.batchImportBtn.clicked.connect(self.onBatchImportBtnClick)
-        self.openBtn = QPushButton("打开")
-        self.openBtn.clicked.connect(self.onOpenBtnClick)
+
+        # 「导入」:QToolButton + 下拉菜单
+        # 单击主区域 = 导入单个文件(严格:同名库拒绝)
+        # 点 ▼ = 弹菜单,可改选批量模式(宽松:同名库跳过)
+        self.importBtn = QToolButton(self)
+        self.importBtn.setText("导入")
+        self.importBtn.setToolTip("导入残局库;单击=单文件,点▼=批量")
+        self.importBtn.setPopupMode(QToolButton.MenuButtonPopup)
+
+        self._importSingleAct = QAction("导入单个文件...", self)
+        self._importSingleAct.triggered.connect(self.onImportBtnClick)
+        self._importBatchAct = QAction("从文件夹批量导入...", self)
+        self._importBatchAct.triggered.connect(self.onBatchImportBtnClick)
+
+        import_menu = QMenu(self)
+        import_menu.addAction(self._importSingleAct)
+        import_menu.addAction(self._importBatchAct)
+        self.importBtn.setMenu(import_menu)
+        # 默认动作 = 单文件导入(最常用),单击即触发
+        self.importBtn.setDefaultAction(self._importSingleAct)
 
         hbox = QHBoxLayout()
         hbox.addWidget(self.bookCombo, 2)
         hbox.addWidget(self.importBtn, 0)
-        hbox.addWidget(self.batchImportBtn, 0)
-        hbox.addWidget(self.openBtn, 0)
 
         vbox = QVBoxLayout()
         vbox.addLayout(hbox)
@@ -1617,9 +1627,6 @@ class PuzzleWidget(QDockWidget):
 
         self.updateBooks()
         self.bookCombo.setCurrentText(lib_name)
-
-    def onOpenBtnClick(self):
-        pass
 
     def onBatchImportBtnClick(self):
         """批量导入:从文件夹一次性导入所有 .eglib,跳过同名已存在的库.

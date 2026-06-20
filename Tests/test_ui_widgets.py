@@ -700,6 +700,25 @@ class TestPuzzleWidget:
         assert len(all_books["json_book"]) == 1
         assert len(all_books["legacy_book"]) == 1
 
+    def test_import_button_is_toolbutton_with_menu(self, widget):
+        """导入按钮应是 QToolButton,带 2 项菜单."""
+        from PyQt5.QtWidgets import QToolButton
+        assert isinstance(widget.importBtn, QToolButton)
+        assert '导入' in widget.importBtn.text()
+        assert widget.importBtn.popupMode() == QToolButton.MenuButtonPopup
+        menu = widget.importBtn.menu()
+        assert menu is not None
+        actions = menu.actions()
+        assert len(actions) == 2
+        assert '单个文件' in actions[0].text()
+        assert '批量' in actions[1].text()
+        assert widget.importBtn.defaultAction() is actions[0]
+
+    def test_old_dead_buttons_removed(self, widget):
+        """原 openBtn / batchImportBtn 已删除."""
+        assert not hasattr(widget, 'openBtn')
+        assert not hasattr(widget, 'batchImportBtn')
+
 
 # =====================================================================
 # GameLibWidget
